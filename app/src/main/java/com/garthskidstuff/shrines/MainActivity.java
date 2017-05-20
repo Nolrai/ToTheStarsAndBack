@@ -5,9 +5,19 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.garthskidstuff.shrines.Game.Game;
+
+import java.sql.Time;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -55,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onNewGame() {
-
+        Game game = Game.mkTestGame();
+        // TODO: use game, go to home shrine screen.
     }
 }
