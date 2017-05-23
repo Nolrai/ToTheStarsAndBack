@@ -18,6 +18,11 @@ import java.util.Set;
 public class Game {
     private static final int minShrines = 40;
     private static final int maxShrines = 100;
+    private static final int minConnections = 3;
+    private static final int maxConnections = 5;
+    private static final int minMaxPopulation = 5; // The max size pop can grow is between min/max
+    private static final int maxMaxPopulation = 40;
+
     final Shrine[] homes = {null, null};
     @SuppressWarnings("FieldCanBeLocal")
     private final List<Shrine> shrines = new ArrayList<>();
@@ -46,7 +51,7 @@ public class Game {
      *
      * @param nameList  A list of names for shrines.
      * @param imageList A list of image ids for the shrines.
-     * @param random_   The RNG used by the whole game, its a parameter so that a test harness can save/print/reuse the seed of the RNG.
+     * @param random_   The RNG used by the whole game, it's a parameter so that a test harness can save/print/reuse the seed of the RNG.
      */
     public Game(List<String> nameList, List<String> imageList, Random random_) {
         random = random_;
@@ -55,7 +60,7 @@ public class Game {
         Shuffled<String> imagesShuffled = new Shuffled<>(imageList);
 
         for (int i = 0; i < numShrines; i++) {
-            Shrine shrine = new Shrine(namesShuffled.next(), imagesShuffled.next(), roll(5, 20));
+            Shrine shrine = new Shrine(namesShuffled.next(), imagesShuffled.next(), roll(minMaxPopulation, maxMaxPopulation));
             shrines.add(shrine);
         }
 
@@ -65,7 +70,7 @@ public class Game {
 
             //generate raw web
             for (Shrine shrine : shrines) {
-                int numConnections = roll(3, 5);
+                int numConnections = roll(minConnections, maxConnections);
                 List<Shrine> connections = shrine.getConnections();
                 do {
                     Shrine newConnection = shrines.get(roll(0, numShrines - 1));
@@ -73,11 +78,7 @@ public class Game {
                     //      edges A to A
                     //  I.E. all connections from the same shrine
                     //      must go to distinct shrines that aren't the origin shrine.
-                    Set<Shrine> invalidDestinations = new HashSet<>();
-                    invalidDestinations.addAll(connections);
-                    invalidDestinations.add(shrine);
-                    final boolean valid = !invalidDestinations.contains(newConnection);
-                    if (valid) {
+                    if (!connections.contains(newConnection) && (newConnection != shrine)) {
                         connections.add(newConnection);
                     }
                 } while (connections.size() < numConnections);
@@ -94,8 +95,11 @@ public class Game {
                     homes[0] = playerHome;
                     Set<Shrine> candidates = playerHome.getNtoMthNeighbors(minDistance, maxDistance);
                     for (Shrine candidate : candidates) {
-                        boolean goodCandidate = (candidate.getConnections().size() == playerHome.getConnections().size()) && (candidate.getNtoMthNeighbors(minDistance, maxDistance).contains(playerHome));
-                        if (!goodCandidate) candidates.remove(candidate);
+                        boolean goodCandidate = (candidate.getConnections().size() == playerHome.getConnections().size()) &&
+                                (candidate.getNtoMthNeighbors(minDistance, maxDistance).contains(playerHome));
+                        if (!goodCandidate) {
+                            candidates.remove(candidate);
+                        }
                     }
                     int size = candidates.size();
                     if (size != 0) {

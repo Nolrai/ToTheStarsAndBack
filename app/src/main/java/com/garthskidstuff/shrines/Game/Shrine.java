@@ -1,5 +1,7 @@
 package com.garthskidstuff.shrines.Game;
 
+import android.support.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -12,7 +14,7 @@ import java.util.TreeSet;
  */
 
 @SuppressWarnings({"DefaultFileTemplate", "WeakerAccess", "unused"})
-public class Shrine {
+public class Shrine implements Comparable {
     private final String name;
 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
@@ -69,6 +71,7 @@ public class Shrine {
         return ret;
     }
 
+    //TODO: Rewrite as class etc.
     /*
      * This is an iterator who's nth next produces the (not already reached) shrines n connections
      * downstream from this.
@@ -102,6 +105,7 @@ public class Shrine {
         };
     }
 
+    //TODO Fix list-like behavior since we're doing sets (no need to test contains)
     /*
 Produces a set of all connections of the shrines of toVisit, that aren't already in visited
     and adds them to visited.
@@ -191,5 +195,14 @@ Produces a set of all connections of the shrines of toVisit, that aren't already
 
     public void setNumCargoGold(int numCargoGold) {
         this.numCargoGold = numCargoGold;
+    }
+
+    @Override
+    public int compareTo(@NonNull Object other) {
+        if (other instanceof Shrine) {
+            Shrine otherShrine = (Shrine) other;
+            return name.compareTo(otherShrine.getName());
+        }
+        return -1;
     }
 }
