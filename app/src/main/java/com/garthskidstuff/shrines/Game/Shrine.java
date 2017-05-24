@@ -45,7 +45,7 @@ public class Shrine implements Comparable {
     Set<Shrine> getConnectedComponent() {
         Set<Shrine> visited = new TreeSet<>();
         //noinspection StatementWithEmptyBody
-        for (Iterator<Set<Shrine>> iter = getNthNeighbors(visited); iter.hasNext(); iter.next()) {
+        for (Iterator<Set<Shrine>> iter = new NthNeighbors(visited); iter.hasNext(); iter.next()) {
             //do nothing
         }
         return visited;
@@ -61,7 +61,7 @@ public class Shrine implements Comparable {
     Set<Shrine> getNtoMthNeighbors(int minDistance, int maxDistance) {
         Set<Shrine> visited = new TreeSet<>();
         Set<Shrine> ret = new TreeSet<>();
-        Iterator<Set<Shrine>> iter = getNthNeighbors(visited);
+        Iterator<Set<Shrine>> iter = new NthNeighbors(visited);
         for (int i = 1; i <= maxDistance && iter.hasNext(); i++) {
             Set<Shrine> now = iter.next();
             if (i >= minDistance) {
@@ -71,51 +71,56 @@ public class Shrine implements Comparable {
         return ret;
     }
 
-    //TODO: Rewrite as class etc.
-    /*
+    /**
      * This is an iterator who's nth next produces the (not already reached) shrines n connections
      * downstream from this.
      *
      * It also adds every visited shrine to the set passed in with visited_.
-     * (Where visited means "We have checked to see if it connects to new planets."
+     * (Where visited means "We have checked to see if it connects to new planets.")
      */
-    private Iterator<Set<Shrine>> getNthNeighbors(final Set<Shrine> visited_) {
-        return new Iterator<Set<Shrine>>() {
-            Set<Shrine> toVisitNext, visited;
+    protected class NthNeighbors implements Iterator<Set<Shrine>>
+    {
+        Set<Shrine> toVisitNext, visited;
 
-            {
-                toVisitNext = new TreeSet<>();
-                toVisitNext.add(Shrine.this);
-                visited = visited_;
-                visited.add(Shrine.this);
-            }
+        /**
+         *
+         * @param visited_ The acumulation of all shrines visited is put hear, inorder to be checked after
+         */
+        public NthNeighbors(Set<Shrine> visited_)
+        {
+            toVisitNext = new TreeSet<>();
+            toVisitNext.add(Shrine.this);
+            visited = visited_;
+            visited.add(Shrine.this);
+        }
 
-            public Set<Shrine> next() {
-                Set<Shrine> new_ = new HashSet<>();
-                for (Shrine connection : toVisitNext) {
-                    new_.addAll(connection.getNewConnections(visited));
-                }
-                toVisitNext = new_;
-                return toVisitNext;
+        public Set<Shrine> next() {
+            Set<Shrine> new_ = new HashSet<>();
+            for (Shrine connection : toVisitNext) {
+                new_.addAll(connection.getNewConnections(visited));
             }
+            toVisitNext = new_;
+            return toVisitNext;
+        }
 
-            public boolean hasNext() {
-                return !toVisitNext.isEmpty();
-            }
-        };
+        public boolean hasNext() {
+            return !toVisitNext.isEmpty();
+        }
+
     }
 
-    //TODO Fix list-like behavior since we're doing sets (no need to test contains)
-    /*
-Produces a set of all connections of the shrines of toVisit, that aren't already in visited
-    and adds them to visited.
-*/
+    /**
+     * filters out the shrines we have already visted from the connections list.
+     * @param visited (Shrines we have already seen, and so do _not_ want to see now.
+     * @return The shrines that are one step from this shrine, and not in "visited".
+     */
     private Set<Shrine> getNewConnections(Set<Shrine> visited) {
         Set<Shrine> toVisitNext = new android.support.v4.util.ArraySet<>();
         for (Shrine connection : getConnections()) {
-            if (!visited.contains(connection)) {
+            if (visited.add(connection)) {
+                // Set::add only returns true if the add changes the set:
+                //  i.e. only if the item was not already in visited.
                 toVisitNext.add(connection);
-                visited.add(connection);
             }
         }
         return toVisitNext;
