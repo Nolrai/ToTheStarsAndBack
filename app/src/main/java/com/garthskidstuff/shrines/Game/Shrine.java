@@ -45,7 +45,7 @@ public class Shrine implements Comparable {
     Set<Shrine> getConnectedComponent() {
         Set<Shrine> visited = new TreeSet<>();
         //noinspection StatementWithEmptyBody
-        for (Iterator<Set<Shrine>> iter = getNthNeighbors(visited); iter.hasNext(); iter.next()) {
+        for (Iterator<Set<Shrine>> iter = new NthNeighbors(visited); iter.hasNext(); iter.next()) {
             //do nothing
         }
         return visited;
