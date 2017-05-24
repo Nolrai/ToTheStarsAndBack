@@ -24,7 +24,7 @@ public class ShrineTest {
 
         Set<Shrine> connections = shrine.getConnectedComponent();
 
-        assertThat(connections.size(), is(numConnections));
+        assertThat(connections.size(), is(numConnections + 1 /* for the original shrine*/));
 
     }
 }
