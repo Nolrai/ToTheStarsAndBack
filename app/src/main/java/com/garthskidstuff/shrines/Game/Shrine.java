@@ -22,9 +22,10 @@ public class Shrine implements Comparable {
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final String imageId;
 
-    static enum Direction
+    enum Direction
     {
         FORWARD, BACKWARD;
+
         Direction toggle ()
         {
             Direction ret;
@@ -43,7 +44,8 @@ public class Shrine implements Comparable {
     }
 
     //It's Game's  responcibility to make sure that all shrines in reverseConnections have this shrine in their connections list.
-    private final Map<Direction, List<Shrine>> connections;
+    private final List<Shrine> connections = new ArrayList<>();
+    private final List<Shrine> reverseConnections = new ArrayList<>();
     private final int maxPopulation;
     private int numWorkers;
     private int numAlters;
@@ -62,9 +64,6 @@ public class Shrine implements Comparable {
         this.name = name;
         this.imageId = imageId;
         this.maxPopulation = maxPopulation;
-        connections = new EnumMap<>(Direction.class);
-        connections.put(Direction.FORWARD, new ArrayList<Shrine>());
-        connections.put(Direction.BACKWARD, new ArrayList<Shrine>());
     }
 
     // Gets all shrines that can be reached (eventually) from here
@@ -172,7 +171,7 @@ public class Shrine implements Comparable {
         return name;
     }
 
-    public List<Shrine> getConnections(ForwardBackward fb)
+    public List<Shrine> getConnections(Direction fb)
     {
         switch (fb)
         {
