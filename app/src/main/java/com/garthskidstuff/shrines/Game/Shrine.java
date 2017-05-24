@@ -3,9 +3,11 @@ package com.garthskidstuff.shrines.Game;
 import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -20,7 +22,28 @@ public class Shrine implements Comparable {
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final String imageId;
 
-    private final List<Shrine> connections = new ArrayList<>();
+    static enum Direction
+    {
+        FORWARD, BACKWARD;
+        Direction toggle ()
+        {
+            Direction ret;
+            switch (this) {
+                case FORWARD:
+                    ret = BACKWARD;
+                    break;
+                case BACKWARD:
+                    ret = FORWARD;
+                    break;
+                default:
+                    ret = null;
+            }
+            return ret;
+        }
+    }
+
+    //It's Game's  responcibility to make sure that all shrines in reverseConnections have this shrine in their connections list.
+    private final Map<Direction, List<Shrine>> connections;
     private final int maxPopulation;
     private int numWorkers;
     private int numAlters;
@@ -39,6 +62,9 @@ public class Shrine implements Comparable {
         this.name = name;
         this.imageId = imageId;
         this.maxPopulation = maxPopulation;
+        connections = new EnumMap<>(Direction.class);
+        connections.put(Direction.FORWARD, new ArrayList<Shrine>());
+        connections.put(Direction.BACKWARD, new ArrayList<Shrine>());
     }
 
     // Gets all shrines that can be reached (eventually) from here
@@ -52,7 +78,23 @@ public class Shrine implements Comparable {
     }
 
     /**
-     * Finds All shrines with shortest path from this is between minDistance and maxDistance (inclusive).
+     * This returns all the minimal paths (using only the shrines in subGraph),
+     * from a to b.
+     * @param subGraph
+     * @param a
+     * @param b
+     * @return
+     */
+    List<Set<Shrine>> getPath (Set<Shrine> subGraph, Shrine a, Shrine b)
+    {
+        List<Set<Shrine>> ret = new ArrayList<>();
+
+
+        return ret;
+    }
+
+    /**
+     * Finds All shrines with shortest path from this shrine is between minDistance and maxDistance (inclusive).
      *
      * @param minDistance Shrines closer then this are ignored.
      * @param maxDistance We stop before looking at shrines farther then this.
@@ -130,8 +172,17 @@ public class Shrine implements Comparable {
         return name;
     }
 
-    public List<Shrine> getConnections() {
-        return connections;
+    public List<Shrine> getConnections(ForwardBackward fb)
+    {
+        switch (fb)
+        {
+            case FORWARD:
+                return connections;
+                break;
+            case BACKWARD:
+                return reverseConnections;
+                break;
+        }
     }
 
     public int getNumWorkers() {
@@ -209,5 +260,18 @@ public class Shrine implements Comparable {
             return name.compareTo(otherShrine.getName());
         }
         return -1;
+    }
+
+    /*
+     * For test:
+     */
+    boolean validateReverseConnections()
+    {
+        boolean ret = true;
+        for (Shrine predecessor : this.reverseConnections
+             ) {
+            ret &= predecessor.connections.contains(this);
+        }
+        return ret;
     }
 }
