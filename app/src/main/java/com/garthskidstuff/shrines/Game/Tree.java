@@ -9,7 +9,7 @@ import java.util.Set;
  */
 
 public class Tree<T> {
-    Set<Tree> children = new HashSet<>();
+    Set<Tree<T>> children = new HashSet<>();
     T here;
 
     public Tree(T t) {
