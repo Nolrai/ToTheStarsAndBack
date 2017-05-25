@@ -71,16 +71,17 @@ public class Game {
             //generate raw web
             for (Shrine shrine : shrines) {
                 int numConnections = roll(minConnections, maxConnections);
+                List<Shrine> connections = shrine.getConnections();
                 do {
                     Shrine newConnection = shrines.get(roll(0, numShrines - 1));
                     //  our graph is a simply connected graph. So at most one edge A to B, and no
                     //      edges A to A
                     //  I.E. all connections from the same shrine
                     //      must go to distinct shrines that aren't the origin shrine.
-                    if (!newConnection != shrine)) {
+                    if (!connections.contains(newConnection) && (newConnection != shrine)) {
                         connections.add(newConnection);
                     }
-                } while (shrine.getConnectionsReadOnly(Shrine.Direction.FORWARD).size() < numConnections);
+                } while (connections.size() < numConnections);
             }
 
             // Validate the web just created above.
