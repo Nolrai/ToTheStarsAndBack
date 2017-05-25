@@ -10,25 +10,10 @@ import java.util.Set;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
-/**
+/** This is a serries of tests of the Shrine class.
  * Created by garthupshaw1 on 5/22/17.
  */
 public class ShrineTest {
-
-    @Test
-    public void getConnectedComponent_getsAllImmediateConnections() {
-        Shrine shrine = new Shrine("someName", "someImageId", 5);
-
-        int numConnections = 5;
-        for (int i = 0; i < numConnections; i++) {
-            Shrine connection = new Shrine("someName" + i, "someImageId" + i, 5);
-            shrine.getConnections().add(connection);
-        }
-
-        Set<Shrine> connections = shrine.getConnectedComponent();
-
-        assertThat(connections.size(), is(numConnections + 1));
-    }
 
     @Test
     public void getPathTo_findEasyPath() {
@@ -173,7 +158,7 @@ public class ShrineTest {
         for (int i = 0; i < 100; i++) {
             for (int j = 0; j < 4; j++) {
                 int idx = (i + j + 1) % 100;
-                shrines.get(i).getConnections().add(shrines.get(j));
+                shrines.get(i).getConnections().add(shrines.get(idx));
             }
         }
 
