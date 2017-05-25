@@ -19,10 +19,10 @@ public class ShrineTest {
         int numConnections = 5;
         for (int i = 0; i < numConnections; i++) {
             Shrine connection = new Shrine("someName" + i, "someImageId" + i, 5);
-            shrine.getConnections().add(connection);
+            shrine.getConnectionsWriteable(Shrine.Direction.FORWARD).add(connection);
         }
 
-        Set<Shrine> connections = shrine.getConnectedComponent();
+        Set<Shrine> connections = shrine.getConnectedComponent(Shrine.Direction.FORWARD);
 
         assertThat(connections.size(), is(numConnections + 1 /* for the original shrine*/));
 
