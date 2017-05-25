@@ -2,10 +2,12 @@ package com.garthskidstuff.shrines.Game;
 
 import android.support.annotation.NonNull;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -157,28 +159,30 @@ public class Shrine implements Comparable {
         return !tree.children.isEmpty();
     }
 
-    private static void makePathTo(Set<Shrine> knownShrines, Tree<Shrine> tree, Shrine destination) {
-        List<Shrine> leaves = new ArrayList<>();
-        for (Shrine shrine : tree.here.getConnections()){
-            if (knownShrines.contains(shrine) && !tree.contains(shrine)) {
-                leaves.add(shrine);
+    private static void makePathTo(Set<Shrine> knownShrines, Tree<Shrine> start, Shrine destination) {
+        Queue<Tree<Shrine>> toDo = new ArrayDeque<>();
+        toDo.add(start);
+        // Another breadth first search, but this one builds a tree and so needs information getNthNheibors doesn't give
+        for (Tree<Shrine> tree = toDo.poll(); null != tree; tree = toDo.poll() ) {
+            List<Shrine> leaves = new ArrayList<>();
+            for (Shrine shrine : tree.here.getConnections()) {
+                if (knownShrines.contains(shrine) && !tree.contains(shrine)) {
+                    leaves.add(shrine);
+                }
+            }
+
+            boolean done = false;
+            tree.addAll(leaves);
+            for (Shrine shrine : leaves) {
+                if (destination == shrine) {
+                    done = true;
+                }
+            }
+
+            if (!done) {
+                toDo.addAll(tree.children);
             }
         }
-
-        boolean done = false;
-        tree.addAll(leaves);
-        for (Shrine shrine : leaves) {
-            if (destination == shrine) {
-                done = true;
-            }
-        }
-
-        if (!done) {
-            for (Tree t : tree.children) {
-                makePathTo(knownShrines, t, destination);
-            }
-        }
-
     }
 
 
