@@ -14,6 +14,22 @@ import static org.junit.Assert.*;
  * Created by garthupshaw1 on 5/22/17.
  */
 public class ShrineTest {
+    @Test
+    public void getPathTo_findTrivialPath() {
+        List<Shrine> shrines = generateShrines(2);
+
+        shrines.get(0).getConnections().add(shrines.get(1));
+
+        Set<Shrine> knownShrines = new HashSet<>(shrines);
+
+        Tree<Shrine> tree = shrines.get(0).getPathTo(knownShrines, shrines.get(1));
+
+        assertThat(tree.children.size(), is(1));
+        //noinspection unchecked
+        for (Tree<Shrine> t : tree.children) {
+            assertThat(t.here, is(shrines.get(1)));
+        }
+    }
 
     @Test
     public void getPathTo_findEasyPath() {
