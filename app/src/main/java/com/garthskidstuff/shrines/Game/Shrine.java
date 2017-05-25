@@ -126,6 +126,63 @@ public class Shrine implements Comparable {
         return toVisitNext;
     }
 
+    public Tree<Shrine> getPathTo(Set<Shrine> knownShrines, Shrine destination) {
+        Tree<Shrine> tree = new Tree<>(this);
+
+        makePathTo(knownShrines, tree, destination);
+
+        pruneTree(tree, destination);
+        return tree;
+    }
+
+    private boolean pruneTree(Tree<Shrine> tree, Shrine destination) {
+        if (tree.here == destination) {
+            return true;
+        }
+
+        if (tree.children.isEmpty()) {
+            return false;
+        }
+
+        //noinspection unchecked
+        List<Tree<Shrine>> remove = new ArrayList<>();
+        //noinspection unchecked
+        for (Tree<Shrine> t : tree.children) {
+            if (!pruneTree(t, destination)) {
+                remove.add(t);
+            }
+        }
+
+        tree.children.removeAll(remove);
+        return !tree.children.isEmpty();
+    }
+
+    private static void makePathTo(Set<Shrine> knownShrines, Tree<Shrine> tree, Shrine destination) {
+        List<Shrine> leaves = new ArrayList<>();
+        for (Shrine shrine : tree.here.getConnections()){
+            if (knownShrines.contains(shrine) && !tree.contains(shrine)) {
+                leaves.add(shrine);
+            }
+        }
+
+        boolean done = false;
+        tree.addAll(leaves);
+        for (Shrine shrine : leaves) {
+            if (destination == shrine) {
+                done = true;
+            }
+        }
+
+        if (!done) {
+            for (Tree t : tree.children) {
+                makePathTo(knownShrines, t, destination);
+            }
+        }
+
+    }
+
+
+
     public String getName() {
         return name;
     }
