@@ -1,5 +1,6 @@
 package com.garthskidstuff.shrines.Game;
 
+import org.hamcrest.Matcher;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -169,26 +170,30 @@ public class ShrineTest {
 
     @Test
     public void getPathTo_findPathInBigSet() {
-        List<Shrine> shrines = generateShrines(100);
 
-        for (int i = 0; i < 100; i++) {
+        final int SIZE = 10;
+        
+        List<Shrine> shrines = generateShrines(SIZE);
+
+        for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < 4; j++) {
-                int idx = (i + j + 1) % 100;
-                shrines.get(i).getConnections().add(shrines.get(idx));
+                int idx = (i + j + 1)%SIZE;
+                shrines.get(i).getConnections().add(shrines.get((i + 1) % SIZE));
             }
         }
-
         Set<Shrine> knownShrines = new HashSet<>(shrines);
 
-        Tree<Shrine> t = shrines.get(0).getPathTo(knownShrines, shrines.get(99));
+        Tree<Shrine> t = shrines.get(0).getPathTo(knownShrines, shrines.get(SIZE-1));
+        
         do {
-            assertThat(t.children.size(), is(1));
+            assertThat(t.children.size() <= 4, is(true));
             //noinspection unchecked
             for (Tree<Shrine> t1 : t.children) {
                 t = t1;
             }
         } while(!t.children.isEmpty());
-        assertThat(t.here, is(shrines.get(99)));
+
+        assertThat(t.here, is(shrines.get(SIZE-1)));
     }
 
     private List<Shrine> generateShrines(int num) {

@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -131,11 +132,52 @@ public class Shrine implements Comparable {
     public Tree<Shrine> getPathTo(Set<Shrine> knownShrines, Shrine destination) {
         Tree<Shrine> tree = new Tree<>(this);
 
-        makePathTo(knownShrines, tree, destination);
+        int size = makePathTo(knownShrines, tree, destination);
 
         pruneTree(tree, destination);
         return tree;
     }
+
+    private static int makePathTo(Set<Shrine> knownShrines, Tree<Shrine> start, Shrine destination) {
+        Collection<Tree<Shrine>> thisRow = new HashSet<>();
+        Collection<Tree<Shrine>> nextRow = new HashSet<>();
+        Set<Shrine> leaves = new HashSet<Shrine>();
+        thisRow.add(start);
+        // Another breadth first search, but this one builds a tree and so needs information getNthNeighbors doesn't give
+        do {
+
+            { //Init iteration (not iterator)
+                Collection<Tree<Shrine>> temp = thisRow;
+                thisRow = nextRow;
+                nextRow = temp;
+                nextRow.clear();
+            }
+
+            for (Tree<Shrine> tree : thisRow) {
+                leaves.clear();
+                for (Shrine shrine : tree.here.getConnections()) {
+                    if (knownShrines.contains(shrine) && !start.contains(shrine)) {
+                        leaves.add(shrine);
+                    }
+                }
+
+                boolean done = false;
+                tree.addAll(leaves);
+                for (Shrine shrine : leaves) {
+                    if (destination == shrine) {
+                        done = true;
+                    }
+                }
+
+                if (!done) {
+                    nextRow.addAll(tree.children);
+                }
+            }
+
+        } while (!thisRow.isEmpty());
+        return start.size();
+    }
+
 
     private boolean pruneTree(Tree<Shrine> tree, Shrine destination) {
         if (tree.here == destination) {
@@ -158,34 +200,6 @@ public class Shrine implements Comparable {
         tree.children.removeAll(remove);
         return !tree.children.isEmpty();
     }
-
-    private static void makePathTo(Set<Shrine> knownShrines, Tree<Shrine> start, Shrine destination) {
-        Queue<Tree<Shrine>> toDo = new ArrayDeque<>();
-        toDo.add(start);
-        // Another breadth first search, but this one builds a tree and so needs information getNthNheibors doesn't give
-        for (Tree<Shrine> tree = toDo.poll(); null != tree; tree = toDo.poll() ) {
-            List<Shrine> leaves = new ArrayList<>();
-            for (Shrine shrine : tree.here.getConnections()) {
-                if (knownShrines.contains(shrine) && !tree.contains(shrine)) {
-                    leaves.add(shrine);
-                }
-            }
-
-            boolean done = false;
-            tree.addAll(leaves);
-            for (Shrine shrine : leaves) {
-                if (destination == shrine) {
-                    done = true;
-                }
-            }
-
-            if (!done) {
-                toDo.addAll(tree.children);
-            }
-        }
-    }
-
-
 
     public String getName() {
         return name;
