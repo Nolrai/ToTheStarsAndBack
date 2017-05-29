@@ -1,11 +1,9 @@
 package com.garthskidstuff.shrines.Game;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
@@ -30,13 +28,18 @@ public class Tree<T> {
     }
 
     public boolean contains(final T t) {
-        //Using a stack instead of a que means its a depth first
+        //Using it as a stack instead of a queue means it's a depth-first search (rather than breadth-first)
         Deque<Tree<T>> stack = new ArrayDeque<>();
+        stack.add(this);
         for (Tree<T> now = stack.poll(); null != now ; now = stack.poll()) {
-            if (t == now.here) {
+            if (Util.equals(t, now.here)) {
                 return true;
             }
-            stack.addFirst(this);
+            for (Tree<T> child : now.children) {
+                if (!stack.contains(child)) {
+                    stack.addFirst(child);
+                }
+            }
         }
         return false;
     }
