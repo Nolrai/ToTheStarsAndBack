@@ -5,9 +5,11 @@ import android.support.annotation.NonNull;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
@@ -130,54 +132,50 @@ public class Shrine implements Comparable {
     }
 
     public Tree<Shrine> getPathTo(Set<Shrine> knownShrines, Shrine destination) {
-        Tree<Shrine> tree = new Tree<>(this);
-
-        int size = makePathTo(knownShrines, tree, destination);
-
+        Tree<Shrine> tree = makePathTo(knownShrines, destination);
         pruneTree(tree, destination);
         return tree;
     }
 
-    private static int makePathTo(Set<Shrine> knownShrines, Tree<Shrine> start, Shrine destination) {
+    private Tree<Shrine> makePathTo(Set<Shrine> knownShrines,  Shrine destination) {
         Collection<Tree<Shrine>> thisRow = new HashSet<>();
         Collection<Tree<Shrine>> nextRow = new HashSet<>();
-        Set<Shrine> leaves = new HashSet<Shrine>();
-        thisRow.add(start);
+        Tree<Shrine> root = new Tree<>(this);
+        nextRow.add(root);
         // Another breadth first search, but this one builds a tree and so needs information getNthNeighbors doesn't give
+        boolean done;
         do {
 
-            { //Init iteration (not iterator)
-                Collection<Tree<Shrine>> temp = thisRow;
-                thisRow = nextRow;
-                nextRow = temp;
-                nextRow.clear();
-            }
+            thisRow.clear();
+            thisRow.addAll(nextRow);
+            nextRow.clear();
 
+            done = false;
+            Map<Tree<Shrine>, Set<Shrine>> map = new HashMap<>();
+
+            // Get the next row per each tree in this row without adding them yet (otherwise we won't get all the leaves in a diamond)
             for (Tree<Shrine> tree : thisRow) {
-                leaves.clear();
+                TreeSet<Shrine> leaves = new TreeSet<>();
                 for (Shrine shrine : tree.here.getConnections()) {
-                    if (knownShrines.contains(shrine) && !start.contains(shrine)) {
+                    if (knownShrines.contains(shrine) && !root.contains(shrine)) {
                         leaves.add(shrine);
                     }
                 }
-
-                boolean done = false;
-                tree.addAll(leaves);
-                for (Shrine shrine : leaves) {
-                    if (destination == shrine) {
-                        done = true;
-                    }
-                }
-
-                if (!done) {
-                    nextRow.addAll(tree.children);
-                }
+                map.put(tree, leaves);
             }
 
-        } while (!thisRow.isEmpty());
-        return start.size();
-    }
+            // Now that we've found all the leaves for all the trees in this row, we can add them to our main tree
+            for (Tree<Shrine> tree : thisRow) {
+                Set<Shrine> leaves = map.get(tree);
+                tree.addAll(leaves);
+                nextRow.addAll(tree.children);
+                // We're done iff a leaf in the next row is our destination
+                done |= leaves.contains(destination);
+            }
+        } while (!done);
 
+        return root;
+    }
 
     private boolean pruneTree(Tree<Shrine> tree, Shrine destination) {
         if (tree.here == destination) {
@@ -284,5 +282,19 @@ public class Shrine implements Comparable {
             return name.compareTo(otherShrine.getName());
         }
         return -1;
+    }
+
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        boolean ret = false;
+        if (other instanceof Shrine) {
+            Shrine otherShrine = (Shrine) other;
+            ret = Util.equals(name, otherShrine.getName());
+        }
+        return ret;
     }
 }

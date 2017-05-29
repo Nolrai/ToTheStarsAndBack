@@ -80,17 +80,32 @@ public class ShrineTest {
     }
 
     @Test
-    public void getPathTo_findPathWithDiamond() {
+    public void getPathTo_findPathWithSimpleDiamond() {
         List<Shrine> shrines = generateShrines(4);
-
-        shrines.get(0).getConnections().add(shrines.get(1));
-        shrines.get(0).getConnections().add(shrines.get(2));
-        shrines.get(1).getConnections().add(shrines.get(3));
-        shrines.get(2).getConnections().add(shrines.get(3));
+        makeDiamond(shrines, 0);
 
         Set<Shrine> knownShrines = new HashSet<>(shrines);
 
         Tree<Shrine> tree = shrines.get(0).getPathTo(knownShrines, shrines.get(3));
+
+        List<Tree<Shrine>> trees = generateListOfTrees(shrines);
+        trees.get(0).children.add(trees.get(1));
+        trees.get(0).children.add(trees.get(2));
+        trees.get(1).children.add(trees.get(3));
+        trees.get(2).children.add(trees.get(3));
+
+        assertThat(trees.get(0), is(tree));
+    }
+
+    @Test
+    public void getPathTo_findPathWithDoubleDiamond() {
+        List<Shrine> shrines = generateShrines(7);
+        makeDiamond(shrines, 0);
+        makeDiamond(shrines, 3);
+
+        Set<Shrine> knownShrines = new HashSet<>(shrines);
+
+        Tree<Shrine> tree = shrines.get(0).getPathTo(knownShrines, shrines.get(6));
 
         assertThat(tree.children.size(), is(2));
         Set<Shrine> children = new HashSet<>();
@@ -206,4 +221,21 @@ public class ShrineTest {
         
         return shrines;
     }
+
+    private List<Tree<Shrine>> generateListOfTrees(List<Shrine> shrines) {
+        List<Tree<Shrine>> trees = new ArrayList<>();
+        for (Shrine shrine : shrines) {
+            trees.add(new Tree<>(shrine));
+        }
+
+        return trees;
+    }
+
+    private void makeDiamond(List<Shrine> shrines, int idx) {
+        shrines.get(idx).getConnections().add(shrines.get(idx + 1));
+        shrines.get(idx).getConnections().add(shrines.get(idx + 2));
+        shrines.get(idx + 1).getConnections().add(shrines.get(idx + 3));
+        shrines.get(idx + 2).getConnections().add(shrines.get(idx + 3));
+    }
+
 }
