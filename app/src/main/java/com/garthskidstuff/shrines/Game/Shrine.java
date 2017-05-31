@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Created by garthupshaw1 on 5/10/17.
@@ -48,7 +47,7 @@ public class Shrine implements Comparable {
 
     // Gets all shrines that can be reached (eventually) from here
     Set<Shrine> getConnectedComponent() {
-        Set<Shrine> visited = new TreeSet<>();
+        Set<Shrine> visited = new HashSet<>();
         //noinspection StatementWithEmptyBody
         for (Iterator<Set<Shrine>> iter = new NthNeighbors(visited); iter.hasNext(); iter.next()) {
             //do nothing
@@ -64,8 +63,8 @@ public class Shrine implements Comparable {
      * @return All shrines with shortest path from this is between minDistance and maxDistance (inclusive).
      */
     Set<Shrine> getNtoMthNeighbors(int minDistance, int maxDistance) {
-        Set<Shrine> visited = new TreeSet<>();
-        Set<Shrine> ret = new TreeSet<>();
+        Set<Shrine> visited = new HashSet<>();
+        Set<Shrine> ret = new HashSet<>();
         Iterator<Set<Shrine>> iter = new NthNeighbors(visited);
         for (int i = 1; i <= maxDistance && iter.hasNext(); i++) {
             Set<Shrine> now = iter.next();
@@ -93,7 +92,7 @@ public class Shrine implements Comparable {
          */
         public NthNeighbors(Set<Shrine> visited_)
         {
-            toVisitNext = new TreeSet<>();
+            toVisitNext = new HashSet<>();
             toVisitNext.add(Shrine.this);
             visited = visited_;
             visited.add(Shrine.this);
@@ -131,31 +130,29 @@ public class Shrine implements Comparable {
         return toVisitNext;
     }
 
-    public Tree<Shrine> getPathTo(Set<Shrine> knownShrines, Shrine destination) {
-        Tree<Shrine> tree = makePathTo(knownShrines, destination);
-        pruneTree(tree, destination);
+    public Tree<Shrine> findPathsTo(Set<Shrine> knownShrines, Shrine destination) {
+        Tree<Shrine> tree = findPathsToHelper(knownShrines, destination);
+        tree = pruneTree(tree, destination);
         return tree;
     }
 
-    private Tree<Shrine> makePathTo(Set<Shrine> knownShrines,  Shrine destination) {
+    private Tree<Shrine> findPathsToHelper(Set<Shrine> knownShrines,  Shrine destination) {
         Collection<Tree<Shrine>> thisRow = new HashSet<>();
         Collection<Tree<Shrine>> nextRow = new HashSet<>();
         Tree<Shrine> root = new Tree<>(this);
         nextRow.add(root);
         // Another breadth first search, but this one builds a tree and so needs information getNthNeighbors doesn't give
-        boolean done;
         do {
 
             thisRow.clear();
             thisRow.addAll(nextRow);
             nextRow.clear();
 
-            done = false;
             Map<Tree<Shrine>, Set<Shrine>> map = new HashMap<>();
 
             // Get the next row per each tree in this row without adding them yet (otherwise we won't get all the leaves in a diamond)
             for (Tree<Shrine> tree : thisRow) {
-                TreeSet<Shrine> leaves = new TreeSet<>();
+                Set<Shrine> leaves = new HashSet<>();
                 for (Shrine shrine : tree.here.getConnections()) {
                     if (knownShrines.contains(shrine) && !root.contains(shrine)) {
                         leaves.add(shrine);
@@ -169,34 +166,51 @@ public class Shrine implements Comparable {
                 Set<Shrine> leaves = map.get(tree);
                 tree.addAll(leaves);
                 nextRow.addAll(tree.children);
-                // We're done iff a leaf in the next row is our destination
-                done |= leaves.contains(destination);
             }
-        } while (!done);
+        } while (!nextRow.isEmpty());
 
         return root;
     }
 
-    private boolean pruneTree(Tree<Shrine> tree, Shrine destination) {
-        if (tree.here == destination) {
-            return true;
+    private Tree<Shrine> pruneTree(Tree<Shrine> tree, Shrine destination) {
+        Set<Tree<Shrine>> keepSet = new HashSet<>();
+        makeKeepSet(keepSet, tree, destination);
+        deleteNodesNotInKeepSet(keepSet, tree);
+        if (tree.isLeaf() && !Util.equals(tree.here, destination)) {
+            tree = null;
         }
+        return tree;
+    }
 
-        if (tree.children.isEmpty()) {
-            return false;
-        }
-
-        //noinspection unchecked
-        List<Tree<Shrine>> remove = new ArrayList<>();
-        //noinspection unchecked
+    private void deleteNodesNotInKeepSet(Set<Tree<Shrine>> keepSet, Tree<Shrine> tree) {
+        Set<Tree<Shrine>> removeSet = new HashSet<>();
         for (Tree<Shrine> t : tree.children) {
-            if (!pruneTree(t, destination)) {
-                remove.add(t);
+            if (!keepSet.contains(t)) {
+                removeSet.add(t);
             }
         }
+        for (Tree<Shrine> t : removeSet) {
+            tree.children.remove(t);
+        }
+    }
 
-        tree.children.removeAll(remove);
-        return !tree.children.isEmpty();
+    private boolean makeKeepSet(Set<Tree<Shrine>> keepSet, Tree<Shrine> tree, Shrine destination) {
+        if (tree.here.equals(destination)) {
+            keepSet.add(tree);
+            return true;
+        } else {
+            boolean found = false;
+            for (Tree<Shrine> t : tree.children) {
+                if (makeKeepSet(keepSet, t, destination)) {
+                    keepSet.add(t);
+                    found = true;
+                }
+            }
+            if (found) {
+                keepSet.add(tree);
+            }
+            return found;
+        }
     }
 
     public String getName() {
@@ -296,5 +310,15 @@ public class Shrine implements Comparable {
             ret = Util.equals(name, otherShrine.getName());
         }
         return ret;
+    }
+
+    @Override
+    public String toString() {
+        String s = name + ": ";
+        s += "Connections: ";
+        for (Shrine shrine : connections) {
+            s += shrine.name + " ";
+        }
+        return s;
     }
 }

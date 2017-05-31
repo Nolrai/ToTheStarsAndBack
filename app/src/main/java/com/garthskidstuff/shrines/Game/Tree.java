@@ -95,8 +95,11 @@ public class Tree<T> {
         if (other instanceof Tree<?>) {
             //noinspection unchecked
             Tree<T> otherTree = (Tree<T>) other; //TODO how to test if other is right kind?
-            Set<Tree<T>> parents = new HashSet<>();
-            ret = testEquality(otherTree, parents);
+            String s = toString();
+            String otherS = otherTree.toString();
+            return Util.equals(s, otherS);
+//            Set<Tree<T>> parents = new HashSet<>();
+//            ret = testEquality(otherTree, parents);
         }
         return ret;
     }
@@ -151,7 +154,7 @@ public class Tree<T> {
             }
 
         } else {
-            s += "*\n";
+            s += "\n";
         }
         return s;
     }

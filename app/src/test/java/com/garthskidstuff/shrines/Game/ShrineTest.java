@@ -16,24 +16,23 @@ import static org.junit.Assert.*;
  */
 public class ShrineTest {
     @Test
-    public void getPathTo_findTrivialPath() {
+    public void findPathsTo_findTrivialPath() {
         List<Shrine> shrines = generateShrines(2);
 
         shrines.get(0).getConnections().add(shrines.get(1));
 
         Set<Shrine> knownShrines = new HashSet<>(shrines);
 
-        Tree<Shrine> tree = shrines.get(0).getPathTo(knownShrines, shrines.get(1));
+        Tree<Shrine> tree = shrines.get(0).findPathsTo(knownShrines, shrines.get(1));
 
-        assertThat(tree.children.size(), is(1));
-        //noinspection unchecked
-        for (Tree<Shrine> t : tree.children) {
-            assertThat(t.here, is(shrines.get(1)));
-        }
+        List<Tree<Shrine>> testTree = generateListOfTrees(shrines);
+        testTree.get(0).children.add(testTree.get(1));
+
+        assertThat(testTree.get(0), is(tree));
     }
 
     @Test
-    public void getPathTo_findEasyPath() {
+    public void findPathsTo_findEasyPath() {
         List<Shrine> shrines = generateShrines(3);
 
         shrines.get(0).getConnections().add(shrines.get(1));
@@ -41,22 +40,17 @@ public class ShrineTest {
 
         Set<Shrine> knownShrines = new HashSet<>(shrines);
 
-        Tree<Shrine> tree = shrines.get(0).getPathTo(knownShrines, shrines.get(2));
+        Tree<Shrine> tree = shrines.get(0).findPathsTo(knownShrines, shrines.get(2));
 
-        assertThat(tree.children.size(), is(1));
-        //noinspection unchecked
-        for (Tree<Shrine> t : tree.children) {
-            assertThat(t.here, is(shrines.get(1)));
-            assertThat(t.children.size(), is(1));
-            //noinspection unchecked
-            for (Tree<Shrine> t1 : t.children) {
-                assertThat(t1.here, is(shrines.get(2)));
-            }
-        }
+        List<Tree<Shrine>> testTree = generateListOfTrees(shrines);
+        testTree.get(0).children.add(testTree.get(1));
+        testTree.get(1).children.add(testTree.get(2));
+
+        assertThat(testTree.get(0), is(tree));
     }
 
     @Test
-    public void getPathTo_findPathWithPruning() {
+    public void findPathsTo_findPathWithPruning() {
         List<Shrine> shrines = generateShrines(4);
 
         shrines.get(0).getConnections().add(shrines.get(1));
@@ -65,28 +59,24 @@ public class ShrineTest {
 
         Set<Shrine> knownShrines = new HashSet<>(shrines);
 
-        Tree<Shrine> tree = shrines.get(0).getPathTo(knownShrines, shrines.get(2));
+        Tree<Shrine> tree = shrines.get(0).findPathsTo(knownShrines, shrines.get(2));
 
-        assertThat(tree.children.size(), is(1));
-        //noinspection unchecked
-        for (Tree<Shrine> t : tree.children) {
-            assertThat(t.here, is(shrines.get(1)));
-            assertThat(t.children.size(), is(1));
-            //noinspection unchecked
-            for (Tree<Shrine> t1 : t.children) {
-                assertThat(t1.here, is(shrines.get(2)));
-            }
-        }
+        List<Tree<Shrine>> trees = generateListOfTrees(shrines);
+        trees.get(0).children.add(trees.get(1));
+        trees.get(1).children.add(trees.get(2));
+        trees.get(1).children.add(trees.get(3));
+
+        assertThat(trees.get(0), is(tree));
     }
 
     @Test
-    public void getPathTo_findPathWithSimpleDiamond() {
+    public void findPathsTo_findPathWithSimpleDiamond() {
         List<Shrine> shrines = generateShrines(4);
-        makeDiamond(shrines, 0);
+        makeDiamond(shrines, 0, 1, 2, 3);
 
         Set<Shrine> knownShrines = new HashSet<>(shrines);
 
-        Tree<Shrine> tree = shrines.get(0).getPathTo(knownShrines, shrines.get(3));
+        Tree<Shrine> tree = shrines.get(0).findPathsTo(knownShrines, shrines.get(3));
 
         List<Tree<Shrine>> trees = generateListOfTrees(shrines);
         trees.get(0).children.add(trees.get(1));
@@ -98,43 +88,97 @@ public class ShrineTest {
     }
 
     @Test
-    public void getPathTo_findPathWithDoubleDiamond() {
+    public void findPathsTo_findPathWithDoubleDiamond() {
         List<Shrine> shrines = generateShrines(7);
-        makeDiamond(shrines, 0);
-        makeDiamond(shrines, 3);
+        makeDiamond(shrines, 0, 1, 2, 3);
+        makeDiamond(shrines, 3, 4, 5, 6);
 
         Set<Shrine> knownShrines = new HashSet<>(shrines);
 
-        Tree<Shrine> tree = shrines.get(0).getPathTo(knownShrines, shrines.get(6));
+        Tree<Shrine> tree = shrines.get(0).findPathsTo(knownShrines, shrines.get(6));
 
-        assertThat(tree.children.size(), is(2));
-        Set<Shrine> children = new HashSet<>();
-        children.add(shrines.get(1));
-        children.add(shrines.get(2));
-        //noinspection unchecked
-        for (Tree<Shrine> t : tree.children) {
-            assertThat(children.contains(t.here), is(true));
-            assertThat(t.children.size(), is(1));
-            //noinspection unchecked
-            for (Tree<Shrine> t1 : t.children) {
-                assertThat(t1.here, is(shrines.get(3)));
-            }
-        }
+        List<Tree<Shrine>> testTree = generateListOfTrees(shrines);
+        testTree.get(0).children.add(testTree.get(1));
+        testTree.get(0).children.add(testTree.get(2));
+        testTree.get(1).children.add(testTree.get(3));
+        testTree.get(2).children.add(testTree.get(3));
+        testTree.get(3).children.add(testTree.get(4));
+        testTree.get(3).children.add(testTree.get(5));
+        testTree.get(4).children.add(testTree.get(6));
+        testTree.get(5).children.add(testTree.get(6));
+
+        assertThat(tree, is(testTree.get(0)));
     }
 
     @Test
-    public void getPathTo_noConnection() {
+    public void findPathsTo_findPathWithHorizontalDiamond() {
+        List<Shrine> shrines = generateShrines(5);
+        makeDiamond(shrines, 0, 1, 2, 4);
+        makeDiamond(shrines, 0, 1, 3, 4);
+
+        Set<Shrine> knownShrines = new HashSet<>(shrines);
+
+        Tree<Shrine> tree = shrines.get(0).findPathsTo(knownShrines, shrines.get(3));
+
+        List<Tree<Shrine>> trees = generateListOfTrees(shrines);
+        trees.get(0).children.add(trees.get(1));
+        trees.get(0).children.add(trees.get(2));
+        trees.get(0).children.add(trees.get(3));
+        trees.get(1).children.add(trees.get(4));
+        trees.get(2).children.add(trees.get(4));
+        trees.get(3).children.add(trees.get(4));
+
+        assertThat(trees.get(0), is(tree));
+    }
+
+    @Test
+    public void findPathsTo_pruneNode() {
+        List<Shrine> shrines = generateShrines(3);
+        shrines.get(0).getConnections().add(shrines.get(1));
+        shrines.get(1).getConnections().add(shrines.get(2));
+        shrines.get(0).getConnections().add(shrines.get(2));
+
+        Set<Shrine> knownShrines = new HashSet<>(shrines);
+
+        Tree<Shrine> tree = shrines.get(0).findPathsTo(knownShrines, shrines.get(1));
+
+        List<Tree<Shrine>> trees = generateListOfTrees(shrines);
+        trees.get(0).children.add(trees.get(1));
+
+        assertThat(trees.get(0), is(tree));
+    }
+
+    @Test
+    public void findPathsTo_pruneNodeWithChildren() {
+        List<Shrine> shrines = generateShrines(4);
+        shrines.get(0).getConnections().add(shrines.get(1));
+        shrines.get(1).getConnections().add(shrines.get(2));
+        shrines.get(0).getConnections().add(shrines.get(2));
+        shrines.get(2).getConnections().add(shrines.get(3));
+
+        Set<Shrine> knownShrines = new HashSet<>(shrines);
+
+        Tree<Shrine> tree = shrines.get(0).findPathsTo(knownShrines, shrines.get(1));
+
+        List<Tree<Shrine>> trees = generateListOfTrees(shrines);
+        trees.get(0).children.add(trees.get(1));
+
+        assertThat(trees.get(0), is(tree));
+    }
+
+    @Test
+    public void findPathsTo_noConnection() {
         List<Shrine> shrines = generateShrines(2);
 
         Set<Shrine> knownShrines = new HashSet<>(shrines);
 
-        Tree<Shrine> tree = shrines.get(0).getPathTo(knownShrines, shrines.get(1));
+        Tree<Shrine> tree = shrines.get(0).findPathsTo(knownShrines, shrines.get(1));
 
-        assertThat(tree.children.size(), is(0));
+        assertThat((null == tree), is(true));
     }
 
     @Test
-    public void getPathTo_findPathWithUnknownShrines() {
+    public void findPathsTo_findPathWithUnknownShrines() {
         List<Shrine> shrines = generateShrines(4);
 
         shrines.get(0).getConnections().add(shrines.get(1));
@@ -145,22 +189,32 @@ public class ShrineTest {
         Set<Shrine> knownShrines = new HashSet<>(shrines);
         knownShrines.remove(shrines.get(2));
 
-        Tree<Shrine> tree = shrines.get(0).getPathTo(knownShrines, shrines.get(3));
+        Tree<Shrine> tree = shrines.get(0).findPathsTo(knownShrines, shrines.get(3));
 
-        assertThat(tree.children.size(), is(1));
-        //noinspection unchecked
-        for (Tree<Shrine> t : tree.children) {
-            assertThat(t.here, is(shrines.get(1)));
-            assertThat(t.children.size(), is(1));
-            //noinspection unchecked
-            for (Tree<Shrine> t1 : t.children) {
-                assertThat(t1.here, is(shrines.get(3)));
-            }
-        }
+        List<Tree<Shrine>> testTree = generateListOfTrees(shrines);
+        testTree.get(0).children.add(testTree.get(1));
+        testTree.get(1).children.add(testTree.get(3));
+
+        assertThat(testTree.get(0), is(tree));
     }
 
     @Test
-    public void getPathTo_findPathWithLoop() {
+    public void findPathsTo_noConnectionBecauseOfUnknownShrines() {
+        List<Shrine> shrines = generateShrines(3);
+
+        shrines.get(0).getConnections().add(shrines.get(1));
+        shrines.get(1).getConnections().add(shrines.get(2));
+
+        Set<Shrine> knownShrines = new HashSet<>(shrines);
+        knownShrines.remove(shrines.get(1));
+
+        Tree<Shrine> tree = shrines.get(0).findPathsTo(knownShrines, shrines.get(2));
+
+        assertThat((null == tree), is(true));
+    }
+
+    @Test
+    public void findPathsTo_findPathWithLoop() {
         List<Shrine> shrines = generateShrines(3);
 
         shrines.get(0).getConnections().add(shrines.get(1));
@@ -169,22 +223,17 @@ public class ShrineTest {
 
         Set<Shrine> knownShrines = new HashSet<>(shrines);
 
-        Tree<Shrine> tree = shrines.get(0).getPathTo(knownShrines, shrines.get(2));
+        Tree<Shrine> tree = shrines.get(0).findPathsTo(knownShrines, shrines.get(2));
 
-        assertThat(tree.children.size(), is(1));
-        //noinspection unchecked
-        for (Tree<Shrine> t : tree.children) {
-            assertThat(t.here, is(shrines.get(1)));
-            assertThat(t.children.size(), is(1));
-            //noinspection unchecked
-            for (Tree<Shrine> t1 : t.children) {
-                assertThat(t1.here, is(shrines.get(2)));
-            }
-        }
+        List<Tree<Shrine>> testTree = generateListOfTrees(shrines);
+        testTree.get(0).children.add(testTree.get(1));
+        testTree.get(1).children.add(testTree.get(2));
+
+        assertThat(testTree.get(0), is(tree));
     }
 
     @Test
-    public void getPathTo_findPathInBigSet() {
+    public void findPathsTo_findPathInBigSet() {
 
         final int SIZE = 10;
         
@@ -198,7 +247,7 @@ public class ShrineTest {
         }
         Set<Shrine> knownShrines = new HashSet<>(shrines);
 
-        Tree<Shrine> t = shrines.get(0).getPathTo(knownShrines, shrines.get(SIZE-1));
+        Tree<Shrine> t = shrines.get(0).findPathsTo(knownShrines, shrines.get(SIZE-1));
         
         do {
             assertThat(t.children.size() <= 4, is(true));
@@ -231,11 +280,11 @@ public class ShrineTest {
         return trees;
     }
 
-    private void makeDiamond(List<Shrine> shrines, int idx) {
-        shrines.get(idx).getConnections().add(shrines.get(idx + 1));
-        shrines.get(idx).getConnections().add(shrines.get(idx + 2));
-        shrines.get(idx + 1).getConnections().add(shrines.get(idx + 3));
-        shrines.get(idx + 2).getConnections().add(shrines.get(idx + 3));
+    private void makeDiamond(List<Shrine> shrines, int idx0, int idx1, int idx2, int idx3) {
+        shrines.get(idx0).getConnections().add(shrines.get(idx1));
+        shrines.get(idx0).getConnections().add(shrines.get(idx2));
+        shrines.get(idx1).getConnections().add(shrines.get(idx3));
+        shrines.get(idx2).getConnections().add(shrines.get(idx3));
     }
 
 }

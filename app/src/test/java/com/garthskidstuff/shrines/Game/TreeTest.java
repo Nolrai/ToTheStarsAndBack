@@ -271,7 +271,7 @@ public class TreeTest {
         tree1.add(tree2);
         tree2.add(tree1);
 
-        assertThat(tree1.toString(), is("0: 1 \n 1: 0 \n  0: *\n"));
+        assertThat(tree1.toString(), is("0: 1 \n 1: 0 \n  0: \n"));
     }
 
     @Test
