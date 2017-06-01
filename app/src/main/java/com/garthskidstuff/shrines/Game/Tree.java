@@ -1,19 +1,26 @@
 package com.garthskidstuff.shrines.Game;
 
+import android.support.annotation.NonNull;
+
 import java.security.InvalidParameterException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.TreeSet;
+
+import static android.R.attr.name;
 
 /**
  * Created by garthupshaw1 on 5/24/17.
  * Tree class
  */
 
-public class Tree<T> {
+public class Tree<T>  {
     Set<Tree<T>> children = new HashSet<>();
     T here;
 
@@ -86,7 +93,8 @@ public class Tree<T> {
     public int hashCode() {
         int hash = 0x248d0814; // 5240c175
         hash ^= here.hashCode();
-        return Integer.rotateLeft(hash, (children.size() % 8));
+        return hash;
+//        return Integer.rotateLeft(hash, (children.size() % 8));
     }
 
     @Override
@@ -98,34 +106,6 @@ public class Tree<T> {
             String s = toString();
             String otherS = otherTree.toString();
             return Util.equals(s, otherS);
-//            Set<Tree<T>> parents = new HashSet<>();
-//            ret = testEquality(otherTree, parents);
-        }
-        return ret;
-    }
-
-    private boolean testEquality(Tree<T> otherTree, Set<Tree<T>> parents) {
-        boolean ret = false;
-        if (Util.equals(here, otherTree.here)) { // here must be the same on both
-            if (children.size() == otherTree.children.size()) {
-                ret = true;
-                if (!parents.contains(this)) {
-                    parents.add(this);
-                    for (Tree<T> child : children) {
-                        boolean found = false;
-                        for (Tree<T> otherChild : otherTree.children) {
-                            if (child.testEquality(otherChild, parents)) {
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            ret = false;
-                            break;
-                        }
-                    }
-                }
-            }
         }
         return ret;
     }
@@ -158,4 +138,5 @@ public class Tree<T> {
         }
         return s;
     }
+
 }
