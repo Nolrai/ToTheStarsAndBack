@@ -3,11 +3,9 @@ package com.garthskidstuff.shrines.Game;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 /**
  * The God object for the "business logic"/Model. I.e. everything that isn't IO goes _here_.
@@ -55,63 +53,63 @@ public class Game {
      */
     public Game(List<String> nameList, List<String> imageList, Random random_) {
         random = random_;
-        int numShrines = roll(minShrines, maxShrines);
-        Shuffled<String> namesShuffled = new Shuffled<>(nameList);
-        Shuffled<String> imagesShuffled = new Shuffled<>(imageList);
-
-        for (int i = 0; i < numShrines; i++) {
-            Shrine shrine = new Shrine(namesShuffled.next(), imagesShuffled.next(), roll(minMaxPopulation, maxMaxPopulation));
-            shrines.add(shrine);
-        }
-
-        // Create the directed graph of Connections.
-        boolean validGraph = false;
-        do {
-
-            //generate raw web
-            for (Shrine shrine : shrines) {
-                int numConnections = roll(minConnections, maxConnections);
-                List<Shrine> connections = shrine.getConnections();
-                do {
-                    Shrine newConnection = shrines.get(roll(0, numShrines - 1));
-                    //  our graph is a simply connected graph. So at most one edge A to B, and no
-                    //      edges A to A
-                    //  I.E. all connections from the same shrine
-                    //      must go to distinct shrines that aren't the origin shrine.
-                    if (!connections.contains(newConnection) && (newConnection != shrine)) {
-                        connections.add(newConnection);
-                    }
-                } while (connections.size() < numConnections);
-            }
-
-            // Validate the web just created above.
-            final int maxDistance = maxHomeDistance;
-            final int minDistance = minHomeDistance;
-            Set<Shrine> connected = shrines.get(0).getConnectedComponent();
-            if (connected.size() >= minShrines) {
-                //This will usually only do one iteration
-                // But there might be no valid candidates.
-                for (Shrine playerHome : connected) {
-                    homes[0] = playerHome;
-                    Set<Shrine> candidates = playerHome.getNtoMthNeighbors(minDistance, maxDistance);
-                    for (Shrine candidate : candidates) {
-                        boolean goodCandidate = (candidate.getConnections().size() == playerHome.getConnections().size()) &&
-                                (candidate.getNtoMthNeighbors(minDistance, maxDistance).contains(playerHome));
-                        if (!goodCandidate) {
-                            candidates.remove(candidate);
-                        }
-                    }
-                    int size = candidates.size();
-                    if (size != 0) {
-                        List<Shrine> candidateList = new ArrayList<>();
-                        candidateList.addAll(candidates);
-                        homes[1] = candidateList.get(roll(0, size - 1));
-                        //We have gotten through all the checks and the web has what we need.
-                        validGraph = true;
-                    }
-                }
-            }
-        } while (!validGraph);
+//        int numShrines = roll(minShrines, maxShrines);
+//        Shuffled<String> namesShuffled = new Shuffled<>(nameList);
+//        Shuffled<String> imagesShuffled = new Shuffled<>(imageList);
+//
+//        for (int i = 0; i < numShrines; i++) {
+//            Shrine shrine = new Shrine(namesShuffled.next(), imagesShuffled.next(), roll(minMaxPopulation, maxMaxPopulation));
+//            shrines.add(shrine);
+//        }
+//
+//        // Create the directed graph of Connections.
+//        boolean validGraph = false;
+//        do {
+//
+//            //generate raw web
+//            for (Shrine shrine : shrines) {
+//                int numConnections = roll(minConnections, maxConnections);
+//                List<Shrine> connections = shrine.getConnections();
+//                do {
+//                    Shrine newConnection = shrines.get(roll(0, numShrines - 1));
+//                    //  our graph is a simply connected graph. So at most one edge A to B, and no
+//                    //      edges A to A
+//                    //  I.E. all connections from the same shrine
+//                    //      must go to distinct shrines that aren't the origin shrine.
+//                    if (!connections.contains(newConnection) && (newConnection != shrine)) {
+//                        connections.add(newConnection);
+//                    }
+//                } while (connections.size() < numConnections);
+//            }
+//
+//            // Validate the web just created above.
+//            final int maxDistance = maxHomeDistance;
+//            final int minDistance = minHomeDistance;
+//            Set<Shrine> connected = shrines.get(0).getConnectedComponent();
+//            if (connected.size() >= minShrines) {
+//                //This will usually only do one iteration
+//                // But there might be no valid candidates.
+//                for (Shrine playerHome : connected) {
+//                    homes[0] = playerHome;
+//                    Set<Shrine> candidates = playerHome.getNtoMthNeighbors(minDistance, maxDistance);
+//                    for (Shrine candidate : candidates) {
+//                        boolean goodCandidate = (candidate.getConnections().size() == playerHome.getConnections().size()) &&
+//                                (candidate.getNtoMthNeighbors(minDistance, maxDistance).contains(playerHome));
+//                        if (!goodCandidate) {
+//                            candidates.remove(candidate);
+//                        }
+//                    }
+//                    int size = candidates.size();
+//                    if (size != 0) {
+//                        List<Shrine> candidateList = new ArrayList<>();
+//                        candidateList.addAll(candidates);
+//                        homes[1] = candidateList.get(roll(0, size - 1));
+//                        //We have gotten through all the checks and the web has what we need.
+//                        validGraph = true;
+//                    }
+//                }
+//            }
+//        } while (!validGraph);
     }
 
     public static Game mkTestGame() {
