@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * The God object for the "business logic"/Model. I.e. everything that isn't IO goes _here_.
@@ -53,39 +54,45 @@ public class Game {
      */
     public Game(List<String> nameList, List<String> imageList, Random random_) {
         random = random_;
-//        int numShrines = roll(minShrines, maxShrines);
-//        Shuffled<String> namesShuffled = new Shuffled<>(nameList);
-//        Shuffled<String> imagesShuffled = new Shuffled<>(imageList);
-//
-//        for (int i = 0; i < numShrines; i++) {
-//            Shrine shrine = new Shrine(namesShuffled.next(), imagesShuffled.next(), roll(minMaxPopulation, maxMaxPopulation));
-//            shrines.add(shrine);
-//        }
-//
-//        // Create the directed graph of Connections.
-//        boolean validGraph = false;
-//        do {
-//
-//            //generate raw web
-//            for (Shrine shrine : shrines) {
-//                int numConnections = roll(minConnections, maxConnections);
-//                List<Shrine> connections = shrine.getConnections();
-//                do {
-//                    Shrine newConnection = shrines.get(roll(0, numShrines - 1));
-//                    //  our graph is a simply connected graph. So at most one edge A to B, and no
-//                    //      edges A to A
-//                    //  I.E. all connections from the same shrine
-//                    //      must go to distinct shrines that aren't the origin shrine.
-//                    if (!connections.contains(newConnection) && (newConnection != shrine)) {
-//                        connections.add(newConnection);
-//                    }
-//                } while (connections.size() < numConnections);
-//            }
-//
-//            // Validate the web just created above.
+        int numShrines = roll(minShrines, maxShrines);
+        Shuffled<String> namesShuffled = new Shuffled<>(nameList);
+        Shuffled<String> imagesShuffled = new Shuffled<>(imageList);
+
+        for (int i = 0; i < numShrines; i++) {
+            Shrine shrine = new Shrine(namesShuffled.next(), imagesShuffled.next(), roll(minMaxPopulation, maxMaxPopulation));
+            shrines.add(shrine);
+        }
+
+        World world = new World();
+
+        // Create the directed graph of Connections.
+        boolean validGraph = false;
+        do {
+            world.clear();
+
+            //generate raw web
+            for (Shrine shrine : shrines) {
+                int numConnections = roll(minConnections, maxConnections);
+                List<Shrine> connections = new ArrayList<>();
+                do {
+                    Shrine newConnection = shrines.get(roll(0, numShrines - 1));
+                    //  our graph is a simply connected graph. So at most one edge A to B, and no
+                    //      edges A to A
+                    //  I.E. all connections from the same shrine
+                    //      must go to distinct shrines that aren't the origin shrine.
+                    if (!connections.contains(newConnection) && (newConnection != shrine)) {
+                        connections.add(newConnection);
+                    }
+                } while (connections.size() < numConnections);
+
+                // Add connections to World
+                world.addShrine(shrine, connections);
+            }
+   
+            // Validate the web just created above.
 //            final int maxDistance = maxHomeDistance;
 //            final int minDistance = minHomeDistance;
-//            Set<Shrine> connected = shrines.get(0).getConnectedComponent();
+//            List<Shrine> connected = world.get(shrines.get(0));
 //            if (connected.size() >= minShrines) {
 //                //This will usually only do one iteration
 //                // But there might be no valid candidates.
@@ -109,7 +116,7 @@ public class Game {
 //                    }
 //                }
 //            }
-//        } while (!validGraph);
+        } while (!validGraph);
     }
 
     public static Game mkTestGame() {
