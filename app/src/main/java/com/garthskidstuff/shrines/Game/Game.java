@@ -15,21 +15,25 @@ import java.util.Set;
 
 @SuppressWarnings("WeakerAccess")
 public class Game {
-    private static final int minShrines = 40;
-    private static final int maxShrines = 100;
-    private static final int minConnections = 3;
-    private static final int maxConnections = 5;
-    private static final int minMaxPopulation = 5; // The max size pop can grow is between min/max
-    private static final int maxMaxPopulation = 40;
 
-    final Shrine[] homes = {null, null};
+    public static class Constants {
+        public int minShrines = 40;
+        public int maxShrines = 100;
+        public int minConnections = 3;
+        public int maxConnections = 5;
+        public int minMaxPopulation = 5; // The max size pop can grow is between min/max
+        public int maxMaxPopulation = 40;
+        @SuppressWarnings("FieldCanBeLocal")
+        public int minHomeDistance = 3;
+        @SuppressWarnings("FieldCanBeLocal")
+        public int maxHomeDistance = 6;
+    }
+    
+    final Constants constants;
+    final List<Shrine> homes;
     @SuppressWarnings("FieldCanBeLocal")
     private final List<Shrine> shrines = new ArrayList<>();
-    private final Random random;
-    @SuppressWarnings("FieldCanBeLocal")
-    private final int minHomeDistance = 5;
-    @SuppressWarnings("FieldCanBeLocal")
-    private final int maxHomeDistance = 6;
+    private Random random; //TODO make final
 
     /**
      * This constructor is the one called by the actual app
@@ -38,7 +42,7 @@ public class Game {
      * @param imageList A list of image ids for the shrines.
      */
     public Game(List<String> nameList, List<String> imageList) {
-        this(nameList, imageList, new Random());
+        this(nameList, imageList, new Random(), new Constants());
     }
 
     /**
@@ -52,27 +56,29 @@ public class Game {
      * @param imageList A list of image ids for the shrines.
      * @param random_   The RNG used by the whole game, it's a parameter so that a test harness can save/print/reuse the seed of the RNG.
      */
-    public Game(List<String> nameList, List<String> imageList, Random random_) {
+    public Game(List<String> nameList, List<String> imageList, Random random_, Constants constants_) {
         random = random_;
-        int numShrines = roll(minShrines, maxShrines);
+        constants = constants_;
+        int numShrines = roll(constants.minShrines, constants.maxShrines);
         Shuffled<String> namesShuffled = new Shuffled<>(nameList);
         Shuffled<String> imagesShuffled = new Shuffled<>(imageList);
 
         for (int i = 0; i < numShrines; i++) {
-            Shrine shrine = new Shrine(namesShuffled.next(), imagesShuffled.next(), roll(minMaxPopulation, maxMaxPopulation));
+            Shrine shrine = new Shrine(namesShuffled.next(), imagesShuffled.next(), roll(constants.minMaxPopulation, constants.maxMaxPopulation));
             shrines.add(shrine);
         }
 
         World world = new World();
 
         // Create the directed graph of Connections.
-        boolean validGraph = false;
+        boolean validGraph; // = false by default
+        List<Shrine> candidates = null;
         do {
             world.clear();
 
             //generate raw web
             for (Shrine shrine : shrines) {
-                int numConnections = roll(minConnections, maxConnections);
+                int numConnections = roll(constants.minConnections, constants.maxConnections);
                 List<Shrine> connections = new ArrayList<>();
                 do {
                     Shrine newConnection = shrines.get(roll(0, numShrines - 1));
@@ -88,38 +94,40 @@ public class Game {
                 // Add connections to World
                 world.addShrine(shrine, connections);
             }
-   
+
             // Validate the web just created above.
-//            final int maxDistance = maxHomeDistance;
-//            final int minDistance = minHomeDistance;
-//            List<Shrine> connected = world.get(shrines.get(0));
-//            if (connected.size() >= minShrines) {
-//                //This will usually only do one iteration
-//                // But there might be no valid candidates.
-//                for (Shrine playerHome : connected) {
-//                    homes[0] = playerHome;
-//                    Set<Shrine> candidates = playerHome.getNtoMthNeighbors(minDistance, maxDistance);
-//                    for (Shrine candidate : candidates) {
-//                        boolean goodCandidate = (candidate.getConnections().size() == playerHome.getConnections().size()) &&
-//                                (candidate.getNtoMthNeighbors(minDistance, maxDistance).contains(playerHome));
-//                        if (!goodCandidate) {
-//                            candidates.remove(candidate);
-//                        }
-//                    }
-//                    int size = candidates.size();
-//                    if (size != 0) {
-//                        List<Shrine> candidateList = new ArrayList<>();
-//                        candidateList.addAll(candidates);
-//                        homes[1] = candidateList.get(roll(0, size - 1));
-//                        //We have gotten through all the checks and the web has what we need.
-//                        validGraph = true;
-//                    }
-//                }
-//            }
+            validGraph = world.isCompletelyConnected();
+            if (validGraph) {
+                candidates = findHomeWorlds(world);
+                validGraph = null != candidates;
+            }
         } while (!validGraph);
+        homes = candidates;
     }
 
-    public static Game mkTestGame() {
+    private List<Shrine> findHomeWorlds(World world) {
+        for (Shrine home0 : world.getShrines()) {
+            for (Shrine home1 : world.getShrines()) {
+                if(home0 != home1) {
+                    Set<List<Shrine>> from0to1 = world.getPaths(world.getShrines(), home0, home1);
+                    Set<List<Shrine>> from1to0 = world.getPaths(world.getShrines(), home1, home0);
+                    List<List<Shrine>> sorted0to1 = World.sortPaths(from0to1);
+                    List<List<Shrine>> sorted1to0 = World.sortPaths(from1to0);
+                    int length0to1 = sorted0to1.get(0).size();
+                    int length1to0 = sorted1to0.get(0).size();
+                    if ((length0to1 == length1to0) && (length0to1 >= constants.minHomeDistance) && (length0to1 <= constants.maxHomeDistance)) {
+                        List<Shrine> homes = new ArrayList<>();
+                        homes.add(home0);
+                        homes.add(home1);
+                        return homes;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public static Game mkTestGame(Constants constants) {
         List<String> names = new ArrayList<>();
         List<String> images = new ArrayList<>();
         for (int i = 0; i < 150; i++) {
@@ -131,12 +139,12 @@ public class Game {
         }
         long seed = System.currentTimeMillis();
         Random random = new Random(seed);
-        Log.d("MainActivity", "random seed = " + seed);
-        return new Game(names, images, random);
+//        Utils.Logd("MainActivity", "random seed = " + seed);
+        return new Game(names, images, random, constants);
     }
 
     public int roll(int min, int max) {
-        return random.nextInt(max - min) + min;
+        return random.nextInt(max - min + 1) + min;
     }
 
     /**

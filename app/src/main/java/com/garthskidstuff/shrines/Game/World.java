@@ -114,7 +114,8 @@ public class World {
         return connected;
     }
 
-    private Set<List<Shrine>> getAllPathsFrom (Shrine start) {
-        return null;
+    public Set<Shrine> getShrines() {
+        return shrineMap.keySet();
     }
+
 }

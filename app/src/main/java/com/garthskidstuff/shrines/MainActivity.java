@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onNewGame() {
-        Game game = Game.mkTestGame();
+        Game game = Game.mkTestGame(new Game.Constants());
         // TODO: use game, go to home shrine screen.
     }
 }
