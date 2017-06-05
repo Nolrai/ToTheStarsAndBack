@@ -27,13 +27,18 @@ public class Game {
         public int minHomeDistance = 3;
         @SuppressWarnings("FieldCanBeLocal")
         public int maxHomeDistance = 6;
+        public long seed = -1;
+
+        public Constants(long seed) {
+            this.seed = seed;
+        }
     }
     
     final Constants constants;
     final List<Shrine> homes;
-    @SuppressWarnings("FieldCanBeLocal")
-    private final List<Shrine> shrines = new ArrayList<>();
-    private Random random; //TODO make final
+    World world;
+
+    private Random random;
 
     /**
      * This constructor is the one called by the actual app
@@ -42,7 +47,7 @@ public class Game {
      * @param imageList A list of image ids for the shrines.
      */
     public Game(List<String> nameList, List<String> imageList) {
-        this(nameList, imageList, new Random(), new Constants());
+        this(nameList, imageList, new Constants(-1));
     }
 
     /**
@@ -54,21 +59,21 @@ public class Game {
      *
      * @param nameList  A list of names for shrines.
      * @param imageList A list of image ids for the shrines.
-     * @param random_   The RNG used by the whole game, it's a parameter so that a test harness can save/print/reuse the seed of the RNG.
      */
-    public Game(List<String> nameList, List<String> imageList, Random random_, Constants constants_) {
-        random = random_;
-        constants = constants_;
+    public Game(List<String> nameList, List<String> imageList, Constants constants) {
+        this.constants = constants;
+        random = (-1 == constants.seed) ? new Random() : new Random(constants.seed);
         int numShrines = roll(constants.minShrines, constants.maxShrines);
         Shuffled<String> namesShuffled = new Shuffled<>(nameList);
         Shuffled<String> imagesShuffled = new Shuffled<>(imageList);
 
+        List<Shrine> shrines = new ArrayList<>();
         for (int i = 0; i < numShrines; i++) {
             Shrine shrine = new Shrine(namesShuffled.next(), imagesShuffled.next(), roll(constants.minMaxPopulation, constants.maxMaxPopulation));
             shrines.add(shrine);
         }
 
-        World world = new World();
+        world = new World();
 
         // Create the directed graph of Connections.
         boolean validGraph; // = false by default
@@ -109,8 +114,8 @@ public class Game {
         for (Shrine home0 : world.getShrines()) {
             for (Shrine home1 : world.getShrines()) {
                 if(home0 != home1) {
-                    Set<List<Shrine>> from0to1 = world.getPaths(world.getShrines(), home0, home1);
-                    Set<List<Shrine>> from1to0 = world.getPaths(world.getShrines(), home1, home0);
+                    Set<List<Shrine>> from0to1 = world.getPaths(world.getShrines(), home0, home1, World.FindPathSettings.useAllShortest());
+                    Set<List<Shrine>> from1to0 = world.getPaths(world.getShrines(), home1, home0, World.FindPathSettings.useAllShortest());
                     List<List<Shrine>> sorted0to1 = World.sortPaths(from0to1);
                     List<List<Shrine>> sorted1to0 = World.sortPaths(from1to0);
                     int length0to1 = sorted0to1.get(0).size();
@@ -137,10 +142,8 @@ public class Game {
             names.add(name);
             images.add(imageID);
         }
-        long seed = System.currentTimeMillis();
-        Random random = new Random(seed);
 //        Utils.Logd("MainActivity", "random seed = " + seed);
-        return new Game(names, images, random, constants);
+        return new Game(names, images, constants);
     }
 
     public int roll(int min, int max) {
@@ -190,7 +193,7 @@ public class Game {
          */
         @Override
         public T next() {
-            now = roll(0, innerList.size());
+            now = roll(0, innerList.size() - 1);
             innerList.remove(now);
             return oldList.get(now);
         }

@@ -26,9 +26,9 @@ public class WorldTest {
     public void getPathsTo_trivialPath() {
         List<Shrine> shrines = Utils.generateShrines(2);
         world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1)));
-        Set<Shrine> knownShrines = new HashSet<>(shrines);
+        world.addShrine(shrines.get(1));
 
-        Set<List<Shrine>> allPaths = world.getPaths(knownShrines, shrines.get(0), shrines.get(1));
+        Set<List<Shrine>> allPaths = world.getPaths(shrines.get(0), shrines.get(1));
 
         Set<List<Shrine>> testAllPaths = new HashSet<>();
         testAllPaths.add(makePath(shrines, new int[]{0, 1}));
@@ -41,9 +41,9 @@ public class WorldTest {
         List<Shrine> shrines = Utils.generateShrines(3);
         world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1)));
         world.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(2)));
-        Set<Shrine> knownShrines = new HashSet<>(shrines);
+        world.addShrine(shrines.get(2));
 
-        Set<List<Shrine>> allPaths = world.getPaths(knownShrines, shrines.get(0), shrines.get(2));
+        Set<List<Shrine>> allPaths = world.getPaths(shrines.get(0), shrines.get(2));
 
         Set<List<Shrine>> testAllPaths = new HashSet<>();
         testAllPaths.add(makePath(shrines, new int[]{0, 1, 2}));
@@ -55,9 +55,9 @@ public class WorldTest {
     public void getPathsTo_diamond() {
         List<Shrine> shrines = Utils.generateShrines(4);
         makeDiamond(world, shrines, 0, 1, 2, 3);
-        Set<Shrine> knownShrines = new HashSet<>(shrines);
+        world.addShrine(shrines.get(3));
 
-        Set<List<Shrine>> allPaths = world.getPaths(knownShrines, shrines.get(0), shrines.get(3));
+        Set<List<Shrine>> allPaths = world.getPaths(shrines.get(0), shrines.get(3));
 
         Set<List<Shrine>> testAllPaths = new HashSet<>();
         testAllPaths.add(makePath(shrines, new int[]{0, 1, 3}));
@@ -71,9 +71,9 @@ public class WorldTest {
         List<Shrine> shrines = Utils.generateShrines(7);
         makeDiamond(world, shrines, 0, 1, 2, 3);
         makeDiamond(world, shrines, 3, 4, 5, 6);
-        Set<Shrine> knownShrines = new HashSet<>(shrines);
+        world.addShrine(shrines.get(6));
 
-        Set<List<Shrine>> allPaths = world.getPaths(knownShrines, shrines.get(0), shrines.get(6));
+        Set<List<Shrine>> allPaths = world.getPaths(shrines.get(0), shrines.get(6));
 
         Set<List<Shrine>> testAllPaths = new HashSet<>();
         testAllPaths.add(makePath(shrines, new int[]{0, 1, 3, 4, 6}));
@@ -89,9 +89,8 @@ public class WorldTest {
         List<Shrine> shrines = Utils.generateShrines(2);
         world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1)));
         world.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(0)));
-        Set<Shrine> knownShrines = new HashSet<>(shrines);
 
-        Set<List<Shrine>> allPaths = world.getPaths(knownShrines, shrines.get(0), shrines.get(1));
+        Set<List<Shrine>> allPaths = world.getPaths(shrines.get(0), shrines.get(1));
 
         Set<List<Shrine>> testAllPaths = new HashSet<>();
         testAllPaths.add(makePath(shrines, new int[]{0, 1}));
@@ -105,9 +104,8 @@ public class WorldTest {
         world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1)));
         world.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(2)));
         world.addShrine(shrines.get(2), Utils.makeConnections(shrines.get(0)));
-        Set<Shrine> knownShrines = new HashSet<>(shrines);
 
-        Set<List<Shrine>> allPaths = world.getPaths(knownShrines, shrines.get(0), shrines.get(2));
+        Set<List<Shrine>> allPaths = world.getPaths(shrines.get(0), shrines.get(2));
 
         Set<List<Shrine>> testAllPaths = new HashSet<>();
         testAllPaths.add(makePath(shrines, new int[]{0, 1, 2}));
@@ -120,9 +118,9 @@ public class WorldTest {
         List<Shrine> shrines = Utils.generateShrines(3);
         world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1)));
         world.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(0), shrines.get(2)));
-        Set<Shrine> knownShrines = new HashSet<>(shrines);
+        world.addShrine(shrines.get(2));
 
-        Set<List<Shrine>> allPaths = world.getPaths(knownShrines, shrines.get(0), shrines.get(2));
+        Set<List<Shrine>> allPaths = world.getPaths(shrines.get(0), shrines.get(2));
 
         Set<List<Shrine>> testAllPaths = new HashSet<>();
         testAllPaths.add(makePath(shrines, new int[]{0, 1, 2}));
@@ -134,10 +132,10 @@ public class WorldTest {
     public void getPathsTo_trivialDeadEndLoop() {
         List<Shrine> shrines = Utils.generateShrines(3);
         world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1),shrines.get(2)));
+        world.addShrine(shrines.get(1));
         world.addShrine(shrines.get(2), Utils.makeConnections(shrines.get(0)));
-        Set<Shrine> knownShrines = new HashSet<>(shrines);
 
-        Set<List<Shrine>> allPaths = world.getPaths(knownShrines, shrines.get(0), shrines.get(1));
+        Set<List<Shrine>> allPaths = world.getPaths(shrines.get(0), shrines.get(1));
 
         Set<List<Shrine>> testAllPaths = new HashSet<>();
         testAllPaths.add(makePath(shrines, new int[]{0, 1}));
@@ -149,9 +147,10 @@ public class WorldTest {
     public void getPathsTo_trivialDeadEnd() {
         List<Shrine> shrines = Utils.generateShrines(3);
         world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1), shrines.get(2)));
-        Set<Shrine> knownShrines = new HashSet<>(shrines);
+        world.addShrine(shrines.get(1));
+        world.addShrine(shrines.get(2));
 
-        Set<List<Shrine>> allPaths = world.getPaths(knownShrines, shrines.get(0), shrines.get(1));
+        Set<List<Shrine>> allPaths = world.getPaths(shrines.get(0), shrines.get(1));
 
         Set<List<Shrine>> testAllPaths = new HashSet<>();
         testAllPaths.add(makePath(shrines, new int[]{0, 1}));
@@ -163,10 +162,11 @@ public class WorldTest {
     public void getPathsTo_simpleDeadEnd() {
         List<Shrine> shrines = Utils.generateShrines(4);
         world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1), shrines.get(2)));
+        world.addShrine(shrines.get(1));
         world.addShrine(shrines.get(2), Utils.makeConnections(shrines.get(3)));
-        Set<Shrine> knownShrines = new HashSet<>(shrines);
+        world.addShrine(shrines.get(3));
 
-        Set<List<Shrine>> allPaths = world.getPaths(knownShrines, shrines.get(0), shrines.get(1));
+        Set<List<Shrine>> allPaths = world.getPaths(shrines.get(0), shrines.get(1));
 
         Set<List<Shrine>> testAllPaths = new HashSet<>();
         testAllPaths.add(makePath(shrines, new int[]{0, 1}));
@@ -179,9 +179,10 @@ public class WorldTest {
         List<Shrine> shrines = Utils.generateShrines(4);
         world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1), shrines.get(2)));
         world.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(3)));
-        Set<Shrine> knownShrines = new HashSet<>(shrines);
+        world.addShrine(shrines.get(2));
+        world.addShrine(shrines.get(3));
 
-        Set<List<Shrine>> allPaths = world.getPaths(knownShrines, shrines.get(0), shrines.get(3));
+        Set<List<Shrine>> allPaths = world.getPaths(shrines.get(0), shrines.get(3));
 
         Set<List<Shrine>> testAllPaths = new HashSet<>();
         testAllPaths.add(makePath(shrines, new int[]{0, 1, 3}));
@@ -194,9 +195,9 @@ public class WorldTest {
         List<Shrine> shrines = Utils.generateShrines(3);
         world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1), shrines.get(2)));
         world.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(2)));
-        Set<Shrine> knownShrines = new HashSet<>(shrines);
+        world.addShrine(shrines.get(2));
 
-        Set<List<Shrine>> allPaths = world.getPaths(knownShrines, shrines.get(0), shrines.get(2));
+        Set<List<Shrine>> allPaths = world.getPaths(shrines.get(0), shrines.get(2), World.FindPathSettings.useMaxDepth(Integer.MAX_VALUE));
 
         Set<List<Shrine>> testAllPaths = new HashSet<>();
         testAllPaths.add(makePath(shrines, new int[]{0, 2}));
@@ -206,16 +207,35 @@ public class WorldTest {
     }
 
     @Test
-    public void getPathsTo_bigNetwork() {
+    public void getPathsTo_bigNetworkGetShortest() {
         int SIZE = 10;
         List<Shrine> shrines = Utils.generateShrines(10);
         for (int i = 0; i < SIZE; i++) {
             int[] idx = new int[]{(i + 1) % SIZE, (i + 2) % SIZE, (i + 3) % SIZE, (i + 4) % SIZE};
             world.addShrine(shrines.get(i), Utils.makeConnections(shrines.get(idx[0]), shrines.get(idx[1]), shrines.get(idx[2]), shrines.get(idx[3])));
         }
-        Set<Shrine> knownShrines = new HashSet<>(shrines);
 
-        Set<List<Shrine>> allPaths = world.getPaths(knownShrines, shrines.get(0), shrines.get(SIZE - 1));
+        Set<List<Shrine>> allPaths = world.getPaths(shrines.get(0), shrines.get(SIZE - 1));
+
+        for (List<Shrine> path : allPaths) {
+            assertThat(path.get(path.size() - 1), is(shrines.get(SIZE - 1)));
+            for (int i = 0; i < path.size() - 1; i++) {
+                List<Shrine> connections = world.get(path.get(i));
+                assertThat(connections.contains(path.get(i + 1)), is(true));
+            }
+        }
+    }
+
+    @Test
+    public void getPathsTo_bigNetworkGetAll() {
+        int SIZE = 10;
+        List<Shrine> shrines = Utils.generateShrines(10);
+        for (int i = 0; i < SIZE; i++) {
+            int[] idx = new int[]{(i + 1) % SIZE, (i + 2) % SIZE, (i + 3) % SIZE, (i + 4) % SIZE};
+            world.addShrine(shrines.get(i), Utils.makeConnections(shrines.get(idx[0]), shrines.get(idx[1]), shrines.get(idx[2]), shrines.get(idx[3])));
+        }
+
+        Set<List<Shrine>> allPaths = world.getPaths(shrines.get(0), shrines.get(SIZE - 1), World.FindPathSettings.useMaxDepth(Integer.MAX_VALUE));
 
         for (List<Shrine> path : allPaths) {
             assertThat(path.get(path.size() - 1), is(shrines.get(SIZE - 1)));
@@ -303,8 +323,7 @@ public class WorldTest {
             int[] idx = new int[]{(i + 1) % SIZE, (i + 2) % SIZE, (i + 3) % SIZE, (i + 4) % SIZE};
             world.addShrine(shrines.get(i), Utils.makeConnections(shrines.get(idx[0]), shrines.get(idx[1]), shrines.get(idx[2]), shrines.get(idx[3])));
         }
-        Set<Shrine> knownShrines = new HashSet<>(shrines);
-        Set<List<Shrine>> allPaths = world.getPaths(knownShrines, shrines.get(0), shrines.get(SIZE - 1));
+        Set<List<Shrine>> allPaths = world.getPaths(shrines.get(0), shrines.get(SIZE - 1), World.FindPathSettings.useMaxDepth(Integer.MAX_VALUE));
 
         List<List<Shrine>> sortedPaths = World.sortPaths(allPaths);
 
