@@ -49,7 +49,7 @@ public class Paths {
         return ret;
     }
 
-    Set<List<Shrine>> makeSetOfPathsFrom(Shrine start, Shrine end) {
+    Set<List<Shrine>> makeSetOfPathsFrom(Shrine start, Shrine end, World.FindPathSettings findPathSettings) {
         Set<List<Shrine>> allPaths = new HashSet<>();
         List<Shrine> path1 = new ArrayList<>();
         path1.add(start);

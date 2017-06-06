@@ -71,66 +71,26 @@ public class World {
     }
 
     public Set<List<Shrine>> getPaths(Set<Shrine> knownShrines, Shrine start, Shrine end, FindPathSettings findPathSettings) {
-        Paths paths = new Paths(start, end);
-        makePathsTo(knownShrines, paths, findPathSettings);
-        return paths.makeSetOfPathsFrom(start, end);
+        Paths paths = copyKnownWorlds(knownShrines, start, end);
+        return paths.makeSetOfPathsFrom(start, end, findPathSettings);
     }
 
-    private void makePathsTo(Set<Shrine> knownShrines, Paths paths, FindPathSettings findPathSettings) {
-        List<Pair<Integer, Shrine>> q = new ArrayList<>();
-        q.add(new Pair<>(0, paths.start));
+    private Paths copyKnownWorlds(Set<Shrine> knownShrines, Shrine start, Shrine end) {
+        Paths paths = new Paths(start, end);
 
-        //noinspection WhileLoopReplaceableByForEach
-        for (int i = 0; i < q.size(); i++) {
-            Pair<Integer, Shrine> item = q.get(i);
-            if (null == paths.get(item.second)) {
-                List<Shrine> connections = get(item.second);
-                if ((null != connections) &&
-                        ((FindPathType.USE_ALL_SHORTEST == findPathSettings.findPathType) ||
-                                (item.first < findPathSettings.depth))) {
-                    List<Shrine> pathConnections = new ArrayList<Shrine>();
-                    for (Shrine shrine : connections) {
-                        if (knownShrines.contains(shrine)) {
-                            pathConnections.add(shrine);
-                        }
-                    }
-                    paths.put(item.second, pathConnections);
-                    for (Shrine shrine : pathConnections) {
-                        q.add(new Pair<>(item.first + 1, shrine));
+        for (Shrine shrine : shrineMap.keySet()) {
+            if (knownShrines.contains(shrine)) {
+                List<Shrine> connections = new ArrayList<>();
+                for (Shrine s : shrineMap.get(shrine)) {
+                    if (knownShrines.contains(s)) {
+                        connections.add(s);
                     }
                 }
-                if ((FindPathType.USE_ALL_SHORTEST == findPathSettings.findPathType) &&
-                        (item.second == paths.end)) {
-                    findPathSettings.findPathType = FindPathType.USE_MAX_DEPTH;
-                    findPathSettings.depth = item.first;
-                }
+                paths.map.put(shrine, connections);
             }
         }
 
-//
-//
-//        if ((FindPathType.USE_ALL_SHORTEST == findPathSettings.findPathType) || (depth < findPathSettings.depth)) {
-//            if (null == paths.get(start)) {
-//                List<Shrine> connections = get(start);
-//                if (null != connections) {
-//                    List<Shrine> pathConnections = new ArrayList<Shrine>();
-//                    for (Shrine shrine : connections) {
-//                        if (knownShrines.contains(shrine)) {
-//                            pathConnections.add(shrine);
-//                        }
-//                    }
-//                    paths.put(start, pathConnections);
-//                    for (Shrine shrine : pathConnections) {
-//                        if (shrine != paths.end) {
-//                            makePathsTo(knownShrines, shrine, paths, depth + 1, findPathSettings);
-//                        } else {
-//                            findPathSettings.findPathType = FindPathType.USE_MAX_DEPTH;
-//                            findPathSettings.depth = depth;
-//                        }
-//                    }
-//                }
-//            }
-//        }
+        return paths;
     }
 
     public static Comparator<List<Shrine>> SORT_SHORTEST_FIRST = new Comparator<List<Shrine>>() {
