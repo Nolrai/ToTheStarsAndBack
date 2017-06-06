@@ -13,6 +13,7 @@ import static org.junit.Assert.*;
 
 /**
  * Created by garthupshaw1 on 6/3/17.
+ * Test Worl logic with paths etc.
  */
 public class WorldTest {
     private World world;
@@ -217,7 +218,12 @@ public class WorldTest {
 
         Set<List<Shrine>> allPaths = world.getPaths(shrines.get(0), shrines.get(SIZE - 1));
 
+        Integer length = null;
         for (List<Shrine> path : allPaths) {
+            if (null == length) {
+                length = path.size();
+            }
+            assertThat(path.size(), is(length));
             assertThat(path.get(path.size() - 1), is(shrines.get(SIZE - 1)));
             for (int i = 0; i < path.size() - 1; i++) {
                 List<Shrine> connections = world.get(path.get(i));

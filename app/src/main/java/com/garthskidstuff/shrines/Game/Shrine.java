@@ -120,4 +120,11 @@ public class Shrine implements Comparable {
         }
         return -1;
     }
+
+    @Override
+    public String toString() {
+        String s = name;
+
+        return s;
+    }
 }
