@@ -13,7 +13,7 @@ import static org.junit.Assert.*;
 
 /**
  * Created by garthupshaw1 on 6/3/17.
- * Test Worl logic with paths etc.
+ * Test World logic with paths etc.
  */
 public class WorldTest {
     private World world;
@@ -210,7 +210,7 @@ public class WorldTest {
     @Test
     public void getPathsTo_bigNetworkGetShortest() {
         int SIZE = 10;
-        List<Shrine> shrines = Utils.generateShrines(10);
+        List<Shrine> shrines = Utils.generateShrines(SIZE);
         for (int i = 0; i < SIZE; i++) {
             int[] idx = new int[]{(i + 1) % SIZE, (i + 2) % SIZE, (i + 3) % SIZE, (i + 4) % SIZE};
             world.addShrine(shrines.get(i), Utils.makeConnections(shrines.get(idx[0]), shrines.get(idx[1]), shrines.get(idx[2]), shrines.get(idx[3])));
@@ -235,7 +235,7 @@ public class WorldTest {
     @Test
     public void getPathsTo_bigNetworkGetAll() {
         int SIZE = 10;
-        List<Shrine> shrines = Utils.generateShrines(10);
+        List<Shrine> shrines = Utils.generateShrines(SIZE);
         for (int i = 0; i < SIZE; i++) {
             int[] idx = new int[]{(i + 1) % SIZE, (i + 2) % SIZE, (i + 3) % SIZE, (i + 4) % SIZE};
             world.addShrine(shrines.get(i), Utils.makeConnections(shrines.get(idx[0]), shrines.get(idx[1]), shrines.get(idx[2]), shrines.get(idx[3])));
@@ -324,7 +324,7 @@ public class WorldTest {
     public void sortPaths_bigNetwork() {
         World world = new World();
         int SIZE = 10;
-        List<Shrine> shrines = Utils.generateShrines(10);
+        List<Shrine> shrines = Utils.generateShrines(SIZE);
         for (int i = 0; i < SIZE; i++) {
             int[] idx = new int[]{(i + 1) % SIZE, (i + 2) % SIZE, (i + 3) % SIZE, (i + 4) % SIZE};
             world.addShrine(shrines.get(i), Utils.makeConnections(shrines.get(idx[0]), shrines.get(idx[1]), shrines.get(idx[2]), shrines.get(idx[3])));
@@ -394,6 +394,40 @@ public class WorldTest {
         world.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(0)));
         world.addShrine(shrines.get(2), Utils.makeConnections(shrines.get(3)));
         world.addShrine(shrines.get(3), Utils.makeConnections(shrines.get(2)));
+
+        boolean result = world.isCompletelyConnected();
+
+        assertThat(result, is(false));
+    }
+
+    @Test
+    public void isCompletelyConnected_bigConnected() {
+        World world = new World();
+        int SIZE = 10;
+        List<Shrine> shrines = Utils.generateShrines(SIZE);
+        for (int i = 0; i < SIZE; i++) {
+            int[] idx = new int[]{(i + 1) % SIZE, (i + 2) % SIZE, (i + 3) % SIZE, (i + 4) % SIZE};
+            world.addShrine(shrines.get(i), Utils.makeConnections(shrines.get(idx[0]), shrines.get(idx[1]), shrines.get(idx[2]), shrines.get(idx[3])));
+        }
+
+        boolean result = world.isCompletelyConnected();
+
+        assertThat(result, is(true));
+    }
+
+    @Test
+    public void isCompletelyConnected_semiConnected() {
+        World world = new World();
+        int SIZE = 10;
+        List<Shrine> shrines = Utils.generateShrines(SIZE);
+        for (int i = 0; i < SIZE; i++) {
+            int[] idx = new int[]{(i + 1) % SIZE, (i + 2) % SIZE, (i + 3) % SIZE, (i + 4) % SIZE};
+            if (0 < i) {
+                world.addShrine(shrines.get(i), Utils.makeConnections(shrines.get(idx[0]), shrines.get(idx[1]), shrines.get(idx[2]), shrines.get(idx[3])));
+            } else {
+                world.addShrine(shrines.get(i));
+            }
+        }
 
         boolean result = world.isCompletelyConnected();
 

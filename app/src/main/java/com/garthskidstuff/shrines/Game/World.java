@@ -21,7 +21,7 @@ import java.util.Set;
  */
 
 public class World {
-    private Map<Shrine, List<Shrine>> shrineMap = new HashMap<>();
+    private Map<Shrine, List<Shrine>> shrineMap = new HashMap<>(); // shrine --> its children
 
     public enum FindPathType { USE_ALL_SHORTEST, USE_MAX_DEPTH }
     public static class FindPathSettings {
@@ -44,7 +44,7 @@ public class World {
 
     public void addShrine(Shrine shrine, List<Shrine> connections) {
         shrineMap.put(shrine, connections);
-    }
+     }
 
     public void addShrine(Shrine shrine) {
         shrineMap.put(shrine, new ArrayList<Shrine>());
@@ -71,25 +71,42 @@ public class World {
     }
 
     public Set<List<Shrine>> getPaths(Set<Shrine> knownShrines, Shrine start, Shrine end, FindPathSettings findPathSettings) {
-        Paths paths = copyKnownWorlds(knownShrines, start, end);
-        return paths.makeSetOfPathsFrom(start, end, findPathSettings);
+        Paths paths = makePathsTo(knownShrines, start, end, findPathSettings);
+        return paths.makeSetOfPathsFrom();
     }
 
-    private Paths copyKnownWorlds(Set<Shrine> knownShrines, Shrine start, Shrine end) {
+    private Paths makePathsTo(Set<Shrine> knownShrines, Shrine start, Shrine end, FindPathSettings findPathSettings) {
         Paths paths = new Paths(start, end);
+        List<Pair<Integer, Shrine>> q = new ArrayList<>();
+        q.add(new Pair<>(0, paths.start));
 
-        for (Shrine shrine : shrineMap.keySet()) {
-            if (knownShrines.contains(shrine)) {
-                List<Shrine> connections = new ArrayList<>();
-                for (Shrine s : shrineMap.get(shrine)) {
-                    if (knownShrines.contains(s)) {
-                        connections.add(s);
+        //noinspection WhileLoopReplaceableByForEach
+        for (int i = 0; i < q.size(); i++) {
+            Pair<Integer, Shrine> item = q.get(i);
+            if (null == paths.get(item.second)) {
+                List<Shrine> connections = get(item.second);
+                if ((null != connections) &&
+                        ((FindPathType.USE_ALL_SHORTEST == findPathSettings.findPathType) ||
+                                (item.first < findPathSettings.depth))) {
+                    List<Shrine> pathConnections = new ArrayList<>();
+                    for (Shrine shrine : connections) {
+                        if (knownShrines.contains(shrine)) {
+                            pathConnections.add(shrine);
+                        }
+                    }
+                    paths.put(item.second, pathConnections);
+                    for (Shrine shrine : pathConnections) {
+                        q.add(new Pair<>(item.first + 1, shrine));
                     }
                 }
-                paths.map.put(shrine, connections);
+                if ((FindPathType.USE_ALL_SHORTEST == findPathSettings.findPathType) &&
+                        (item.second == paths.end)) {
+                    findPathSettings.findPathType = FindPathType.USE_MAX_DEPTH;
+                    findPathSettings.depth = item.first;
+                    paths.shortestLength = item.first;
+                }
             }
         }
-
         return paths;
     }
 
@@ -134,18 +151,16 @@ public class World {
     }
 
     public boolean isCompletelyConnected() {
-        for (Shrine start : shrineMap.keySet()) {
-            for (Shrine end : shrineMap.keySet()) {
-                if (start != end) {
-                    Set<List<Shrine>> shortestPaths = getPaths(start, end, FindPathSettings.useMaxDepth(Integer.MAX_VALUE));
-                    if (shortestPaths.isEmpty()) {
-                        return false;
-                    }
-                }
+        boolean connected = true;
+        for (Shrine shrine : shrineMap.keySet()) {
+            Paths paths = makePathsTo(shrineMap.keySet(), shrine, null, FindPathSettings.useMaxDepth(Integer.MAX_VALUE));
+            if (paths.map.keySet().size() != shrineMap.size()) {
+                connected = false;
+                break;
             }
         }
 
-        return true;
+        return connected;
     }
 
     public Set<Shrine> getShrines() {

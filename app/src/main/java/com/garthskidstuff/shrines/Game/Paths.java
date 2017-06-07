@@ -15,6 +15,7 @@ import java.util.Set;
 public class Paths {
     Shrine start;
     Shrine end;
+    int shortestLength = -1;
     public Map<Shrine, List<Shrine>> map = new HashMap<>();
 
     public Paths(Shrine start, Shrine end) {
@@ -49,7 +50,7 @@ public class Paths {
         return ret;
     }
 
-    Set<List<Shrine>> makeSetOfPathsFrom(Shrine start, Shrine end, World.FindPathSettings findPathSettings) {
+    Set<List<Shrine>> makeSetOfPathsFrom() {
         Set<List<Shrine>> allPaths = new HashSet<>();
         List<Shrine> path1 = new ArrayList<>();
         path1.add(start);
@@ -63,7 +64,8 @@ public class Paths {
 
             for (List<Shrine> path : allPaths) {
                 Shrine endPath = path.get(path.size() - 1);
-                if (!Utils.equals(endPath, end)) { // path is not terminated at destination
+                boolean tooLong = (-1 != shortestLength) && (shortestLength < path.size());
+                if (!tooLong && !Utils.equals(endPath, end)) { // partial path hasn't hit end
                     List<Shrine> connections = get(endPath);
                     newAllPaths.remove(path);
                     if (null != connections) {
@@ -71,9 +73,13 @@ public class Paths {
                             if (!path.contains(shrine)) { // not a loop
                                 List<Shrine> newPath = new ArrayList<>();
                                 newPath.addAll(path);
-                                newPath.add(shrine);
-                                newAllPaths.add(newPath);
-                                keepGoing = true;
+                                if ((-1 == shortestLength) ||
+                                        (newPath.size() < shortestLength) ||
+                                        (shrine == end)) {
+                                    newPath.add(shrine);
+                                    newAllPaths.add(newPath);
+                                    keepGoing = true;
+                                }
                             }
                         }
                     }
