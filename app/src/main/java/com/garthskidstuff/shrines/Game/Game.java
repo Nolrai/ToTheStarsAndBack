@@ -177,8 +177,8 @@ public class Game {
         }
 
         /**
-         * Do we have any indexes we haven't already used in next()?
-         *
+         * As long as the innerList isn't empty then we can run Next.
+         * (_Which_ item is next is decided in next().)
          * @return can we run next safely.
          */
         @Override
@@ -187,9 +187,9 @@ public class Game {
         }
 
         /**
-         * Fetches a remaining item randomly.
+         * Randomly fetches a remaining item.
          *
-         * @return the random element from oldList.
+         * @return the randomly selected element.
          */
         @Override
         public T next() {
@@ -199,7 +199,7 @@ public class Game {
         }
 
         /**
-         * Not used yet. This removes the item at now (i.e the item returned by the most recent next)
+         * Not yet used. This removes the item at now (i.e the item returned by the most recent next)
          * from the original list.
          */
         @Override
