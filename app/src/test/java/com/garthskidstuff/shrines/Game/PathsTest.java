@@ -1,4 +1,7 @@
-package com.garthskidstuff.shrines.Game;
+package com.garthskidstuff.shrineNames.Game;
+
+import com.garthskidstuff.shrines.Game.Paths;
+import com.garthskidstuff.shrines.Game.Utils;
 
 import org.junit.Test;
 
@@ -15,24 +18,24 @@ public class PathsTest {
 
     @Test
     public void putAndGet_singleItem() {
-        List<Shrine> shrines = Utils.generateShrines(2);
-        Paths path = new Paths(shrines.get(0), shrines.get(1));
-        List<Shrine> connections = Utils.makeConnections(shrines.get(1));
+        List<String> shrineNames = Utils.generateShrineNames(2);
+        Paths path = new Paths(shrineNames.get(0), shrineNames.get(1));
+        List<String> connections = Utils.makeConnections(shrineNames.get(1));
 
-        path.put(shrines.get(0), connections);
-        List<Shrine> testConnections = path.get(shrines.get(0));
+        path.put(shrineNames.get(0), connections);
+        List<String> testConnections = path.get(shrineNames.get(0));
 
         assertThat(testConnections, is(connections));
     }
 
     @Test
     public void putAndGet_itemNotInPath() {
-        List<Shrine> shrines = Utils.generateShrines(2);
-        Paths path = new Paths(shrines.get(0), shrines.get(1));
-        List<Shrine> connections = Utils.makeConnections(shrines.get(1));
+        List<String> shrineNames = Utils.generateShrineNames(2);
+        Paths path = new Paths(shrineNames.get(0), shrineNames.get(1));
+        List<String> connections = Utils.makeConnections(shrineNames.get(1));
 
-        path.put(shrines.get(0), connections);
-        List<Shrine> testConnections = path.get(shrines.get(1));
+        path.put(shrineNames.get(0), connections);
+        List<String> testConnections = path.get(shrineNames.get(1));
 
         assertThat((null == testConnections), is(true));
     }

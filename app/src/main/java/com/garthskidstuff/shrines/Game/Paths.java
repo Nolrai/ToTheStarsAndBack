@@ -9,74 +9,82 @@ import java.util.Set;
 
 /**
  * Created by garthtroubleupshaw on 6/1/17.
- * Capture all map from a start Shrine to an end Shrine
+ * Capture all map from a startName String to an endName String
  */
 
 public class Paths {
-    Shrine start;
-    Shrine end;
+    String startName;
+    String endName;
     int shortestLength = -1;
-    public Map<Shrine, List<Shrine>> map = new HashMap<>();
+    public Map<String, List<String>> map = new HashMap<>();
 
-    public Paths(Shrine start, Shrine end) {
-        this.start = start;
-        this.end = end;
+    public Paths(String startName, String endName) {
+        this.startName = startName;
+        this.endName = endName;
     }
 
-    public void put(Shrine shrine, List<Shrine> connections) {
-        map.put(shrine, connections);
+    public void put(String shrineName, List<String> connections) {
+        map.put(shrineName, connections);
     }
 
-    public List<Shrine> get(Shrine shrine) {
-        return map.get(shrine);
+    public List<String> get(String shrineName) {
+        return map.get(shrineName);
     }
 
-    public void remove(Shrine shrine) {
-        map.remove(shrine);
+    public void remove(String shrineName) {
+        map.remove(shrineName);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Paths paths = (Paths) o;
+
+        if (shortestLength != paths.shortestLength) return false;
+        if (!startName.equals(paths.startName)) return false;
+        if (!endName.equals(paths.endName)) return false;
+        return map.equals(paths.map);
+
     }
 
     @Override
     public int hashCode() {
-        return start.hashCode() ^ end.hashCode();
+        int result = startName.hashCode();
+        result = 31 * result + endName.hashCode();
+        result = 31 * result + shortestLength;
+        result = 31 * result + map.hashCode();
+        return result;
     }
 
-    @Override
-    public boolean equals(Object other) {
-        boolean ret = false;
-        if (other instanceof Paths) {
-            Paths otherPaths = (Paths) other;
-            ret = Utils.equals(start, otherPaths.start) && Utils.equals(end, otherPaths.end) && (map.equals(otherPaths.map));
-        }
-        return ret;
-    }
-
-    Set<List<Shrine>> makeSetOfPathsFrom() {
-        Set<List<Shrine>> allPaths = new HashSet<>();
-        List<Shrine> path1 = new ArrayList<>();
-        path1.add(start);
+    Set<List<String>> makeSetOfPathsFrom() {
+        Set<List<String>> allPaths = new HashSet<>();
+        List<String> path1 = new ArrayList<>();
+        path1.add(startName);
         allPaths.add(path1);
 
         boolean keepGoing = false;
         do {
             keepGoing = false;
-            Set<List<Shrine>> newAllPaths = new HashSet<>();
+            Set<List<String>> newAllPaths = new HashSet<>();
             newAllPaths.addAll(allPaths);
 
-            for (List<Shrine> path : allPaths) {
-                Shrine endPath = path.get(path.size() - 1);
+            for (List<String> path : allPaths) {
+                String endPath = path.get(path.size() - 1);
                 boolean tooLong = (-1 != shortestLength) && (shortestLength < path.size());
-                if (!tooLong && !Utils.equals(endPath, end)) { // partial path hasn't hit end
-                    List<Shrine> connections = get(endPath);
+                if (!tooLong && !Utils.equals(endPath, endName)) { // partial path hasn't hit endName
+                    List<String> connections = get(endPath);
                     newAllPaths.remove(path);
                     if (null != connections) {
-                        for (Shrine shrine : connections) {
-                            if (!path.contains(shrine)) { // not a loop
-                                List<Shrine> newPath = new ArrayList<>();
+                        for (String shrineName : connections) {
+                            if (!path.contains(shrineName)) { // not a loop
+                                List<String> newPath = new ArrayList<>();
                                 newPath.addAll(path);
                                 if ((-1 == shortestLength) ||
                                         (newPath.size() < shortestLength) ||
-                                        (shrine == end)) {
-                                    newPath.add(shrine);
+                                        (shrineName == endName)) {
+                                    newPath.add(shrineName);
                                     newAllPaths.add(newPath);
                                     keepGoing = true;
                                 }

@@ -1,8 +1,9 @@
 package com.garthskidstuff.shrines.Game;
 
+import com.google.gson.Gson;
+
 import org.junit.Test;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -19,7 +20,7 @@ public class GameTest {
         Game.Constants constants = new Game.Constants(1);
         Game game = Game.mkTestGame(constants);
 
-        assertThat(game.homes.size(), is(2));
+        assertThat(game.homeNames.size(), is(2));
     }
 
     @Test
@@ -27,9 +28,9 @@ public class GameTest {
         Game.Constants constants = new Game.Constants(1);
         Game game = Game.mkTestGame(constants);
 
-        Shrine home0 = game.homes.get(0);
-        Shrine home1 = game.homes.get(1);
-        assertThat(game.world.get(home0).size(), is(game.world.get(home1).size()));
+        String homeName0 = game.homeNames.get(0);
+        String homeName1 = game.homeNames.get(1);
+        assertThat(game.world.getConnections(homeName0).size(), is(game.world.getConnections(homeName1).size()));
     }
 
     @Test
@@ -37,8 +38,9 @@ public class GameTest {
         Game.Constants constants = new Game.Constants(1);
         Game game = Game.mkTestGame(constants);
 
-        for (Shrine shrine : game.world.getShrines()) {
-            if (!game.homes.contains(shrine)) {
+        for (String name : game.world.getShrineNames()) {
+            if (!game.homeNames.contains(name)) {
+                Shrine shrine = game.world.getShrine(name);
                 isBetween(constants.minMaxPopulation, constants.maxMaxPopulation, shrine.getMaxPopulation());
                 isBetween(constants.minMiningRateParts, constants.maxMiningRateParts, shrine.getMiningRateParts());
                 assertThat(shrine.getMiningDegradationRateParts(), is(constants.miningDegradationRateParts));
@@ -51,7 +53,8 @@ public class GameTest {
         Game.Constants constants = new Game.Constants(1);
         Game game = Game.mkTestGame(constants);
 
-        for (Shrine shrine : game.homes) {
+        for (String name : game.homeNames) {
+            Shrine shrine = game.world.getShrine(name);
             assertThat(shrine.getMaxPopulation(), is(constants.homeMaxPopulation));
             assertThat(shrine.getMiningRateParts(), is(constants.homeMiningRateParts));
             assertThat(shrine.getNumAlters(), is(constants.homeNumAlters));
@@ -65,14 +68,25 @@ public class GameTest {
         Game.Constants constants = new Game.Constants(1);
         Game game = Game.mkTestGame(constants);
 
-        Shrine home0 = game.homes.get(0);
-        Shrine home1 = game.homes.get(1);
-        Set<List<Shrine>> allPaths0to1 = game.world.getPaths(home0, home1, World.FindPathSettings.useAllShortest());
-        List<List<Shrine>> sortedPaths0to1 = World.sortPaths(allPaths0to1);
-        Set<List<Shrine>> allPaths1to0 = game.world.getPaths(home0, home1, World.FindPathSettings.useAllShortest());
-        List<List<Shrine>> sortedPaths1to0 = World.sortPaths(allPaths1to0);
+        String homeName0 = game.homeNames.get(0);
+        String homeName1 = game.homeNames.get(1);
+        Set<List<String>> allPaths0to1 = game.world.getPaths(homeName0, homeName1, World.FindPathSettings.useAllShortest());
+        List<List<String>> sortedPaths0to1 = game.world.sortPaths(allPaths0to1);
+        Set<List<String>> allPaths1to0 = game.world.getPaths(homeName0, homeName1, World.FindPathSettings.useAllShortest());
+        List<List<String>> sortedPaths1to0 = game.world.sortPaths(allPaths1to0);
 
         assertThat(sortedPaths0to1.get(0).size(), is(sortedPaths1to0.get(0).size()));
+    }
+
+    @Test
+    public void serialize_toJsonAndBack () {
+        Game.Constants constants = new Game.Constants(1);
+        Game game = Game.mkTestGame(constants);
+        Gson gson = new Gson();
+        String json = gson.toJson(game);
+        Game newGame = gson.fromJson(json, Game.class);
+
+        assertThat(newGame, is(game));
     }
 
     private void isBetween(int low, int high, int value) {

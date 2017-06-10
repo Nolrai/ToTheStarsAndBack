@@ -12,7 +12,6 @@ public class Shrine implements Comparable {
     
     private final static int PARTS_MULTIPLIER = 1000;
 
-    @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final String imageId;
 
     private int maxPopulation; // This is really final, but set in an init call AND is the actual int -- not 100th
@@ -211,4 +210,44 @@ public class Shrine implements Comparable {
                 '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Shrine shrine = (Shrine) o;
+
+        if (maxPopulation != shrine.maxPopulation) return false;
+        if (numWorkersParts != shrine.numWorkersParts) return false;
+        if (numAltersParts != shrine.numAltersParts) return false;
+        if (miningRateParts != shrine.miningRateParts) return false;
+        if (miningDegradationRateParts != shrine.miningDegradationRateParts) return false;
+        if (numGoldParts != shrine.numGoldParts) return false;
+        if (numScoutParts != shrine.numScoutParts) return false;
+        if (numFighterParts != shrine.numFighterParts) return false;
+        if (numCargoEmptyParts != shrine.numCargoEmptyParts) return false;
+        if (numCargoWorkers != shrine.numCargoWorkers) return false;
+        if (numCargoGold != shrine.numCargoGold) return false;
+        if (!name.equals(shrine.name)) return false;
+        return imageId.equals(shrine.imageId);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + imageId.hashCode();
+        result = 31 * result + maxPopulation;
+        result = 31 * result + numWorkersParts;
+        result = 31 * result + numAltersParts;
+        result = 31 * result + miningRateParts;
+        result = 31 * result + miningDegradationRateParts;
+        result = 31 * result + numGoldParts;
+        result = 31 * result + numScoutParts;
+        result = 31 * result + numFighterParts;
+        result = 31 * result + numCargoEmptyParts;
+        result = 31 * result + numCargoWorkers;
+        result = 31 * result + numCargoGold;
+        return result;
+    }
 }

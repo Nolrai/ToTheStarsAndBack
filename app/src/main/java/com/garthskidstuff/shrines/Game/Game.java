@@ -1,7 +1,5 @@
 package com.garthskidstuff.shrines.Game;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -42,13 +40,63 @@ public class Game {
         public Constants(long seed) {
             this.seed = seed;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Constants constants = (Constants) o;
+
+            if (minShrines != constants.minShrines) return false;
+            if (maxShrines != constants.maxShrines) return false;
+            if (minConnections != constants.minConnections) return false;
+            if (maxConnections != constants.maxConnections) return false;
+            if (minMaxPopulation != constants.minMaxPopulation) return false;
+            if (maxMaxPopulation != constants.maxMaxPopulation) return false;
+            if (minMiningRateParts != constants.minMiningRateParts) return false;
+            if (maxMiningRateParts != constants.maxMiningRateParts) return false;
+            if (miningDegradationRateParts != constants.miningDegradationRateParts) return false;
+            if (homeMaxPopulation != constants.homeMaxPopulation) return false;
+            if (homeMiningRateParts != constants.homeMiningRateParts) return false;
+            if (homeNumAlters != constants.homeNumAlters) return false;
+            if (homeNumGold != constants.homeNumGold) return false;
+            if (homeNumWorkers != constants.homeNumWorkers) return false;
+            if (minHomeDistance != constants.minHomeDistance) return false;
+            //noinspection SimplifiableIfStatement
+            if (maxHomeDistance != constants.maxHomeDistance) return false;
+            return seed == constants.seed;
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = minShrines;
+            result = 31 * result + maxShrines;
+            result = 31 * result + minConnections;
+            result = 31 * result + maxConnections;
+            result = 31 * result + minMaxPopulation;
+            result = 31 * result + maxMaxPopulation;
+            result = 31 * result + minMiningRateParts;
+            result = 31 * result + maxMiningRateParts;
+            result = 31 * result + miningDegradationRateParts;
+            result = 31 * result + homeMaxPopulation;
+            result = 31 * result + homeMiningRateParts;
+            result = 31 * result + homeNumAlters;
+            result = 31 * result + homeNumGold;
+            result = 31 * result + homeNumWorkers;
+            result = 31 * result + minHomeDistance;
+            result = 31 * result + maxHomeDistance;
+            result = 31 * result + (int) (seed ^ (seed >>> 32));
+            return result;
+        }
     }
     
     final Constants constants;
-    final List<Shrine> homes;
+    final List<String> homeNames;
     World world;
 
-    private Random random;
+    private volatile Random random;
 
     /**
      * This constructor is the one called by the actual app
@@ -87,21 +135,21 @@ public class Game {
 
         // Create the directed graph of Connections.
         boolean validGraph; // = false by default
-        List<Shrine> candidates = null;
+        List<String> candidates = null;
         do {
             world.clear();
 
             //generate raw web
             for (Shrine shrine : shrines) {
                 int numConnections = roll(constants.minConnections, constants.maxConnections);
-                List<Shrine> connections = new ArrayList<>();
+                List<String> connections = new ArrayList<>();
                 do {
-                    Shrine newConnection = shrines.get(roll(0, numShrines - 1));
+                    String newConnection = shrines.get(roll(0, numShrines - 1)).getName();
                     //  our graph is a simply connected graph. So at most one edge A to B, and no
                     //      edges A to A
                     //  I.E. all connections from the same shrine
                     //      must go to distinct shrines that aren't the origin shrine.
-                    if (!connections.contains(newConnection) && (newConnection != shrine)) {
+                    if (!connections.contains(newConnection) && !Utils.equals(newConnection, shrine.getName())) {
                         connections.add(newConnection);
                     }
                 } while (connections.size() < numConnections);
@@ -117,7 +165,7 @@ public class Game {
                 validGraph = null != candidates;
             }
         } while (!validGraph);
-        homes = candidates;
+        homeNames = candidates;
 
         // Init all the default shrine values
         for (Shrine shrine : world.getShrines()) {
@@ -127,25 +175,27 @@ public class Game {
             shrine.initBasic(maxPopulation, miningRateParts, miningDegradationRateParts);
         }
 
-        for (Shrine shrine : homes) {
+        // Init the home worlds
+        for (String name : homeNames) {
+            Shrine shrine = world.getShrine(name);
             shrine.initHome(constants.homeMaxPopulation, constants.homeMiningRateParts, constants.miningDegradationRateParts,
                     constants.homeNumWorkers, constants.homeNumAlters, constants.homeNumGold);
         }
 
     }
 
-    private List<Shrine> findHomeWorlds(World world) {
-        for (Shrine home0 : world.getShrines()) {
-            for (Shrine home1 : world.getShrines()) {
-                if ((home0 != home1) && (world.get(home0).size() == world.get(home1).size())) {
-                    Set<List<Shrine>> from0to1 = world.getPaths(world.getShrines(), home0, home1, World.FindPathSettings.useAllShortest());
-                    Set<List<Shrine>> from1to0 = world.getPaths(world.getShrines(), home1, home0, World.FindPathSettings.useAllShortest());
-                    List<List<Shrine>> sorted0to1 = World.sortPaths(from0to1);
-                    List<List<Shrine>> sorted1to0 = World.sortPaths(from1to0);
+    private List<String> findHomeWorlds(World world) {
+        for (String home0 : world.getShrineNames()) {
+            for (String home1 : world.getShrineNames()) {
+                if (!Utils.equals(home0, home1) && (world.getConnections(home0).size() == world.getConnections(home1).size())) {
+                    Set<List<String>> from0to1 = world.getPaths(world.getShrineNames(), home0, home1, World.FindPathSettings.useAllShortest());
+                    Set<List<String>> from1to0 = world.getPaths(world.getShrineNames(), home1, home0, World.FindPathSettings.useAllShortest());
+                    List<List<String>> sorted0to1 = world.sortPaths(from0to1);
+                    List<List<String>> sorted1to0 = world.sortPaths(from1to0);
                     int length0to1 = sorted0to1.get(0).size();
                     int length1to0 = sorted1to0.get(0).size();
                     if ((length0to1 == length1to0) && (length0to1 >= constants.minHomeDistance) && (length0to1 <= constants.maxHomeDistance)) {
-                        List<Shrine> homes = new ArrayList<>();
+                        List<String> homes = new ArrayList<>();
                         homes.add(home0);
                         homes.add(home1);
                         return homes;
@@ -236,5 +286,27 @@ public class Game {
             }
             oldList.remove(now);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Game game = (Game) o;
+
+        if (!constants.equals(game.constants)) return false;
+        //noinspection SimplifiableIfStatement
+        if (!homeNames.equals(game.homeNames)) return false;
+        return world.equals(game.world);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = constants.hashCode();
+        result = 31 * result + homeNames.hashCode();
+        result = 31 * result + world.hashCode();
+        return result;
     }
 }
