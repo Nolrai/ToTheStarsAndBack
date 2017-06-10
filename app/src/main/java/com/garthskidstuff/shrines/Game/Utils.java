@@ -2,6 +2,7 @@ package com.garthskidstuff.shrines.Game;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by garthtroubleupshaw on 6/1/17.
@@ -12,21 +13,19 @@ public class Utils {
     public static boolean equals(Object o1, Object o2) {
         return (null == o1) ? (null == o2) : o1.equals(o2);
     }
-    
+
+    /**
+     * Useful method for tests
+     */
     public static List<Shrine> generateShrines(int num) {
         List<Shrine> shrines = new ArrayList<>();
 
         for (int i = 0; i < num; i++) {
-            Shrine s = new Shrine("" + i, "" + i, i);
+            Shrine s = new Shrine("" + i, "" + i);
             shrines.add(s);
         }
 
         return shrines;
-    }
-
-    public static List<Shrine> makeConnections() {
-        List<Shrine> connections = new ArrayList<>();
-        return connections;
     }
 
     public static List<Shrine> makeConnections(Shrine c0) {
@@ -67,6 +66,10 @@ public class Utils {
         connections.add(c3);
         connections.add(c4);
         return connections;
+    }
+
+    public static boolean isBetweenInclusive(int low, int high, int value) {
+        return (low <= value) && (value <= high);
     }
 
 }

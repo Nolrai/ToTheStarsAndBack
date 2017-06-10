@@ -23,6 +23,16 @@ public class Game {
         public int maxConnections = 5;
         public int minMaxPopulation = 5; // The max size pop can grow is between min/max
         public int maxMaxPopulation = 40;
+        public int minMiningRateParts = 100; // Amount of gold a single worker can mine (in Shrine.PARTS_MULTIPLIER units)
+        public int maxMiningRateParts = 1000;
+        public int miningDegradationRateParts = 1; // amount mining rate goes down each time a worker mines
+        
+        public int homeMaxPopulation = 100;
+        public int homeMiningRateParts = 100;
+        public int homeNumAlters = 10;
+        public int homeNumGold = 30;
+        public int homeNumWorkers = 50;
+        
         @SuppressWarnings("FieldCanBeLocal")
         public int minHomeDistance = 3;
         @SuppressWarnings("FieldCanBeLocal")
@@ -69,7 +79,7 @@ public class Game {
 
         List<Shrine> shrines = new ArrayList<>();
         for (int i = 0; i < numShrines; i++) {
-            Shrine shrine = new Shrine(namesShuffled.next(), imagesShuffled.next(), roll(constants.minMaxPopulation, constants.maxMaxPopulation));
+            Shrine shrine = new Shrine(namesShuffled.next(), imagesShuffled.next());
             shrines.add(shrine);
         }
 
@@ -108,12 +118,26 @@ public class Game {
             }
         } while (!validGraph);
         homes = candidates;
+
+        // Init all the default shrine values
+        for (Shrine shrine : world.getShrines()) {
+            int maxPopulation = roll(constants.minMaxPopulation, constants.maxMaxPopulation);
+            int miningRateParts = roll(constants.minMiningRateParts, constants.maxMiningRateParts);
+            int miningDegradationRateParts = constants.miningDegradationRateParts;
+            shrine.initBasic(maxPopulation, miningRateParts, miningDegradationRateParts);
+        }
+
+        for (Shrine shrine : homes) {
+            shrine.initHome(constants.homeMaxPopulation, constants.homeMiningRateParts, constants.miningDegradationRateParts,
+                    constants.homeNumWorkers, constants.homeNumAlters, constants.homeNumGold);
+        }
+
     }
 
     private List<Shrine> findHomeWorlds(World world) {
         for (Shrine home0 : world.getShrines()) {
             for (Shrine home1 : world.getShrines()) {
-                if(home0 != home1) {
+                if ((home0 != home1) && (world.get(home0).size() == world.get(home1).size())) {
                     Set<List<Shrine>> from0to1 = world.getPaths(world.getShrines(), home0, home1, World.FindPathSettings.useAllShortest());
                     Set<List<Shrine>> from1to0 = world.getPaths(world.getShrines(), home1, home0, World.FindPathSettings.useAllShortest());
                     List<List<Shrine>> sorted0to1 = World.sortPaths(from0to1);
