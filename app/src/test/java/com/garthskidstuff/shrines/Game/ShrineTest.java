@@ -49,50 +49,82 @@ public class ShrineTest {
 
     @Test
     public void doOrder_buildScoutSuccess() {
-        Shrine shrine = makeBasicShrine("name", "imageId");
-        shrine.setNumWorker(1);
-        shrine.setNumGold(1);
-        shrine.setNumAltar(1);
-        shrine.doOrder(Shrine.Order.BUILD_SCOUT, 1);
-
-        assertThat(shrine.getNumGold(), is(0));
-        assertThat(shrine.getNumAltar(), is(0));
-        assertThat(shrine.getNumUsedAltar(), is(1));
-        assertThat(shrine.getNumWorker(), is(0));
-        assertThat(shrine.getNumUsedWorker(), is(1));
+        testBuildSuccess(Shrine.Order.BUILD_SCOUT);
     }
 
     @Test
     public void doOrder_buildScoutFailWorker() {
-        Shrine shrine = makeBasicShrine("name", "imageId");
-        shrine.setNumGold(1);
-        shrine.setNumAltar(1);
-        Shrine oldShrine = copyShrine(shrine);
-        shrine.doOrder(Shrine.Order.BUILD_SCOUT, 1);
-
-        assertThat(shrine, is(oldShrine));
+        testBuildFailWorker(Shrine.Order.BUILD_SCOUT);
     }
 
     @Test
     public void doOrder_buildScoutFailGold() {
-        Shrine shrine = makeBasicShrine("name", "imageId");
-        shrine.setNumWorker(1);
-        shrine.setNumAltar(1);
-        Shrine oldShrine = copyShrine(shrine);
-        shrine.doOrder(Shrine.Order.BUILD_SCOUT, 1);
-
-        assertThat(shrine, is(oldShrine));
+        testBuildFailGold(Shrine.Order.BUILD_SCOUT);
     }
 
     @Test
     public void doOrder_buildScoutFailAltar() {
-        Shrine shrine = makeBasicShrine("name", "imageId");
-        shrine.setNumWorker(1);
-        shrine.setNumGold(1);
-        Shrine oldShrine = copyShrine(shrine);
-        shrine.doOrder(Shrine.Order.BUILD_SCOUT, 1);
+        testBuildFailAltar(Shrine.Order.BUILD_SCOUT);
+    }
 
-        assertThat(shrine, is(oldShrine));
+    @Test
+    public void doOrder_buildCargoSuccess() {
+        testBuildSuccess(Shrine.Order.BUILD_CARGO);
+    }
+
+    @Test
+    public void doOrder_buildCargoFailWorker() {
+        testBuildFailWorker(Shrine.Order.BUILD_CARGO);
+    }
+
+    @Test
+    public void doOrder_buildCargoFailGold() {
+        testBuildFailGold(Shrine.Order.BUILD_CARGO);
+    }
+
+    @Test
+    public void doOrder_buildCargoFailAltar() {
+        testBuildFailAltar(Shrine.Order.BUILD_CARGO);
+    }
+
+    @Test
+    public void doOrder_buildFighterSuccess() {
+        testBuildSuccess(Shrine.Order.BUILD_FIGHTER);
+    }
+
+    @Test
+    public void doOrder_buildFighterFailWorker() {
+        testBuildFailWorker(Shrine.Order.BUILD_FIGHTER);
+    }
+
+    @Test
+    public void doOrder_buildFighterFailGold() {
+        testBuildFailGold(Shrine.Order.BUILD_FIGHTER);
+    }
+
+    @Test
+    public void doOrder_buildFighterFailAltar() {
+        testBuildFailAltar(Shrine.Order.BUILD_FIGHTER);
+    }
+
+    @Test
+    public void doOrder_buildAltarSuccess() {
+        testBuildSuccess(Shrine.Order.BUILD_ALTAR);
+    }
+
+    @Test
+    public void doOrder_buildAltarFailWorker() {
+        testBuildFailWorker(Shrine.Order.BUILD_ALTAR);
+    }
+
+    @Test
+    public void doOrder_buildAltarFailGold() {
+        testBuildFailGold(Shrine.Order.BUILD_ALTAR);
+    }
+
+    @Test
+    public void doOrder_buildAltarFailAltar() {
+        testBuildFailAltar(Shrine.Order.BUILD_ALTAR);
     }
 
     @Test
@@ -302,6 +334,65 @@ public class ShrineTest {
 
     private void testUnloadFailCargo(Shrine.Order order) {
         Shrine shrine = makeBasicShrine("name", "imageId");
+        Shrine oldShrine = copyShrine(shrine);
+        shrine.doOrder(order, 1);
+
+        assertThat(shrine, is(oldShrine));
+    }
+
+    private void testBuildSuccess(Shrine.Order order) {
+        Shrine shrine = makeBasicShrine("name", "imageId");
+        shrine.setNumWorker(1);
+        shrine.setNumGold(1);
+        shrine.setNumAltar(1);
+        shrine.doOrder(order, 1);
+
+        assertThat(shrine.getNumGold(), is(0));
+        assertThat(shrine.getNumAltar(), is(0));
+        assertThat(shrine.getNumUsedAltar(), is(1));
+        assertThat(shrine.getNumWorker(), is(0));
+        assertThat(shrine.getNumUsedWorker(), is(1));
+
+        switch(order) {
+            case BUILD_ALTAR:
+                assertThat(shrine.getNumAltarParts(), is(Shrine.PARTS_MULTIPLIER / Shrine.BUILD_ALTAR_COST));
+                break;
+            case BUILD_CARGO:
+                assertThat(shrine.getNumCargoEmptyParts(), is(Shrine.PARTS_MULTIPLIER / Shrine.BUILD_CARGO_COST));
+                break;
+            case BUILD_SCOUT:
+                assertThat(shrine.getNumScoutParts(), is(Shrine.PARTS_MULTIPLIER / Shrine.BUILD_SCOUT_COST));
+                break;
+            case BUILD_FIGHTER:
+                assertThat(shrine.getNumFighterParts(), is(Shrine.PARTS_MULTIPLIER / Shrine.BUILD_FIGHTER_COST));
+                break;
+        }
+    }
+
+    private void testBuildFailWorker(Shrine.Order order) {
+        Shrine shrine = makeBasicShrine("name", "imageId");
+        shrine.setNumGold(1);
+        shrine.setNumAltar(1);
+        Shrine oldShrine = copyShrine(shrine);
+        shrine.doOrder(order, 1);
+
+        assertThat(shrine, is(oldShrine));
+    }
+
+    private void testBuildFailGold(Shrine.Order order) {
+        Shrine shrine = makeBasicShrine("name", "imageId");
+        shrine.setNumWorker(1);
+        shrine.setNumAltar(1);
+        Shrine oldShrine = copyShrine(shrine);
+        shrine.doOrder(order, 1);
+
+        assertThat(shrine, is(oldShrine));
+    }
+
+    private void testBuildFailAltar(Shrine.Order order) {
+        Shrine shrine = makeBasicShrine("name", "imageId");
+        shrine.setNumWorker(1);
+        shrine.setNumGold(1);
         Shrine oldShrine = copyShrine(shrine);
         shrine.doOrder(order, 1);
 

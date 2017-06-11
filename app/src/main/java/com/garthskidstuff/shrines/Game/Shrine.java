@@ -10,13 +10,13 @@ import com.google.gson.Gson;
 public class Shrine  {
     private final String name;
 
-    private final static int PARTS_MULTIPLIER = 1000;
+    final static int PARTS_MULTIPLIER = 1000;
 
     // All costs need to divide 1000 evenly.
     final static int BUILD_SCOUT_COST = 1;
-    final static int BUILD_CARGO_COST = 1;
-    final static int BUILD_FIGHTER_COST = 1;
-    final static int BUILD_ALTAR_COST = 1;
+    final static int BUILD_CARGO_COST = 2;
+    final static int BUILD_FIGHTER_COST = 5;
+    final static int BUILD_ALTAR_COST = 10;
 
     private final String imageId;
 
@@ -271,12 +271,18 @@ public class Shrine  {
                 break;
 
             case BUILD_CARGO:
+                success = payBuildCost(num);
+                numCargoEmptyParts += (numParts / BUILD_CARGO_COST);
                 break;
 
             case BUILD_FIGHTER:
+                success = payBuildCost(num);
+                numFighterParts += (numParts / BUILD_FIGHTER_COST);
                 break;
 
             case BUILD_ALTAR:
+                success = payBuildCost(num);
+                numAltarParts += (numParts / BUILD_ALTAR_COST);
                 break;
 
             case LOAD_CARGO_GOLD:
