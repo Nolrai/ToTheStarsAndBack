@@ -1,8 +1,12 @@
 package com.garthskidstuff.shrines.Game;
 
+import android.support.v4.util.Pair;
+
 import com.google.gson.Gson;
 
 import org.junit.Test;
+
+import java.util.Map;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -203,6 +207,66 @@ public class ShrineTest {
     }
 
     @Test
+    public void doMoveOrder_scoutSuccess() {
+        testMoveOrder(Shrine.ShipType.SCOUT);
+    }
+
+    @Test
+    public void doMoveOrder_scoutFail() {
+        testMoveOrderFail(Shrine.ShipType.SCOUT);
+    }
+
+    @Test
+    public void doMoveOrder_fighterSuccess() {
+        testMoveOrder(Shrine.ShipType.FIGHTER);
+    }
+
+    @Test
+    public void doMoveOrder_fighterFail() {
+        testMoveOrderFail(Shrine.ShipType.FIGHTER);
+    }
+
+    @Test
+    public void doMoveOrder_cargoEmptySuccess() {
+        testMoveOrder(Shrine.ShipType.CARGO_EMPTY);
+    }
+
+    @Test
+    public void doMoveOrder_cargoEmptyFail() {
+        testMoveOrderFail(Shrine.ShipType.CARGO_EMPTY);
+    }
+
+    @Test
+    public void doMoveOrder_cargoGoldSuccess() {
+        testMoveOrder(Shrine.ShipType.CARGO_GOLD);
+    }
+
+    @Test
+    public void doMoveOrder_cargoGoldFail() {
+        testMoveOrderFail(Shrine.ShipType.CARGO_GOLD);
+    }
+
+    @Test
+    public void doMoveOrder_cargoAltarSuccess() {
+        testMoveOrder(Shrine.ShipType.CARGO_ALTAR);
+    }
+
+    @Test
+    public void doMoveOrder_cargoAltarFail() {
+        testMoveOrderFail(Shrine.ShipType.CARGO_ALTAR);
+    }
+
+    @Test
+    public void doMoveOrder_cargoWorkerSuccess() {
+        testMoveOrder(Shrine.ShipType.CARGO_WORKER);
+    }
+
+    @Test
+    public void doMoveOrder_cargoWorkerFail() {
+        testMoveOrderFail(Shrine.ShipType.CARGO_WORKER);
+    }
+
+    @Test
     public void makeSavedState_restore() {
         Shrine shrine = makeBasicShrine("name", "imageId");
         shrine.setAllValues();
@@ -398,4 +462,52 @@ public class ShrineTest {
 
         assertThat(shrine, is(oldShrine));
     }
+
+    private void testMoveOrder(Shrine.ShipType type) {
+        int numToMove = 2;
+        Shrine shrine = makeBasicShrine("name", "imageId");
+        switch(type) {
+            case SCOUT:
+                shrine.setNumScout(numToMove);
+                break;
+            case FIGHTER:
+                shrine.setNumFighter(numToMove);
+                break;
+            case CARGO_EMPTY:
+                shrine.setNumCargoEmpty(numToMove);
+                break;
+            case CARGO_GOLD:
+                shrine.setNumCargoGold(numToMove);
+                break;
+            case CARGO_ALTAR:
+                shrine.setNumCargoAltar(numToMove);
+                break;
+            case CARGO_WORKER:
+                shrine.setNumCargoWorker(numToMove);
+                break;
+        }
+        String dest = "destination";
+        shrine.doMoveOrder(dest, type, numToMove);
+
+        Map<Pair<String, Shrine.ShipType>, Integer> map = shrine.getConvertedMovementMap();
+
+        assertThat(map.size(), is(1));
+        for (Pair<String, Shrine.ShipType> pair : map.keySet()) {
+            assertThat(pair.first, is(dest));
+            assertThat(pair.second, is(type));
+            assertThat(map.get(pair), is(numToMove));
+        }
+    }
+
+    private void testMoveOrderFail(Shrine.ShipType type) {
+        Shrine shrine = makeBasicShrine("name", "imageId");
+        shrine.doMoveOrder("destination", type, 1);
+
+        Shrine oldShrine = copyShrine(shrine);
+        Map<Pair<String, Shrine.ShipType>, Integer> map = shrine.getConvertedMovementMap();
+
+        assertThat(map.size(), is(0));
+        assertThat(shrine, is(oldShrine));
+    }
+
 }
