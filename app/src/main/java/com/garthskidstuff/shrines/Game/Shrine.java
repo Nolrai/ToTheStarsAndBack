@@ -1,6 +1,11 @@
 package com.garthskidstuff.shrines.Game;
 
+import android.support.v4.util.Pair;
+
 import com.google.gson.Gson;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by garthupshaw1 on 5/10/17.
@@ -8,6 +13,8 @@ import com.google.gson.Gson;
  */
 
 public class Shrine  {
+    private static final String TAG = "Shrine";
+
     private final String name;
 
     final static int PARTS_MULTIPLIER = 1000;
@@ -47,6 +54,17 @@ public class Shrine  {
     private int numCargoGold;
 
     private int numCargoAltar;
+
+    enum ShipType {
+        SCOUT,
+        FIGHTER,
+        CARGO_EMPTY,
+        CARGO_GOLD,
+        CARGO_WORKER,
+        CARGO_ALTAR,
+    }
+    // Map "<destinationName>, <ShipType>" --> number of ships
+    private Map<String, Integer> movementMap = new HashMap<>();
 
     enum Order {
         MINE,
@@ -308,7 +326,31 @@ public class Shrine  {
             case UNLOAD_CARGO_ALTAR:
                 success = loadUnloadCargoAltar(-num);
                 break;
+
+            default:
+//                Log.d(TAG, "Unknown Order: " + order.toString());
+                break;
         }
+        if (!success) {
+            restore(savedState);
+        }
+    }
+
+    public void doMoveOrder(ShipType type, int num, String destinationName) {
+        int numParts = num * PARTS_MULTIPLIER;
+        String savedState = makeSavedState();
+        boolean success = true;
+        switch (type) {
+            case SCOUT:
+                numScoutParts -= numParts;
+                success = (numScoutParts >= 0);
+                break;
+        }
+
+        String key = destinationName + "," + type;
+        Integer curNum = movementMap.get(key);
+        movementMap.put(key, (null == curNum) ? num : curNum + num);
+
         if (!success) {
             restore(savedState);
         }
@@ -384,7 +426,9 @@ public class Shrine  {
         if (numCargoGold != shrine.numCargoGold) return false;
         if (numCargoAltar != shrine.numCargoAltar) return false;
         if (!name.equals(shrine.name)) return false;
-        return imageId.equals(shrine.imageId);
+        if (!imageId.equals(shrine.imageId)) return false;
+        return movementMap.equals(shrine.movementMap);
+
     }
 
     @Override
@@ -405,6 +449,7 @@ public class Shrine  {
         result = 31 * result + numCargoWorker;
         result = 31 * result + numCargoGold;
         result = 31 * result + numCargoAltar;
+        result = 31 * result + movementMap.hashCode();
         return result;
     }
 
@@ -424,6 +469,7 @@ public class Shrine  {
         numCargoWorker = other.numCargoWorker;
         numCargoGold = other.numCargoGold;
         numCargoAltar = other.numCargoAltar;
+        movementMap = new HashMap<>(other.movementMap);
     }
 
     /**
@@ -444,6 +490,10 @@ public class Shrine  {
         numCargoWorker = 12;
         numCargoGold = 13;
         numCargoAltar = 14;
+        int idx = 15;
+        for (ShipType type : ShipType.values()) {
+            movementMap.put("foobar" + "," + type, idx++);
+        }
     }
 
     @Override
@@ -465,6 +515,7 @@ public class Shrine  {
                 ", numCargoWorker=" + numCargoWorker +
                 ", numCargoGold=" + numCargoGold +
                 ", numCargoAltar=" + numCargoAltar +
+                ", movementMap=" + movementMap +
                 '}';
     }
 
