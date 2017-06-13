@@ -1,5 +1,7 @@
 package com.garthskidstuff.shrines.Game;
 
+import com.google.gson.Gson;
+
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -15,5 +17,16 @@ import static org.junit.Assert.assertThat;
  * Created by garthupshaw1 on 5/22/17.
  */
 public class ShrineTest {
+
+    @Test
+    public void serialize_toJsonAndBack() {
+        Gson gson = new Gson();
+        Shrine shrine = new Shrine("name", "imageId");
+        shrine.initBasic(100, 10, 10);
+        String json = gson.toJson(shrine);
+        Shrine newShrine = gson.fromJson(json, Shrine.class);
+
+        assertThat(newShrine, is(shrine));
+    }
 
 }

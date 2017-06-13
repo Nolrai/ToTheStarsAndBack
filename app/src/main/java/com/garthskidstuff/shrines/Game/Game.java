@@ -1,7 +1,5 @@
 package com.garthskidstuff.shrines.Game;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -15,21 +13,90 @@ import java.util.Set;
 
 @SuppressWarnings("WeakerAccess")
 public class Game {
-    private static final int minShrines = 40;
-    private static final int maxShrines = 100;
-    private static final int minConnections = 3;
-    private static final int maxConnections = 5;
-    private static final int minMaxPopulation = 5; // The max size pop can grow is between min/max
-    private static final int maxMaxPopulation = 40;
 
-    final Shrine[] homes = {null, null};
-    @SuppressWarnings("FieldCanBeLocal")
-    private final List<Shrine> shrines = new ArrayList<>();
-    private final Random random;
-    @SuppressWarnings("FieldCanBeLocal")
-    private final int minHomeDistance = 5;
-    @SuppressWarnings("FieldCanBeLocal")
-    private final int maxHomeDistance = 6;
+    public static class Constants {
+        public int minShrines = 40;
+        public int maxShrines = 100;
+        public int minConnections = 3;
+        public int maxConnections = 5;
+        public int minMaxPopulation = 5; // The max size pop can grow is between min/max
+        public int maxMaxPopulation = 40;
+        public int minMiningRateParts = 100; // Amount of gold a single worker can mine (in Shrine.PARTS_MULTIPLIER units)
+        public int maxMiningRateParts = 1000;
+        public int miningDegradationRateParts = 1; // amount mining rate goes down each time a worker mines
+        
+        public int homeMaxPopulation = 100;
+        public int homeMiningRateParts = 100;
+        public int homeNumAlters = 10;
+        public int homeNumGold = 30;
+        public int homeNumWorkers = 50;
+        
+        @SuppressWarnings("FieldCanBeLocal")
+        public int minHomeDistance = 3;
+        @SuppressWarnings("FieldCanBeLocal")
+        public int maxHomeDistance = 6;
+        public long seed = -1;
+
+        public Constants(long seed) {
+            this.seed = seed;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Constants constants = (Constants) o;
+
+            if (minShrines != constants.minShrines) return false;
+            if (maxShrines != constants.maxShrines) return false;
+            if (minConnections != constants.minConnections) return false;
+            if (maxConnections != constants.maxConnections) return false;
+            if (minMaxPopulation != constants.minMaxPopulation) return false;
+            if (maxMaxPopulation != constants.maxMaxPopulation) return false;
+            if (minMiningRateParts != constants.minMiningRateParts) return false;
+            if (maxMiningRateParts != constants.maxMiningRateParts) return false;
+            if (miningDegradationRateParts != constants.miningDegradationRateParts) return false;
+            if (homeMaxPopulation != constants.homeMaxPopulation) return false;
+            if (homeMiningRateParts != constants.homeMiningRateParts) return false;
+            if (homeNumAlters != constants.homeNumAlters) return false;
+            if (homeNumGold != constants.homeNumGold) return false;
+            if (homeNumWorkers != constants.homeNumWorkers) return false;
+            if (minHomeDistance != constants.minHomeDistance) return false;
+            //noinspection SimplifiableIfStatement
+            if (maxHomeDistance != constants.maxHomeDistance) return false;
+            return seed == constants.seed;
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = minShrines;
+            result = 31 * result + maxShrines;
+            result = 31 * result + minConnections;
+            result = 31 * result + maxConnections;
+            result = 31 * result + minMaxPopulation;
+            result = 31 * result + maxMaxPopulation;
+            result = 31 * result + minMiningRateParts;
+            result = 31 * result + maxMiningRateParts;
+            result = 31 * result + miningDegradationRateParts;
+            result = 31 * result + homeMaxPopulation;
+            result = 31 * result + homeMiningRateParts;
+            result = 31 * result + homeNumAlters;
+            result = 31 * result + homeNumGold;
+            result = 31 * result + homeNumWorkers;
+            result = 31 * result + minHomeDistance;
+            result = 31 * result + maxHomeDistance;
+            result = 31 * result + (int) (seed ^ (seed >>> 32));
+            return result;
+        }
+    }
+    
+    final Constants constants;
+    final List<String> homeNames;
+    World world;
+
+    private volatile Random random;
 
     /**
      * This constructor is the one called by the actual app
@@ -38,7 +105,7 @@ public class Game {
      * @param imageList A list of image ids for the shrines.
      */
     public Game(List<String> nameList, List<String> imageList) {
-        this(nameList, imageList, new Random());
+        this(nameList, imageList, new Constants(-1));
     }
 
     /**
@@ -50,37 +117,39 @@ public class Game {
      *
      * @param nameList  A list of names for shrines.
      * @param imageList A list of image ids for the shrines.
-     * @param random_   The RNG used by the whole game, it's a parameter so that a test harness can save/print/reuse the seed of the RNG.
      */
-    public Game(List<String> nameList, List<String> imageList, Random random_) {
-        random = random_;
-        int numShrines = roll(minShrines, maxShrines);
+    public Game(List<String> nameList, List<String> imageList, Constants constants) {
+        this.constants = constants;
+        random = (-1 == constants.seed) ? new Random() : new Random(constants.seed);
+        int numShrines = roll(constants.minShrines, constants.maxShrines);
         Shuffled<String> namesShuffled = new Shuffled<>(nameList);
         Shuffled<String> imagesShuffled = new Shuffled<>(imageList);
 
+        List<Shrine> shrines = new ArrayList<>();
         for (int i = 0; i < numShrines; i++) {
-            Shrine shrine = new Shrine(namesShuffled.next(), imagesShuffled.next(), roll(minMaxPopulation, maxMaxPopulation));
+            Shrine shrine = new Shrine(namesShuffled.next(), imagesShuffled.next());
             shrines.add(shrine);
         }
 
-        World world = new World();
+        world = new World();
 
         // Create the directed graph of Connections.
-        boolean validGraph = false;
+        boolean validGraph; // = false by default
+        List<String> candidates = null;
         do {
             world.clear();
 
             //generate raw web
             for (Shrine shrine : shrines) {
-                int numConnections = roll(minConnections, maxConnections);
-                List<Shrine> connections = new ArrayList<>();
+                int numConnections = roll(constants.minConnections, constants.maxConnections);
+                List<String> connections = new ArrayList<>();
                 do {
-                    Shrine newConnection = shrines.get(roll(0, numShrines - 1));
+                    String newConnection = shrines.get(roll(0, numShrines - 1)).getName();
                     //  our graph is a simply connected graph. So at most one edge A to B, and no
                     //      edges A to A
                     //  I.E. all connections from the same shrine
                     //      must go to distinct shrines that aren't the origin shrine.
-                    if (!connections.contains(newConnection) && (newConnection != shrine)) {
+                    if (!connections.contains(newConnection) && !Utils.equals(newConnection, shrine.getName())) {
                         connections.add(newConnection);
                     }
                 } while (connections.size() < numConnections);
@@ -88,38 +157,56 @@ public class Game {
                 // Add connections to World
                 world.addShrine(shrine, connections);
             }
-   
+
             // Validate the web just created above.
-//            final int maxDistance = maxHomeDistance;
-//            final int minDistance = minHomeDistance;
-//            List<Shrine> connected = world.get(shrines.get(0));
-//            if (connected.size() >= minShrines) {
-//                //This will usually only do one iteration
-//                // But there might be no valid candidates.
-//                for (Shrine playerHome : connected) {
-//                    homes[0] = playerHome;
-//                    Set<Shrine> candidates = playerHome.getNtoMthNeighbors(minDistance, maxDistance);
-//                    for (Shrine candidate : candidates) {
-//                        boolean goodCandidate = (candidate.getConnections().size() == playerHome.getConnections().size()) &&
-//                                (candidate.getNtoMthNeighbors(minDistance, maxDistance).contains(playerHome));
-//                        if (!goodCandidate) {
-//                            candidates.remove(candidate);
-//                        }
-//                    }
-//                    int size = candidates.size();
-//                    if (size != 0) {
-//                        List<Shrine> candidateList = new ArrayList<>();
-//                        candidateList.addAll(candidates);
-//                        homes[1] = candidateList.get(roll(0, size - 1));
-//                        //We have gotten through all the checks and the web has what we need.
-//                        validGraph = true;
-//                    }
-//                }
-//            }
+            validGraph = world.isCompletelyConnected();
+            if (validGraph) {
+                candidates = findHomeWorlds(world);
+                validGraph = null != candidates;
+            }
         } while (!validGraph);
+        homeNames = candidates;
+
+        // Init all the default shrine values
+        for (Shrine shrine : world.getShrines()) {
+            int maxPopulation = roll(constants.minMaxPopulation, constants.maxMaxPopulation);
+            int miningRateParts = roll(constants.minMiningRateParts, constants.maxMiningRateParts);
+            int miningDegradationRateParts = constants.miningDegradationRateParts;
+            shrine.initBasic(maxPopulation, miningRateParts, miningDegradationRateParts);
+        }
+
+        // Init the home worlds
+        for (String name : homeNames) {
+            Shrine shrine = world.getShrine(name);
+            shrine.initHome(constants.homeMaxPopulation, constants.homeMiningRateParts, constants.miningDegradationRateParts,
+                    constants.homeNumWorkers, constants.homeNumAlters, constants.homeNumGold);
+        }
+
     }
 
-    public static Game mkTestGame() {
+    private List<String> findHomeWorlds(World world) {
+        for (String home0 : world.getShrineNames()) {
+            for (String home1 : world.getShrineNames()) {
+                if (!Utils.equals(home0, home1) && (world.getConnections(home0).size() == world.getConnections(home1).size())) {
+                    Set<List<String>> from0to1 = world.getPaths(world.getShrineNames(), home0, home1, World.FindPathSettings.useAllShortest());
+                    Set<List<String>> from1to0 = world.getPaths(world.getShrineNames(), home1, home0, World.FindPathSettings.useAllShortest());
+                    List<List<String>> sorted0to1 = world.sortPaths(from0to1);
+                    List<List<String>> sorted1to0 = world.sortPaths(from1to0);
+                    int length0to1 = sorted0to1.get(0).size();
+                    int length1to0 = sorted1to0.get(0).size();
+                    if ((length0to1 == length1to0) && (length0to1 >= constants.minHomeDistance) && (length0to1 <= constants.maxHomeDistance)) {
+                        List<String> homes = new ArrayList<>();
+                        homes.add(home0);
+                        homes.add(home1);
+                        return homes;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public static Game mkTestGame(Constants constants) {
         List<String> names = new ArrayList<>();
         List<String> images = new ArrayList<>();
         for (int i = 0; i < 150; i++) {
@@ -129,14 +216,12 @@ public class Game {
             names.add(name);
             images.add(imageID);
         }
-        long seed = System.currentTimeMillis();
-        Random random = new Random(seed);
-        Log.d("MainActivity", "random seed = " + seed);
-        return new Game(names, images, random);
+//        Utils.Logd("MainActivity", "random seed = " + seed);
+        return new Game(names, images, constants);
     }
 
     public int roll(int min, int max) {
-        return random.nextInt(max - min) + min;
+        return random.nextInt(max - min + 1) + min;
     }
 
     /**
@@ -166,8 +251,8 @@ public class Game {
         }
 
         /**
-         * Do we have any indexes we haven't already used in next()?
-         *
+         * As long as the innerList isn't empty then we can run Next.
+         * (_Which_ item is next is decided in next().)
          * @return can we run next safely.
          */
         @Override
@@ -176,19 +261,19 @@ public class Game {
         }
 
         /**
-         * Fetches a remaining item randomly.
+         * Randomly fetches a remaining item.
          *
-         * @return the random element from oldList.
+         * @return the randomly selected element.
          */
         @Override
         public T next() {
-            now = roll(0, innerList.size());
+            now = roll(0, innerList.size() - 1);
             innerList.remove(now);
             return oldList.get(now);
         }
 
         /**
-         * Not used yet. This removes the item at now (i.e the item returned by the most recent next)
+         * Not yet used. This removes the item at now (i.e the item returned by the most recent next)
          * from the original list.
          */
         @Override
@@ -201,5 +286,27 @@ public class Game {
             }
             oldList.remove(now);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Game game = (Game) o;
+
+        if (!constants.equals(game.constants)) return false;
+        //noinspection SimplifiableIfStatement
+        if (!homeNames.equals(game.homeNames)) return false;
+        return world.equals(game.world);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = constants.hashCode();
+        result = 31 * result + homeNames.hashCode();
+        result = 31 * result + world.hashCode();
+        return result;
     }
 }

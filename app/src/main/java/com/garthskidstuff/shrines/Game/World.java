@@ -1,10 +1,12 @@
 package com.garthskidstuff.shrines.Game;
 
+import android.support.v4.util.Pair;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,107 +16,169 @@ import java.util.Set;
  * Map of all Shrines in the world: Shrine -> connections + convenience functions
  */
 
-public class World {
-    private Map<Shrine, List<Shrine>> shrineMap = new HashMap<>();
+class World {
+    private Map<String, List<String>> connectionMap = new HashMap<>(); // shrine name --> its children's names
+    private Map<String, Shrine> shrineMap = new HashMap<>(); // shrine name -> shrine object
 
-    public void addShrine(Shrine shrine, List<Shrine> connections) {
-        shrineMap.put(shrine, connections);
+    public Collection<Shrine> getShrines() {
+        return shrineMap.values();
     }
 
-    public List<Shrine> get(Shrine shrine) {
-        return shrineMap.get(shrine);
-    }
 
-    public void clear() {
-        shrineMap.clear();
-    }
+    enum FindPathType { USE_ALL_SHORTEST, USE_MAX_DEPTH }
+    static class FindPathSettings {
+        FindPathType findPathType;
+        int depth = -1;
 
-    public Set<List<Shrine>> getPaths(Set<Shrine> knownShrines, Shrine start, Shrine end) {
-        Paths paths = new Paths(start, end);
-        makePathsTo(knownShrines, start, paths);
-        return paths.makeSetOfPathsFrom(start, end);
-    }
+        static FindPathSettings useAllShortest() {
+            FindPathSettings findPathSettings = new FindPathSettings();
+            findPathSettings.findPathType = FindPathType.USE_ALL_SHORTEST;
+            return findPathSettings;
+        }
 
-    private void makePathsTo(Set<Shrine> knownShrines, Shrine start, Paths paths) {
-        if (null == paths.get(start)) {
-            List<Shrine> connections = get(start);
-            if (null != connections) {
-                List<Shrine> pathConnections = new ArrayList<Shrine>();
-                for (Shrine shrine : connections) {
-                    if (knownShrines.contains(shrine)) {
-                        pathConnections.add(shrine);
-                    }
-                }
-                paths.put(start, pathConnections);
-                for (Shrine shrine : pathConnections) {
-                    if (shrine != paths.end) {
-                        makePathsTo(knownShrines, shrine, paths);
-                    }
-                }
-            }
+        static FindPathSettings useMaxDepth(int depth) {
+            FindPathSettings findPathSettings = new FindPathSettings();
+            findPathSettings.findPathType = FindPathType.USE_MAX_DEPTH;
+            findPathSettings.depth = depth;
+            return findPathSettings;
         }
     }
 
-    public static Comparator<List<Shrine>> SORT_SHORTEST_FIRST = new Comparator<List<Shrine>>() {
+    void addShrine(Shrine shrine, List<String> connectionNames) {
+        connectionMap.put(shrine.getName(), connectionNames);
+        shrineMap.put(shrine.getName(), shrine);
+     }
+
+    void addShrine(Shrine shrine) {
+        connectionMap.put(shrine.getName(), new ArrayList<String>());
+    }
+
+    List<String> getConnections(String shrineName) {
+        return connectionMap.get(shrineName);
+    }
+
+    Shrine getShrine(String shrineName) {
+        return shrineMap.get(shrineName);
+    }
+
+    List<Shrine> getShrines(List<String> shrineNames) {
+        List<Shrine> shrines = new ArrayList<>();
+        for (String name : shrineNames) {
+            shrines.add(getShrine(name));
+        }
+        return shrines;
+    }
+
+    void clear() {
+        connectionMap.clear();
+    }
+
+    Set<List<String>> getPaths(String startName, String endName) {
+        return getPaths(connectionMap.keySet(), startName, endName, FindPathSettings.useAllShortest());
+    }
+
+    Set<List<String>> getPaths(Set<String> knownShrines, String startName, String endName) {
+        return getPaths(knownShrines, startName, endName, FindPathSettings.useAllShortest());
+    }
+
+    Set<List<String>> getPaths(String startName, String endName, FindPathSettings findPathSettings) {
+        return getPaths(connectionMap.keySet(), startName, endName, findPathSettings);
+    }
+
+    Set<List<String>> getPaths(Set<String> knownShrines, String startName, String endName, FindPathSettings findPathSettings) {
+        Paths paths = makePathsTo(knownShrines, startName, endName, findPathSettings);
+        return paths.makeSetOfPathsFrom();
+    }
+
+    private Paths makePathsTo(Set<String> knownShrines, String start, String end, FindPathSettings findPathSettings) {
+        Paths paths = new Paths(start, end);
+        List<Pair<Integer, String>> q = new ArrayList<>();
+        q.add(new Pair<>(0, paths.startName));
+
+        //noinspection WhileLoopReplaceableByForEach
+        for (int i = 0; i < q.size(); i++) {
+            Pair<Integer, String> item = q.get(i);
+            if (null == paths.get(item.second)) {
+                List<String> connections = getConnections(item.second);
+                if ((null != connections) &&
+                        ((FindPathType.USE_ALL_SHORTEST == findPathSettings.findPathType) ||
+                                (item.first < findPathSettings.depth))) {
+                    List<String> pathConnections = new ArrayList<>();
+                    for (String shrineName : connections) {
+                        if (knownShrines.contains(shrineName)) {
+                            pathConnections.add(shrineName);
+                        }
+                    }
+                    paths.put(item.second, pathConnections);
+                    for (String shrineName : pathConnections) {
+                        q.add(new Pair<>(item.first + 1, shrineName));
+                    }
+                }
+                if ((FindPathType.USE_ALL_SHORTEST == findPathSettings.findPathType) &&
+                        (Utils.equals(item.second, paths.endName))) {
+                    findPathSettings.findPathType = FindPathType.USE_MAX_DEPTH;
+                    findPathSettings.depth = item.first;
+                    paths.shortestLength = item.first;
+                }
+            }
+        }
+        return paths;
+    }
+
+    static Comparator<List<String>> SORT_SHORTEST_FIRST = new Comparator<List<String>>() {
         @Override
-        public int compare(List<Shrine> lhs, List<Shrine> rhs) {
+        public int compare(List<String> lhs, List<String> rhs) {
             Integer lhsSize = lhs.size();
             Integer rhsSize = rhs.size();
             return lhsSize.compareTo(rhsSize);
         }
     };
 
-    public static Comparator<List<Shrine>> SORT_BY_POPULATION = new Comparator<List<Shrine>>() {
-        @Override
-        public int compare(List<Shrine> lhs, List<Shrine> rhs) {
-            Integer lhsSize = 0;
-            for (Shrine shrine : lhs) {
-                lhsSize += shrine.getNumWorkers();
-            }
-            Integer rhsSize = 0;
-            for (Shrine shrine : rhs) {
-                rhsSize += shrine.getNumWorkers();
-            }
-            return lhsSize.compareTo(rhsSize);
-        }
-    };
-
-    public static List<List<Shrine>> sortPaths(Set<List<Shrine>> allPaths) {
+    List<List<String>> sortPaths(Set<List<String>> allPaths) {
         return sortPaths(allPaths, SORT_SHORTEST_FIRST);
     }
 
-    public static List<List<Shrine>> sortPaths(Set<List<Shrine>> allPaths, Comparator<List<Shrine>> comparator) {
-        List<List<Shrine>> sortedPaths = new ArrayList<>();
-
-        for (List<Shrine> path : allPaths) {
-            sortedPaths.add(path);
-        }
-
+    List<List<String>> sortPaths(Set<List<String>> allPaths, Comparator<List<String>> comparator) {
+        List<List<String>> sortedPaths = new ArrayList<>();
+        sortedPaths.addAll(allPaths);
         Collections.sort(sortedPaths, comparator);
-
         return sortedPaths;
     }
 
-    public boolean isCompletelyConnected() {
+    boolean isCompletelyConnected() {
         boolean connected = true;
-        Set<Shrine> knownShrines = new HashSet<>();
-        knownShrines.addAll(shrineMap.keySet());
-
-        for (Shrine shrine : shrineMap.keySet()) {
-            Set<Shrine> included = new HashSet<>();
-            Paths paths = new Paths(shrine, null);
-            makePathsTo(knownShrines, shrine, paths);
-            if (paths.map.keySet().size() != knownShrines.size()) {
+        for (String shrineName : connectionMap.keySet()) {
+            Paths paths = makePathsTo(connectionMap.keySet(), shrineName, null, FindPathSettings.useMaxDepth(Integer.MAX_VALUE));
+            if (paths.map.keySet().size() != connectionMap.size()) {
                 connected = false;
                 break;
             }
-
         }
 
         return connected;
     }
 
-    private Set<List<Shrine>> getAllPathsFrom (Shrine start) {
-        return null;
+    Set<String> getShrineNames() {
+        return connectionMap.keySet();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        World world = (World) o;
+
+        //noinspection SimplifiableIfStatement
+        if (!connectionMap.equals(world.connectionMap)) return false;
+        return shrineMap.equals(world.shrineMap);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = connectionMap.hashCode();
+        result = 31 * result + shrineMap.hashCode();
+        return result;
     }
 }
