@@ -5,9 +5,7 @@ import android.support.v4.util.Pair;
 import com.google.gson.Gson;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by garthupshaw1 on 5/10/17.
@@ -222,14 +220,6 @@ public class Shrine  {
         this.numCargoAltar = numCargoAltar;
     }
 
-    public Map<String, Integer> getMovementMap() {
-        return movementMap;
-    }
-
-    public void setMovementMap(Map<String, Integer> movementMap) {
-        this.movementMap = movementMap;
-    }
-
     // The following are convenience functions to get/set whole integer values
     public int getNumGold() {
         return numGoldParts / PARTS_MULTIPLIER;
@@ -261,14 +251,6 @@ public class Shrine  {
 
     public void setNumScout(int num) {
         numScoutParts = num * PARTS_MULTIPLIER;
-    }
-
-    public int getNumFighter() {
-        return numFighterParts / PARTS_MULTIPLIER;
-    }
-
-    public void setNumFighter(int num) {
-        numFighterParts = num * PARTS_MULTIPLIER;
     }
 
     public int getNumCargoEmpty() {
@@ -354,7 +336,7 @@ public class Shrine  {
         }
     }
 
-    public void doMoveOrder(String destinationName, ShipType type, int num) {
+    public void doMoveOrder(ShipType type, int num, String destinationName) {
         int numParts = num * PARTS_MULTIPLIER;
         String savedState = makeSavedState();
         boolean success = true;
@@ -363,29 +345,9 @@ public class Shrine  {
                 numScoutParts -= numParts;
                 success = (numScoutParts >= 0);
                 break;
-            case FIGHTER:
-                numFighterParts -= numParts;
-                success = (numFighterParts >= 0);
-                break;
-            case CARGO_EMPTY:
-                numCargoEmptyParts -= numParts;
-                success = (numCargoEmptyParts >= 0);
-                break;
-            case CARGO_GOLD:
-                numCargoGold -= num;
-                success = (numCargoGold >= 0);
-                break;
-            case CARGO_ALTAR:
-                numCargoAltar -= num;
-                success = (numCargoAltar >= 0);
-                break;
-            case CARGO_WORKER:
-                numCargoWorker -= num;
-                success = (numCargoWorker >= 0);
-                break;
         }
 
-        String key = nameAndShipTypeToString(destinationName, type);
+        String key = destinationName + "," + type;
         Integer curNum = movementMap.get(key);
         movementMap.put(key, (null == curNum) ? num : curNum + num);
 
@@ -530,7 +492,7 @@ public class Shrine  {
         numCargoAltar = 14;
         int idx = 15;
         for (ShipType type : ShipType.values()) {
-            movementMap.put(nameAndShipTypeToString("foobar", type), idx++);
+            movementMap.put("foobar" + "," + type, idx++);
         }
     }
 
@@ -557,25 +519,5 @@ public class Shrine  {
                 '}';
     }
 
-    Map<Pair<String, ShipType>, Integer> getConvertedMovementMap() {
-        Map<Pair<String, ShipType>, Integer> map = new HashMap<>();
-
-        for (String key : movementMap.keySet()) {
-            Pair<String, ShipType> pair = stringToNameAndShipType(key);
-            map.put(pair, movementMap.get(key));
-        }
-
-        return map;
-    }
-
-    private String nameAndShipTypeToString(String name, ShipType type) {
-        return name + "," + type;
-    }
-
-    private Pair<String, ShipType> stringToNameAndShipType(String s) {
-        String[] parts = s.split(",");
-        Pair<String, ShipType> pair = new Pair<>(parts[0], ShipType.valueOf(parts[1]));
-        return pair;
-    }
 
 }
