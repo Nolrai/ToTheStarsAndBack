@@ -2,6 +2,8 @@ package com.garthskidstuff.shrines.Game;
 
 import android.support.v4.util.Pair;
 
+import com.garthskidstuff.shrines.Game.Shrine.*;
+
 import com.google.gson.Gson;
 
 import org.junit.Test;
@@ -34,7 +36,7 @@ public class ShrineTest {
     @Test
     public void doOrder_mineNotEnoughWorkers() {
         Shrine shrine = makeBasicShrine("name", "imageId");
-        shrine.doOrder(Shrine.Order.MINE, 10);
+        shrine.doOrder(Order.MINE, 10);
 
         assertThat(shrine.getNumGold(), is(0));
     }
@@ -43,7 +45,7 @@ public class ShrineTest {
     public void doOrder_mine1Success() {
         Shrine shrine = makeBasicShrine("name", "imageId");
         shrine.setNumWorker(1);
-        shrine.doOrder(Shrine.Order.MINE, 1);
+        shrine.doOrder(Order.MINE, 1);
 
         assertThat(shrine.getNumGoldParts(), is(miningRateParts));
         assertThat(shrine.getMiningRateParts(), is(miningRateParts - miningDegradationRateParts));
@@ -53,217 +55,217 @@ public class ShrineTest {
 
     @Test
     public void doOrder_buildScoutSuccess() {
-        testBuildSuccess(Shrine.Order.BUILD_SCOUT);
+        testBuildSuccess(Order.BUILD_SCOUT);
     }
 
     @Test
     public void doOrder_buildScoutFailWorker() {
-        testBuildFailWorker(Shrine.Order.BUILD_SCOUT);
+        testBuildFailWorker(Order.BUILD_SCOUT);
     }
 
     @Test
     public void doOrder_buildScoutFailGold() {
-        testBuildFailGold(Shrine.Order.BUILD_SCOUT);
+        testBuildFailGold(Order.BUILD_SCOUT);
     }
 
     @Test
     public void doOrder_buildScoutFailAltar() {
-        testBuildFailAltar(Shrine.Order.BUILD_SCOUT);
+        testBuildFailAltar(Order.BUILD_SCOUT);
     }
 
     @Test
     public void doOrder_buildCargoSuccess() {
-        testBuildSuccess(Shrine.Order.BUILD_CARGO);
+        testBuildSuccess(Order.BUILD_CARGO);
     }
 
     @Test
     public void doOrder_buildCargoFailWorker() {
-        testBuildFailWorker(Shrine.Order.BUILD_CARGO);
+        testBuildFailWorker(Order.BUILD_CARGO);
     }
 
     @Test
     public void doOrder_buildCargoFailGold() {
-        testBuildFailGold(Shrine.Order.BUILD_CARGO);
+        testBuildFailGold(Order.BUILD_CARGO);
     }
 
     @Test
     public void doOrder_buildCargoFailAltar() {
-        testBuildFailAltar(Shrine.Order.BUILD_CARGO);
+        testBuildFailAltar(Order.BUILD_CARGO);
     }
 
     @Test
     public void doOrder_buildFighterSuccess() {
-        testBuildSuccess(Shrine.Order.BUILD_FIGHTER);
+        testBuildSuccess(Order.BUILD_FIGHTER);
     }
 
     @Test
     public void doOrder_buildFighterFailWorker() {
-        testBuildFailWorker(Shrine.Order.BUILD_FIGHTER);
+        testBuildFailWorker(Order.BUILD_FIGHTER);
     }
 
     @Test
     public void doOrder_buildFighterFailGold() {
-        testBuildFailGold(Shrine.Order.BUILD_FIGHTER);
+        testBuildFailGold(Order.BUILD_FIGHTER);
     }
 
     @Test
     public void doOrder_buildFighterFailAltar() {
-        testBuildFailAltar(Shrine.Order.BUILD_FIGHTER);
+        testBuildFailAltar(Order.BUILD_FIGHTER);
     }
 
     @Test
     public void doOrder_buildAltarSuccess() {
-        testBuildSuccess(Shrine.Order.BUILD_ALTAR);
+        testBuildSuccess(Order.BUILD_ALTAR);
     }
 
     @Test
     public void doOrder_buildAltarFailWorker() {
-        testBuildFailWorker(Shrine.Order.BUILD_ALTAR);
+        testBuildFailWorker(Order.BUILD_ALTAR);
     }
 
     @Test
     public void doOrder_buildAltarFailGold() {
-        testBuildFailGold(Shrine.Order.BUILD_ALTAR);
+        testBuildFailGold(Order.BUILD_ALTAR);
     }
 
     @Test
     public void doOrder_buildAltarFailAltar() {
-        testBuildFailAltar(Shrine.Order.BUILD_ALTAR);
+        testBuildFailAltar(Order.BUILD_ALTAR);
     }
 
     @Test
     public void doOrder_loadGoldSuccess() {
-        testLoadSuccess(Shrine.Order.LOAD_CARGO_GOLD);
+        testLoadSuccess(Order.LOAD_CARGO_GOLD);
     }
 
     @Test
     public void doOrder_loadGoldFailGold() {
-        testLoadFailResource(Shrine.Order.LOAD_CARGO_GOLD);
+        testLoadFailResource(Order.LOAD_CARGO_GOLD);
     }
 
     @Test
     public void doOrder_loadGoldFailCargoEmpty() {
-        testLoadFailCargo(Shrine.Order.LOAD_CARGO_GOLD);
+        testLoadFailCargo(Order.LOAD_CARGO_GOLD);
     }
 
     @Test
     public void doOrder_loadAltarSuccess() {
-        testLoadSuccess(Shrine.Order.LOAD_CARGO_ALTAR);
+        testLoadSuccess(Order.LOAD_CARGO_ALTAR);
     }
 
     @Test
     public void doOrder_loadAltarFailAltar() {
-        testLoadFailResource(Shrine.Order.LOAD_CARGO_ALTAR);
+        testLoadFailResource(Order.LOAD_CARGO_ALTAR);
     }
 
     @Test
     public void doOrder_loadAltarFailCargoEmpty() {
-        testLoadFailCargo(Shrine.Order.LOAD_CARGO_ALTAR);
+        testLoadFailCargo(Order.LOAD_CARGO_ALTAR);
     }
 
     @Test
     public void doOrder_loadWorkerSuccess() {
-        testLoadSuccess(Shrine.Order.LOAD_CARGO_WORKER);
+        testLoadSuccess(Order.LOAD_CARGO_WORKER);
     }
 
     @Test
     public void doOrder_loadWorkerFailWorker() {
-        testLoadFailResource(Shrine.Order.LOAD_CARGO_WORKER);
+        testLoadFailResource(Order.LOAD_CARGO_WORKER);
     }
 
     @Test
     public void doOrder_loadWorkerFailCargoEmpty() {
-        testLoadFailCargo(Shrine.Order.LOAD_CARGO_WORKER);
+        testLoadFailCargo(Order.LOAD_CARGO_WORKER);
     }
 
     @Test
     public void doOrder_unloadGoldSuccess() {
-        testUnloadSuccess(Shrine.Order.UNLOAD_CARGO_GOLD);
+        testUnloadSuccess(Order.UNLOAD_CARGO_GOLD);
     }
 
     @Test
     public void doOrder_unloadGoldFailCargo() {
-        testUnloadFailCargo(Shrine.Order.UNLOAD_CARGO_GOLD);
+        testUnloadFailCargo(Order.UNLOAD_CARGO_GOLD);
     }
 
     @Test
     public void doOrder_unloadAltarSuccess() {
-        testUnloadSuccess(Shrine.Order.UNLOAD_CARGO_ALTAR);
+        testUnloadSuccess(Order.UNLOAD_CARGO_ALTAR);
     }
 
     @Test
     public void doOrder_unloadAltarFailCargo() {
-        testUnloadFailCargo(Shrine.Order.UNLOAD_CARGO_ALTAR);
+        testUnloadFailCargo(Order.UNLOAD_CARGO_ALTAR);
     }
 
     @Test
     public void doOrder_unloadWorkerSuccess() {
-        testUnloadSuccess(Shrine.Order.UNLOAD_CARGO_WORKER);
+        testUnloadSuccess(Order.UNLOAD_CARGO_WORKER);
     }
 
     @Test
     public void doOrder_loadWorkerFailCargo() {
-        testUnloadFailCargo(Shrine.Order.UNLOAD_CARGO_WORKER);
+        testUnloadFailCargo(Order.UNLOAD_CARGO_WORKER);
     }
 
     @Test
     public void doMoveOrder_scoutSuccess() {
-        testMoveOrder(Shrine.ShipType.SCOUT);
+        testMoveOrder(ShipType.SCOUT);
     }
 
     @Test
     public void doMoveOrder_scoutFail() {
-        testMoveOrderFail(Shrine.ShipType.SCOUT);
+        testMoveOrderFail(ShipType.SCOUT);
     }
 
     @Test
     public void doMoveOrder_fighterSuccess() {
-        testMoveOrder(Shrine.ShipType.FIGHTER);
+        testMoveOrder(ShipType.FIGHTER);
     }
 
     @Test
     public void doMoveOrder_fighterFail() {
-        testMoveOrderFail(Shrine.ShipType.FIGHTER);
+        testMoveOrderFail(ShipType.FIGHTER);
     }
 
     @Test
     public void doMoveOrder_cargoEmptySuccess() {
-        testMoveOrder(Shrine.ShipType.CARGO_EMPTY);
+        testMoveOrder(ShipType.CARGO_EMPTY);
     }
 
     @Test
     public void doMoveOrder_cargoEmptyFail() {
-        testMoveOrderFail(Shrine.ShipType.CARGO_EMPTY);
+        testMoveOrderFail(ShipType.CARGO_EMPTY);
     }
 
     @Test
     public void doMoveOrder_cargoGoldSuccess() {
-        testMoveOrder(Shrine.ShipType.CARGO_GOLD);
+        testMoveOrder(ShipType.CARGO_GOLD);
     }
 
     @Test
     public void doMoveOrder_cargoGoldFail() {
-        testMoveOrderFail(Shrine.ShipType.CARGO_GOLD);
+        testMoveOrderFail(ShipType.CARGO_GOLD);
     }
 
     @Test
     public void doMoveOrder_cargoAltarSuccess() {
-        testMoveOrder(Shrine.ShipType.CARGO_ALTAR);
+        testMoveOrder(ShipType.CARGO_ALTAR);
     }
 
     @Test
     public void doMoveOrder_cargoAltarFail() {
-        testMoveOrderFail(Shrine.ShipType.CARGO_ALTAR);
+        testMoveOrderFail(ShipType.CARGO_ALTAR);
     }
 
     @Test
     public void doMoveOrder_cargoWorkerSuccess() {
-        testMoveOrder(Shrine.ShipType.CARGO_WORKER);
+        testMoveOrder(ShipType.CARGO_WORKER);
     }
 
     @Test
     public void doMoveOrder_cargoWorkerFail() {
-        testMoveOrderFail(Shrine.ShipType.CARGO_WORKER);
+        testMoveOrderFail(ShipType.CARGO_WORKER);
     }
 
     @Test
@@ -282,12 +284,12 @@ public class ShrineTest {
     public void doOrder_workerInvariant() {
         int totalWorkers = 1;
 
-        for (Shrine.Order order : Shrine.Order.values()) {
+        for (Order order : Order.values()) {
             Shrine shrine = makeBasicShrine("name", "imageId");
             shrine.setNumWorker(totalWorkers);
             shrine.doOrder(order, totalWorkers);
 
-            assertThat(shrine.getNumWorker() + shrine.getNumUsedWorker() + shrine.getNumCargoWorker(), is(totalWorkers));
+            assertThat(shrine.getNumWorker() + shrine.getNumUsedWorker() + shrine.getNumShip(ShipType.CARGO_WORKER), is(totalWorkers));
         }
     }
 
@@ -303,100 +305,50 @@ public class ShrineTest {
         return copy;
     }
 
-    private void testLoadSuccess(Shrine.Order order) {
+    private void testLoadSuccess(Order order) {
         Shrine shrine = makeBasicShrine("name", "imageId");
-        switch (order) {
-            case LOAD_CARGO_ALTAR:
-                shrine.setNumAltar(1);
-                break;
-            case LOAD_CARGO_GOLD:
-                shrine.setNumGold(1);
-                break;
-            case LOAD_CARGO_WORKER:
-                shrine.setNumWorker(1);
-                break;
-        }
-        shrine.setNumCargoEmpty(1);
+        CargoType cargoType = shrine.getCargoType(order);
+        shrine.setNumCargo(cargoType, 1);
+        shrine.setNumShip(ShipType.CARGO_EMPTY, 1);
         shrine.doOrder(order, 1);
 
-        switch (order) {
-            case LOAD_CARGO_ALTAR:
-                assertThat(shrine.getNumAltar(), is(0));
-                assertThat(shrine.getNumCargoAltar(), is(1));
-                break;
-            case LOAD_CARGO_GOLD:
-                assertThat(shrine.getNumGold(), is(0));
-                assertThat(shrine.getNumCargoGold(), is(1));
-                break;
-            case LOAD_CARGO_WORKER:
-                assertThat(shrine.getNumWorker(), is(0));
-                assertThat(shrine.getNumCargoWorker(), is(1));
-                break;
-        }
-        assertThat(shrine.getNumCargoEmpty(), is(0));
+        assertThat(shrine.getNumCargo(cargoType), is(0));
+        assertThat(shrine.getNumShip(shrine.getCargoShipType(cargoType)), is(1));
+        assertThat(shrine.getNumShip(ShipType.CARGO_EMPTY), is(0));
     }
 
-    private void testLoadFailResource(Shrine.Order order) {
+    private void testLoadFailResource(Order order) {
         Shrine shrine = makeBasicShrine("name", "imageId");
-        shrine.setNumCargoEmpty(1);
+        shrine.setNumShip(ShipType.CARGO_EMPTY, 1);
         Shrine oldShrine = copyShrine(shrine);
         shrine.doOrder(order, 1);
 
         assertThat(shrine, is(oldShrine));
     }
 
-    private void testLoadFailCargo(Shrine.Order order) {
+    private void testLoadFailCargo(Order order) {
         Shrine shrine = makeBasicShrine("name", "imageId");
-        switch (order) {
-            case LOAD_CARGO_ALTAR:
-                shrine.setNumAltar(1);
-                break;
-            case LOAD_CARGO_GOLD:
-                shrine.setNumGold(1);
-                break;
-            case LOAD_CARGO_WORKER:
-                shrine.setNumWorker(1);
-                break;
-        }
+        CargoType cargoType = shrine.getCargoType(order);
+        shrine.setNumCargo(cargoType, 1);
         Shrine oldShrine = copyShrine(shrine);
         shrine.doOrder(order, 1);
 
         assertThat(shrine, is(oldShrine));
     }
 
-    private void testUnloadSuccess(Shrine.Order order) {
+    private void testUnloadSuccess(Order order) {
         Shrine shrine = makeBasicShrine("name", "imageId");
-        switch (order) {
-            case UNLOAD_CARGO_ALTAR:
-                shrine.setNumCargoAltar(1);
-                break;
-            case UNLOAD_CARGO_GOLD:
-                shrine.setNumCargoGold(1);
-                break;
-            case UNLOAD_CARGO_WORKER:
-                shrine.setNumCargoWorker(1);
-                break;
-        }
+        CargoType cargoType = shrine.getCargoType(order);
+        ShipType shipType = shrine.getCargoShipType(cargoType); 
+        shrine.setNumShip(shipType, 1);
         shrine.doOrder(order, 1);
 
-        switch (order) {
-            case UNLOAD_CARGO_ALTAR:
-                assertThat(shrine.getNumAltar(), is(1));
-                assertThat(shrine.getNumCargoAltar(), is(0));
-                break;
-            case UNLOAD_CARGO_GOLD:
-                assertThat(shrine.getNumGold(), is(1));
-                assertThat(shrine.getNumCargoGold(), is(0));
-                break;
-            case UNLOAD_CARGO_WORKER:
-                assertThat(shrine.getNumWorker(), is(1));
-                assertThat(shrine.getNumCargoWorker(), is(0));
-                break;
-        }
-        assertThat(shrine.getNumCargoEmpty(), is(1));
+        assertThat(shrine.getNumCargo(cargoType), is(1));
+        assertThat(shrine.getNumShip(shipType), is(0));
+        assertThat(shrine.getNumShip(ShipType.CARGO_EMPTY), is(1));
     }
 
-    private void testUnloadFailCargo(Shrine.Order order) {
+    private void testUnloadFailCargo(Order order) {
         Shrine shrine = makeBasicShrine("name", "imageId");
         Shrine oldShrine = copyShrine(shrine);
         shrine.doOrder(order, 1);
@@ -404,7 +356,7 @@ public class ShrineTest {
         assertThat(shrine, is(oldShrine));
     }
 
-    private void testBuildSuccess(Shrine.Order order) {
+    private void testBuildSuccess(Order order) {
         Shrine shrine = makeBasicShrine("name", "imageId");
         shrine.setNumWorker(1);
         shrine.setNumGold(1);
@@ -422,18 +374,18 @@ public class ShrineTest {
                 assertThat(shrine.getNumAltarParts(), is(Shrine.PARTS_MULTIPLIER / Shrine.BUILD_ALTAR_COST));
                 break;
             case BUILD_CARGO:
-                assertThat(shrine.getNumCargoEmptyParts(), is(Shrine.PARTS_MULTIPLIER / Shrine.BUILD_CARGO_COST));
+                assertThat(shrine.getNumShipParts(ShipType.CARGO_EMPTY), is(Shrine.PARTS_MULTIPLIER / Shrine.BUILD_CARGO_COST));
                 break;
             case BUILD_SCOUT:
-                assertThat(shrine.getNumScoutParts(), is(Shrine.PARTS_MULTIPLIER / Shrine.BUILD_SCOUT_COST));
+                assertThat(shrine.getNumShipParts(ShipType.SCOUT), is(Shrine.PARTS_MULTIPLIER / Shrine.BUILD_SCOUT_COST));
                 break;
             case BUILD_FIGHTER:
-                assertThat(shrine.getNumFighterParts(), is(Shrine.PARTS_MULTIPLIER / Shrine.BUILD_FIGHTER_COST));
+                assertThat(shrine.getNumShipParts(ShipType.FIGHTER), is(Shrine.PARTS_MULTIPLIER / Shrine.BUILD_FIGHTER_COST));
                 break;
         }
     }
 
-    private void testBuildFailWorker(Shrine.Order order) {
+    private void testBuildFailWorker(Order order) {
         Shrine shrine = makeBasicShrine("name", "imageId");
         shrine.setNumGold(1);
         shrine.setNumAltar(1);
@@ -443,7 +395,7 @@ public class ShrineTest {
         assertThat(shrine, is(oldShrine));
     }
 
-    private void testBuildFailGold(Shrine.Order order) {
+    private void testBuildFailGold(Order order) {
         Shrine shrine = makeBasicShrine("name", "imageId");
         shrine.setNumWorker(1);
         shrine.setNumAltar(1);
@@ -453,7 +405,7 @@ public class ShrineTest {
         assertThat(shrine, is(oldShrine));
     }
 
-    private void testBuildFailAltar(Shrine.Order order) {
+    private void testBuildFailAltar(Order order) {
         Shrine shrine = makeBasicShrine("name", "imageId");
         shrine.setNumWorker(1);
         shrine.setNumGold(1);
@@ -463,48 +415,29 @@ public class ShrineTest {
         assertThat(shrine, is(oldShrine));
     }
 
-    private void testMoveOrder(Shrine.ShipType type) {
+    private void testMoveOrder(ShipType type) {
         int numToMove = 2;
         Shrine shrine = makeBasicShrine("name", "imageId");
-        switch(type) {
-            case SCOUT:
-                shrine.setNumScout(numToMove);
-                break;
-            case FIGHTER:
-                shrine.setNumFighter(numToMove);
-                break;
-            case CARGO_EMPTY:
-                shrine.setNumCargoEmpty(numToMove);
-                break;
-            case CARGO_GOLD:
-                shrine.setNumCargoGold(numToMove);
-                break;
-            case CARGO_ALTAR:
-                shrine.setNumCargoAltar(numToMove);
-                break;
-            case CARGO_WORKER:
-                shrine.setNumCargoWorker(numToMove);
-                break;
-        }
+        shrine.setNumShip(type, numToMove);
         String dest = "destination";
         shrine.doMoveOrder(dest, type, numToMove);
 
-        Map<Pair<String, Shrine.ShipType>, Integer> map = shrine.getConvertedMovementMap();
+        Map<Pair<String, ShipType>, Integer> map = shrine.getConvertedMovementMap();
 
         assertThat(map.size(), is(1));
-        for (Pair<String, Shrine.ShipType> pair : map.keySet()) {
+        for (Pair<String, ShipType> pair : map.keySet()) {
             assertThat(pair.first, is(dest));
             assertThat(pair.second, is(type));
             assertThat(map.get(pair), is(numToMove));
         }
     }
 
-    private void testMoveOrderFail(Shrine.ShipType type) {
+    private void testMoveOrderFail(ShipType type) {
         Shrine shrine = makeBasicShrine("name", "imageId");
         shrine.doMoveOrder("destination", type, 1);
 
         Shrine oldShrine = copyShrine(shrine);
-        Map<Pair<String, Shrine.ShipType>, Integer> map = shrine.getConvertedMovementMap();
+        Map<Pair<String, ShipType>, Integer> map = shrine.getConvertedMovementMap();
 
         assertThat(map.size(), is(0));
         assertThat(shrine, is(oldShrine));
