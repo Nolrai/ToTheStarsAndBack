@@ -423,7 +423,6 @@ public class WorldTest {
         world.addShrine(shrines.get(idx0), Utils.makeConnections(shrines.get(idx1).getName(), shrines.get(idx2).getName()));
         world.addShrine(shrines.get(idx1), Utils.makeConnections(shrines.get(idx3).getName()));
         world.addShrine(shrines.get(idx2), Utils.makeConnections(shrines.get(idx3).getName()));
-        world.addShrine(shrines.get(idx3));
     }
 
     private List<String> makePath(List<Shrine> shrines, int[] indexes) {
