@@ -1,22 +1,22 @@
 package com.garthskidstuff.shrines.Game;
 
+import android.support.annotation.NonNull;
+
 /**
  * Created by garthupshaw1 on 5/10/17.
  * A single node in the World graph
  */
 
-public class Shrine  {
+public class Shrine implements Comparable {
     private final String name;
     
-    final static int PARTS_MULTIPLIER = 1000;
+    private final static int PARTS_MULTIPLIER = 1000;
 
     private final String imageId;
 
     private int maxPopulation; // This is really final, but set in an init call AND is the actual int -- not 100th
 
     private int numWorkersParts;
-
-    private int numUsedWorkersParts;
 
     private int numAltersParts;
 
@@ -35,8 +35,6 @@ public class Shrine  {
     private int numCargoWorkers;
 
     private int numCargoGold;
-
-    enum Order { MINE, BUILD_SCOUT };
 
     public Shrine(String name, String imageId) {
         this.name = name;
@@ -89,22 +87,6 @@ public class Shrine  {
 
     public void setNumWorkers(int numWorkers) {
         this.numWorkersParts = numWorkers * PARTS_MULTIPLIER;
-    }
-
-    public int getNumUsedWorkersParts() {
-        return numUsedWorkersParts;
-    }
-
-    public int getNumUsedWorkers() {
-        return numUsedWorkersParts / PARTS_MULTIPLIER;
-    }
-
-    public void setNumUsedWorkersParts(int numUsedWorkersParts) {
-        this.numUsedWorkersParts = numUsedWorkersParts;
-    }
-
-    public void setNumUsedWorkers(int numUsedWorkers) {
-        this.numUsedWorkersParts = numUsedWorkers * PARTS_MULTIPLIER;
     }
 
     public int getNumAltersParts() {
@@ -199,30 +181,14 @@ public class Shrine  {
         this.numCargoGold = numCargoGold;
     }
 
+    @Override
 
-    void doOrder(Order order, int num) {
-        int numParts = num * PARTS_MULTIPLIER;
-        switch (order) {
-            case MINE:
-                if (numParts <= numWorkersParts) {
-                    useWorkers(num);
-                    numGoldParts += num * miningRateParts;
-                    miningRateParts -= num * miningDegradationRateParts;
-                }
-                break;
-            case BUILD_SCOUT:
-                if ((numParts <= numWorkersParts) {
-                    useWorkers(num);
-
-                }
-                break;
+    public int compareTo(@NonNull Object other) {
+        if (other instanceof Shrine) {
+            Shrine otherShrine = (Shrine) other;
+            return name.compareTo(otherShrine.getName());
         }
-    }
-
-    private void useWorkers(int num) {
-        int numParts = num * PARTS_MULTIPLIER;
-        numUsedWorkersParts += numParts;
-        numWorkersParts -= numParts;
+        return -1;
     }
 
     @Override
