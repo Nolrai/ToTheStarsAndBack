@@ -6,6 +6,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.core.Is.is;
@@ -415,6 +416,33 @@ public class WorldTest {
         boolean result = world.isCompletelyConnected();
 
         assertThat(result, is(false));
+    }
+
+    @Test
+    public void processMoves_foo() {
+        List<Shrine> shrines = Utils.generateShrines(2);
+        world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getName()));
+        world.addShrine(shrines.get(1));
+
+        for (Shrine.MovableType type : Shrine.MovableType.values()) {
+            shrines.get(0).addDeparture(shrines.get(1).getName(), type, type.ordinal() + 1);
+        }
+
+        world.processMoves();
+
+        for (int i = 0; i < shrines.size(); i++) {
+            Map<String, Map<Shrine.MovableType, Integer>> departures = shrines.get(i).getDepartureMap();
+            assertThat(departures.size(), is(0));
+        }
+        Map<String, Map<Shrine.MovableType, Integer>> arrivals0 = shrines.get(0).getArrivalMap();
+        assertThat(arrivals0.size(), is(0));
+        Map<String, Map<Shrine.MovableType, Integer>> arrivals1 = shrines.get(1).getArrivalMap();
+        assertThat(arrivals1.size(), is(1));
+        Map<Shrine.MovableType, Integer> subMap = arrivals1.get(shrines.get(0).getName());
+        assertThat(subMap.size(), is(Shrine.MovableType.values().length));
+        for (Shrine.MovableType type : subMap.keySet()) {
+            assertThat(subMap.get(type), is(type.ordinal() + 1));
+        }
     }
 
     /* Helper Functions */

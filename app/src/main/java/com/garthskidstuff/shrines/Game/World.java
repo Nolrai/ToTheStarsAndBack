@@ -51,6 +51,7 @@ class World {
 
     void addShrine(Shrine shrine) {
         connectionMap.put(shrine.getName(), new ArrayList<String>());
+        shrineMap.put(shrine.getName(), shrine);
     }
 
     List<String> getConnections(String shrineName) {
@@ -160,6 +161,25 @@ class World {
 
     Set<String> getShrineNames() {
         return connectionMap.keySet();
+    }
+
+    void processMoves() {
+        for (String shrineName : getShrineNames()) {
+            Shrine shrine = getShrine(shrineName);
+            //TODO get copy
+            Map<String, Map<Shrine.MovableType, Integer>> departureMap = shrine.getDepartureMap();
+
+            for (String destinationName : departureMap.keySet()) {
+                Shrine destination = getShrine(destinationName);
+                Map<Shrine.MovableType, Integer> subMap = departureMap.get(destinationName);
+                for (Shrine.MovableType type : subMap.keySet()) {
+                    int num = subMap.get(type);
+
+                    destination.addArrival(shrine.getOwnerName(), type, num);
+                }
+            }
+            departureMap.clear();
+        }
     }
 
     @Override

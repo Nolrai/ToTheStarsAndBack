@@ -23,6 +23,8 @@ public class Shrine  {
 
     private final String imageId;
 
+    private String ownerName = ""; // name of the home world that owns this shrine
+
     private int maxWorkers; // This is really final, but set in an init call AND is the actual int -- not 100th
 
     private int numWorkerParts;
@@ -69,6 +71,7 @@ public class Shrine  {
     public Shrine(String name, String imageId) {
         this.name = name;
         this.imageId = imageId;
+        ownerName = name;
     }
 
     public void initBasic(int maxPopulation, int miningRateParts, int miningDegradationRateParts) {
@@ -96,6 +99,18 @@ public class Shrine  {
 
     public int getMaxWorkers() {
         return maxWorkers;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
+    }
+
+    public Map<String, Map<MovableType, Integer>> getArrivalMap() {
+        return arrivalMap;
     }
 
     public void setMaxWorkers(int maxWorkers) {
@@ -168,10 +183,6 @@ public class Shrine  {
 
     public Map<String, Map<MovableType, Integer>> getDepartureMap() {
         return departureMap;
-    }
-
-    public void setDepartureMap(Map<String, Map<MovableType, Integer>> departureMap) {
-        this.departureMap = departureMap;
     }
 
     // The following are convenience functions to get/set whole integer values
@@ -317,12 +328,12 @@ public class Shrine  {
         return getFromMap(departureMap, destinationName, type);
     }
 
-    void addArrival(String destinationName, MovableType type, int num) {
-        addToMap(departureMap, destinationName, type, num);
+    void addArrival(String homeName, MovableType type, int num) {
+        addToMap(arrivalMap, homeName, type, num);
     }
 
     int getArrival(String destinationName, MovableType type) {
-        return getFromMap(departureMap, destinationName, type);
+        return getFromMap(arrivalMap, destinationName, type);
     }
 
     private void addToMap(Map<String, Map<MovableType, Integer>> map, String destinationName, MovableType type, int num) {
