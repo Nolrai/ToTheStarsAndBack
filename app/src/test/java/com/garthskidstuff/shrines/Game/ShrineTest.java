@@ -9,6 +9,7 @@ import com.google.gson.Gson;
 import org.junit.Test;
 
 import java.util.Map;
+import java.util.Vector;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -422,14 +423,13 @@ public class ShrineTest {
         String dest = "destination";
         shrine.doMoveOrder(dest, type, numToMove);
 
-        Map<Pair<String, ShipType>, Integer> map = shrine.getConvertedMovementMap();
+        assertThat(shrine.getMove(dest, type), is(numToMove));
 
+        Map<String, Map<ShipType, Integer>> map = shrine.getMovementMap();
         assertThat(map.size(), is(1));
-        for (Pair<String, ShipType> pair : map.keySet()) {
-            assertThat(pair.first, is(dest));
-            assertThat(pair.second, is(type));
-            assertThat(map.get(pair), is(numToMove));
-        }
+        Map<ShipType, Integer> subMap = map.get(dest);
+        assertThat(subMap.size(), is(1));
+        assertThat(subMap.get(type), is(numToMove));
     }
 
     private void testMoveOrderFail(ShipType type) {
@@ -437,7 +437,7 @@ public class ShrineTest {
         shrine.doMoveOrder("destination", type, 1);
 
         Shrine oldShrine = copyShrine(shrine);
-        Map<Pair<String, ShipType>, Integer> map = shrine.getConvertedMovementMap();
+        Map<String, Map<ShipType, Integer>> map = shrine.getMovementMap();
 
         assertThat(map.size(), is(0));
         assertThat(shrine, is(oldShrine));

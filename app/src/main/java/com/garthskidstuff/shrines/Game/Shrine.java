@@ -58,7 +58,7 @@ public class Shrine  {
         CARGO_ALTAR,
     }
     // Map "<destinationName>, <ShipType>" --> number of ships
-    private Map<String, Integer> movementMap = new HashMap<>();
+    private Map<String, Map<ShipType, Integer>> movementMap = new HashMap<>();
 
     private Map<ShipType, Integer> numShipMap = new HashMap<>();
 
@@ -192,11 +192,11 @@ public class Shrine  {
         numShipMap.put(type, num * PARTS_MULTIPLIER);
     }
 
-    public Map<String, Integer> getMovementMap() {
+    public Map<String, Map<ShipType, Integer>> getMovementMap() {
         return movementMap;
     }
 
-    public void setMovementMap(Map<String, Integer> movementMap) {
+    public void setMovementMap(Map<String, Map<ShipType, Integer>> movementMap) {
         this.movementMap = movementMap;
     }
 
@@ -295,13 +295,30 @@ public class Shrine  {
         addNumShipParts(type, -numParts);
         boolean success = (0 <= getNumShipParts(type));
 
-        String key = nameAndShipTypeToString(destinationName, type);
-        Integer curNum = movementMap.get(key);
-        movementMap.put(key, (null == curNum) ? num : curNum + num);
+        addMove(destinationName, type, num);
 
         if (!success) {
             setShrine(oldShrine);
         }
+    }
+
+    void addMove(String destinationName, ShipType type, int num) {
+        Map<ShipType, Integer> map = movementMap.get(destinationName);
+        if (null == map) {
+            map = new HashMap<>();
+        }
+        Integer curNum = map.get(type);
+        map.put(type, (null == curNum) ? num : curNum + num);
+        movementMap.put(destinationName, map);
+    }
+
+    int getMove(String destinationName, ShipType type) {
+        Integer num = 0;
+        Map<ShipType, Integer> map = movementMap.get(destinationName);
+        if (null != map) {
+            num = map.get(type);
+        }
+        return (null == num) ? 0 : num;
     }
 
     private boolean payBuildCost(int num) {
@@ -483,8 +500,10 @@ public class Shrine  {
         for (ShipType shipType : ShipType.values()) {
             numShipMap.put(shipType, idx++);
         }
-        for (ShipType type : ShipType.values()) {
-            movementMap.put(nameAndShipTypeToString("foobar", type), idx++);
+        for (String destinationName : new String[] { "foo", "bar"}) {
+            for (ShipType type : ShipType.values()) {
+                addMove(destinationName, type, idx++);
+            }
         }
     }
 
@@ -505,26 +524,26 @@ public class Shrine  {
                 ", numShipMap=" + numShipMap +
                 '}';
     }
-
-    Map<Pair<String, ShipType>, Integer> getConvertedMovementMap() {
-        Map<Pair<String, ShipType>, Integer> map = new HashMap<>();
-
-        for (String key : movementMap.keySet()) {
-            Pair<String, ShipType> pair = stringToNameAndShipType(key);
-            map.put(pair, movementMap.get(key));
-        }
-
-        return map;
-    }
-
-    private String nameAndShipTypeToString(String name, ShipType type) {
-        return name + "," + type;
-    }
-
-    private Pair<String, ShipType> stringToNameAndShipType(String s) {
-        String[] parts = s.split(",");
-        Pair<String, ShipType> pair = new Pair<>(parts[0], ShipType.valueOf(parts[1]));
-        return pair;
-    }
+//
+//    Map<Pair<String, ShipType>, Integer> getConvertedMovementMap() {
+//        Map<Pair<String, ShipType>, Integer> map = new HashMap<>();
+//
+//        for (String key : movementMap.keySet()) {
+//            Pair<String, ShipType> pair = stringToNameAndShipType(key);
+//            map.put(pair, movementMap.get(key));
+//        }
+//
+//        return map;
+//    }
+//
+//    private String nameAndShipTypeToString(String name, ShipType type) {
+//        return name + "," + type;
+//    }
+//
+//    private Pair<String, ShipType> stringToNameAndShipType(String s) {
+//        String[] parts = s.split(",");
+//        Pair<String, ShipType> pair = new Pair<>(parts[0], ShipType.valueOf(parts[1]));
+//        return pair;
+//    }
 
 }
