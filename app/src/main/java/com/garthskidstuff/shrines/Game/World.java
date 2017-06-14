@@ -1,7 +1,9 @@
 package com.garthskidstuff.shrines.Game;
 
+import android.renderscript.RSInvalidStateException;
 import android.support.v4.util.Pair;
 
+import java.io.InvalidObjectException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -160,22 +162,26 @@ class World {
     }
 
     Set<String> getShrineNames() {
-        return connectionMap.keySet();
+        return shrineMap.keySet();
     }
 
-    void processMoves() {
+    void processMoves() throws InvalidObjectException {
         for (String shrineName : getShrineNames()) {
             Shrine shrine = getShrine(shrineName);
             //TODO get copy
             Map<String, Map<Shrine.MovableType, Integer>> departureMap = shrine.getDepartureMap();
 
             for (String destinationName : departureMap.keySet()) {
-                Shrine destination = getShrine(destinationName);
-                Map<Shrine.MovableType, Integer> subMap = departureMap.get(destinationName);
-                for (Shrine.MovableType type : subMap.keySet()) {
-                    int num = subMap.get(type);
+                if (connectionMap.get(shrine.getName()).contains(destinationName)) { // Prevent moves to unconnected shrines
+                    Shrine destination = getShrine(destinationName);
+                    Map<Shrine.MovableType, Integer> subMap = departureMap.get(destinationName);
+                    for (Shrine.MovableType type : subMap.keySet()) {
+                        int num = subMap.get(type);
 
-                    destination.addArrival(shrine.getOwnerName(), type, num);
+                        destination.addArrival(shrine.getOwnerName(), type, num);
+                    }
+                } else {
+                    throw new InvalidObjectException(shrine.getName() + " does not connect to " + destinationName);
                 }
             }
             departureMap.clear();

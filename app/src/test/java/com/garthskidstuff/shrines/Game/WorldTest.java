@@ -3,6 +3,7 @@ package com.garthskidstuff.shrines.Game;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.InvalidObjectException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -419,7 +420,7 @@ public class WorldTest {
     }
 
     @Test
-    public void processMoves_foo() {
+    public void processMoves_trivial() {
         List<Shrine> shrines = Utils.generateShrines(2);
         world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getName()));
         world.addShrine(shrines.get(1));
@@ -428,7 +429,11 @@ public class WorldTest {
             shrines.get(0).addDeparture(shrines.get(1).getName(), type, type.ordinal() + 1);
         }
 
-        world.processMoves();
+        try {
+            world.processMoves();
+        } catch (InvalidObjectException e) {
+            assertThat(e.getMessage(), true, is(false));
+        }
 
         for (int i = 0; i < shrines.size(); i++) {
             Map<String, Map<Shrine.MovableType, Integer>> departures = shrines.get(i).getDepartureMap();
@@ -442,6 +447,66 @@ public class WorldTest {
         assertThat(subMap.size(), is(Shrine.MovableType.values().length));
         for (Shrine.MovableType type : subMap.keySet()) {
             assertThat(subMap.get(type), is(type.ordinal() + 1));
+        }
+    }
+
+
+    @Test
+    public void processMoves_catchException() {
+        List<Shrine> shrines = Utils.generateShrines(2);
+        world.addShrine(shrines.get(0));
+        world.addShrine(shrines.get(1));
+
+        shrines.get(0).addDeparture(shrines.get(1).getName(), Shrine.MovableType.GOLD, 1);
+
+        boolean thrown = false;
+        try {
+            world.processMoves();
+        } catch (InvalidObjectException e) {
+            thrown = true;
+        }
+        assertThat(thrown, is(true));
+    }
+
+    @Test
+    public void processMoves_backAndForth() {
+        List<Shrine> shrines = Utils.generateShrines(2);
+        world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getName()));
+        world.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(0).getName()));
+
+        for (Shrine.MovableType type : Shrine.MovableType.values()) {
+            shrines.get(0).addDeparture(shrines.get(1).getName(), type, type.ordinal() + 1);
+            shrines.get(1).addDeparture(shrines.get(0).getName(), type, type.ordinal() + 10);
+        }
+
+        try {
+            world.processMoves();
+        } catch (InvalidObjectException e) {
+            assertThat(e.getMessage(), true, is(false));
+        }
+
+        for (int i = 0; i < shrines.size(); i++) {
+            Map<String, Map<Shrine.MovableType, Integer>> departures = shrines.get(i).getDepartureMap();
+            assertThat(departures.size(), is(0));
+        }
+        Map<String, Map<Shrine.MovableType, Integer>> arrivals0 = shrines.get(0).getArrivalMap();
+        assertThat(arrivals0.size(), is(1));
+        {
+            Map<Shrine.MovableType, Integer> subMap = arrivals0.get(shrines.get(1).getName());
+            assertThat(subMap.size(), is(Shrine.MovableType.values().length));
+            for (Shrine.MovableType type : subMap.keySet()) {
+                assertThat(subMap.get(type), is(type.ordinal() + 10));
+            }
+        }
+
+        Map<String, Map<Shrine.MovableType, Integer>> arrivals1 = shrines.get(1).getArrivalMap();
+        assertThat(arrivals1.size(), is(1));
+        {
+            Map<Shrine.MovableType, Integer> subMap = arrivals1.get(shrines.get(0).getName());
+            assertThat(subMap.size(), is(Shrine.MovableType.values().length));
+            for (Shrine.MovableType type : subMap.keySet()) {
+                assertThat(subMap.get(type), is(type.ordinal() + 1));
+            }
         }
     }
 
