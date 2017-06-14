@@ -41,7 +41,7 @@ public class GameTest {
         for (String name : game.world.getShrineNames()) {
             if (!game.homeNames.contains(name)) {
                 Shrine shrine = game.world.getShrine(name);
-                isBetween(constants.minMaxPopulation, constants.maxMaxPopulation, shrine.getMaxPopulation());
+                isBetween(constants.minMaxPopulation, constants.maxMaxPopulation, shrine.getMaxWorkers());
                 isBetween(constants.minMiningRateParts, constants.maxMiningRateParts, shrine.getMiningRateParts());
                 assertThat(shrine.getMiningDegradationRateParts(), is(constants.miningDegradationRateParts));
             }
@@ -55,11 +55,11 @@ public class GameTest {
 
         for (String name : game.homeNames) {
             Shrine shrine = game.world.getShrine(name);
-            assertThat(shrine.getMaxPopulation(), is(constants.homeMaxPopulation));
+            assertThat(shrine.getMaxWorkers(), is(constants.homeMaxPopulation));
             assertThat(shrine.getMiningRateParts(), is(constants.homeMiningRateParts));
-            assertThat(shrine.getNumAlters(), is(constants.homeNumAlters));
+            assertThat(shrine.getNumAltar(), is(constants.homeNumAlters));
             assertThat(shrine.getNumGold(), is(constants.homeNumGold));
-            assertThat(shrine.getNumWorkers(), is(constants.homeNumWorkers));
+            assertThat(shrine.getNumWorker(), is(constants.homeNumWorkers));
         }
     }
 
