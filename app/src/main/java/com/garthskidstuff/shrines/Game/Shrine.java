@@ -1,7 +1,5 @@
 package com.garthskidstuff.shrines.Game;
 
-import android.support.v4.util.Pair;
-
 import com.google.gson.Gson;
 
 import java.util.HashMap;
@@ -20,8 +18,6 @@ public class Shrine  {
     final static int PARTS_MULTIPLIER = 1000;
 
     // All costs need to divide 1000 evenly.
-    final static int BUILD_SCOUT_COST = 1;
-    final static int BUILD_CARGO_COST = 2;
     final static int BUILD_FIGHTER_COST = 5;
     final static int BUILD_ALTAR_COST = 10;
 
@@ -37,52 +33,42 @@ public class Shrine  {
 
     private int numUsedAltar;
 
+    private int numFighterParts;
+
     private int miningRateParts;  // amount of gold generated when 1 worker mines
 
     private int miningDegradationRateParts;  // mining rate drops each time a worker mines
 
     private int numGoldParts;
 
-    enum CargoType {
-        GOLD,
-        WORKER,
-        ALTAR
+    enum MovableType {
+        GOLD(0),
+        WORKER(0),
+        ALTAR(5),
+        FIGHTER(0);
+
+        final int moveCost;
+
+        private MovableType(int moveCost) {
+            this.moveCost = moveCost;
+        }
     }
 
-    enum ShipType {
-        SCOUT,
-        FIGHTER,
-        CARGO_EMPTY,
-        CARGO_GOLD,
-        CARGO_WORKER,
-        CARGO_ALTAR,
-    }
-    // Map "<destinationName>, <ShipType>" --> number of ships
-    private Map<String, Map<ShipType, Integer>> movementMap = new HashMap<>();
+    // destination --> (type --> number)
+    private Map<String, Map<MovableType, Integer>> departureMap = new HashMap<>();
 
-    private Map<ShipType, Integer> numShipMap = new HashMap<>();
+    // home --> (type --> number)
+    private Map<String, Map<MovableType, Integer>> arrivalMap = new HashMap<>();
 
     enum Order {
         MINE,
-        BUILD_SCOUT,
-        BUILD_CARGO,
         BUILD_FIGHTER,
         BUILD_ALTAR,
-        LOAD_CARGO_GOLD,
-        LOAD_CARGO_WORKER,
-        LOAD_CARGO_ALTAR,
-        UNLOAD_CARGO_GOLD,
-        UNLOAD_CARGO_WORKER,
-        UNLOAD_CARGO_ALTAR,
     };
 
     public Shrine(String name, String imageId) {
         this.name = name;
         this.imageId = imageId;
-
-        for (ShipType type : ShipType.values()) {
-            numShipMap.put(type, 0);
-        }
     }
 
     public void initBasic(int maxPopulation, int miningRateParts, int miningDegradationRateParts) {
@@ -172,32 +158,20 @@ public class Shrine  {
         this.numGoldParts = numGoldParts;
     }
 
-    public int getNumShipParts(ShipType type) {
-        return numShipMap.get(type);
+    public int getNumFighterParts() {
+        return numFighterParts;
     }
 
-    public void setNumShipParts(ShipType type, int numParts) {
-        numShipMap.put(type, numParts);
+    public void setNumFighterParts(int numFighterParts) {
+        this.numFighterParts = numFighterParts;
     }
 
-    public void addNumShipParts(ShipType type, int numParts) {
-        numShipMap.put(type, numShipMap.get(type) + numParts);
+    public Map<String, Map<MovableType, Integer>> getDepartureMap() {
+        return departureMap;
     }
 
-    public int getNumShip(ShipType type) {
-        return numShipMap.get(type) / PARTS_MULTIPLIER;
-    }
-
-    public void setNumShip(ShipType type, int num) {
-        numShipMap.put(type, num * PARTS_MULTIPLIER);
-    }
-
-    public Map<String, Map<ShipType, Integer>> getMovementMap() {
-        return movementMap;
-    }
-
-    public void setMovementMap(Map<String, Map<ShipType, Integer>> movementMap) {
-        this.movementMap = movementMap;
+    public void setDepartureMap(Map<String, Map<MovableType, Integer>> departureMap) {
+        this.departureMap = departureMap;
     }
 
     // The following are convenience functions to get/set whole integer values
@@ -225,6 +199,45 @@ public class Shrine  {
         numAltarParts = num * PARTS_MULTIPLIER;
     }
 
+    public int getNumFighter() {
+        return numFighterParts / PARTS_MULTIPLIER;
+    }
+
+    public void setNumFighter(int num) {
+        numFighterParts = num * PARTS_MULTIPLIER;
+    }
+
+    public void setMovableType(MovableType type, int num) {
+        switch (type) {
+            case WORKER:
+                setNumWorker(num);
+                break;
+            case GOLD:
+                setNumGold(num);
+                break;
+            case ALTAR:
+                setNumAltar(num);
+                break;
+            case FIGHTER:
+                setNumFighter(num);
+                break;
+        }
+    }
+
+    public Integer getMovableType(MovableType type) {
+        switch (type) {
+            case WORKER:
+                return getNumWorker();
+            case GOLD:
+                return getNumGold();
+            case ALTAR:
+                return getNumAltar();
+            case FIGHTER:
+                return getNumFighter();
+        }
+        return null;
+    }
+
     String makeSavedState() {
         Gson gson = new Gson();
         return gson.toJson(this);
@@ -247,36 +260,14 @@ public class Shrine  {
                 miningRateParts -= num * miningDegradationRateParts;
                 break;
 
-            case BUILD_SCOUT:
-                success = payBuildCost(num);
-                addNumShipParts(ShipType.SCOUT, numParts / BUILD_SCOUT_COST);
-                break;
-
-            case BUILD_CARGO:
-                success = payBuildCost(num);
-                addNumShipParts(ShipType.CARGO_EMPTY, numParts / BUILD_CARGO_COST);
-                break;
-
             case BUILD_FIGHTER:
                 success = payBuildCost(num);
-                addNumShipParts(ShipType.FIGHTER, numParts / BUILD_FIGHTER_COST);
+                numFighterParts += (numParts / BUILD_FIGHTER_COST);
                 break;
 
             case BUILD_ALTAR:
                 success = payBuildCost(num);
                 numAltarParts += (numParts / BUILD_ALTAR_COST);
-                break;
-
-            case LOAD_CARGO_GOLD:
-            case LOAD_CARGO_WORKER:
-            case LOAD_CARGO_ALTAR:
-                success = loadUnloadCargo(getCargoType(order), num);
-                break;
-
-            case UNLOAD_CARGO_GOLD:
-            case UNLOAD_CARGO_WORKER:
-            case UNLOAD_CARGO_ALTAR:
-                success = loadUnloadCargo(getCargoType(order), -num);
                 break;
 
             default:
@@ -288,38 +279,71 @@ public class Shrine  {
         }
     }
 
-    public void doMoveOrder(String destinationName, ShipType type, int num) {
-        int numParts = num * PARTS_MULTIPLIER;
+    public void doMoveOrder(String destinationName, MovableType type, int num) {
         Shrine oldShrine = new Shrine("name", "id");
         oldShrine.setShrine(this);
-        addNumShipParts(type, -numParts);
-        boolean success = (0 <= getNumShipParts(type));
 
-        addMove(destinationName, type, num);
+        addDeparture(destinationName, type, num);
 
-        if (!success) {
+        if (!useGold(type.moveCost) || !useMovable(type, num)) {
             setShrine(oldShrine);
         }
     }
 
-    void addMove(String destinationName, ShipType type, int num) {
-        Map<ShipType, Integer> map = movementMap.get(destinationName);
-        if (null == map) {
-            map = new HashMap<>();
+    boolean useMovable(MovableType type, int num) {
+        int numParts = num * PARTS_MULTIPLIER;
+        switch(type) {
+            case WORKER:
+                numWorkerParts -= numParts;
+                return (0 <= numWorkerParts);
+            case GOLD:
+                numGoldParts -= numParts;
+                return (0 <= numGoldParts);
+            case ALTAR:
+                numAltarParts -= numParts;
+                return (0 <= numAltarParts);
+            case FIGHTER:
+                numFighterParts -= numParts;
+                return (0 <= numFighterParts);
         }
-        Integer curNum = map.get(type);
-        map.put(type, (null == curNum) ? num : curNum + num);
-        movementMap.put(destinationName, map);
+        return false;
     }
 
-    int getMove(String destinationName, ShipType type) {
+    void addDeparture(String destinationName, MovableType type, int num) {
+        addToMap(departureMap, destinationName, type, num);
+    }
+
+    int getDeparture(String destinationName, MovableType type) {
+        return getFromMap(departureMap, destinationName, type);
+    }
+
+    void addArrival(String destinationName, MovableType type, int num) {
+        addToMap(departureMap, destinationName, type, num);
+    }
+
+    int getArrival(String destinationName, MovableType type) {
+        return getFromMap(departureMap, destinationName, type);
+    }
+
+    private void addToMap(Map<String, Map<MovableType, Integer>> map, String destinationName, MovableType type, int num) {
+        Map<MovableType, Integer> subMap = map.get(destinationName);
+        if (null == subMap) {
+            subMap = new HashMap<>();
+        }
+        Integer curNum = subMap.get(type);
+        subMap.put(type, (null == curNum) ? num : curNum + num);
+        map.put(destinationName, subMap);
+    }
+
+    private int getFromMap(Map<String, Map<MovableType, Integer>> map, String id, MovableType type) {
         Integer num = 0;
-        Map<ShipType, Integer> map = movementMap.get(destinationName);
-        if (null != map) {
-            num = map.get(type);
+        Map<MovableType, Integer> subMap = map.get(id);
+        if (null != subMap) {
+            num = subMap.get(type);
         }
         return (null == num) ? 0 : num;
     }
+
 
     private boolean payBuildCost(int num) {
         return useWorkers(num) && useGold(num) && useAltars(num);
@@ -345,92 +369,6 @@ public class Shrine  {
         return (numAltarParts >= 0);
     }
 
-    CargoType getCargoType(Order order) {
-        switch (order) {
-            case LOAD_CARGO_GOLD:
-            case UNLOAD_CARGO_GOLD:
-                return CargoType.GOLD;
-            case LOAD_CARGO_WORKER:
-            case UNLOAD_CARGO_WORKER:
-                return CargoType.GOLD;
-            case LOAD_CARGO_ALTAR:
-            case UNLOAD_CARGO_ALTAR:
-                return CargoType.GOLD;
-        }
-        return null;
-    }
-
-    CargoType getCargoType(ShipType shipType) {
-        switch (shipType) {
-            case CARGO_GOLD:
-                return CargoType.GOLD;
-            case CARGO_WORKER:
-                return CargoType.GOLD;
-            case CARGO_ALTAR:
-                return CargoType.GOLD;
-        }
-        return null;
-    }
-
-    void setNumCargo(CargoType cargoType, int num) {
-        switch (cargoType) {
-            case GOLD:
-                setNumGold(num);
-                break;
-            case WORKER:
-                setNumWorker(num);
-                break;
-            case ALTAR:
-                setNumAltar(num);
-                break;
-        }
-    }
-
-    Integer getNumCargo(CargoType cargoType) {
-        switch (cargoType) {
-            case GOLD:
-                return getNumGold();
-            case WORKER:
-                return getNumWorker();
-            case ALTAR:
-                return getNumAltar();
-        }
-        return null;
-    }
-
-     ShipType getCargoShipType(CargoType cargoType) {
-        switch (cargoType) {
-            case GOLD: return ShipType.CARGO_GOLD;
-            case WORKER: return ShipType.CARGO_WORKER;
-            case ALTAR: return ShipType.CARGO_ALTAR;
-        }
-        return null;
-    }
-
-    private Integer addCargo(CargoType cargoType, int num) {
-        int numParts = num * PARTS_MULTIPLIER;
-        switch (cargoType) {
-            case GOLD:
-                return (numGoldParts += numParts);
-            case WORKER:
-                return (numWorkerParts += numParts);
-            case ALTAR:
-                return (numAltarParts += numParts);
-        }
-        return null;
-    }
-
-    private boolean loadUnloadCargo(CargoType cargoType, int num) throws NullPointerException { // num < 0 ==> unloading
-        int numParts = num * PARTS_MULTIPLIER;
-        Integer result = addCargo(cargoType, -num);
-        addNumShipParts(ShipType.CARGO_EMPTY, -numParts);
-        ShipType shipType = getCargoShipType(cargoType);
-        addNumShipParts(shipType, numParts);
-
-        //noinspection ConstantConditions
-        return (result >= 0) && (getNumShipParts(shipType) >= 0) && (getNumShipParts(ShipType.CARGO_EMPTY) >= 0);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -443,13 +381,14 @@ public class Shrine  {
         if (numUsedWorker != shrine.numUsedWorker) return false;
         if (numAltarParts != shrine.numAltarParts) return false;
         if (numUsedAltar != shrine.numUsedAltar) return false;
+        if (numFighterParts != shrine.numFighterParts) return false;
         if (miningRateParts != shrine.miningRateParts) return false;
         if (miningDegradationRateParts != shrine.miningDegradationRateParts) return false;
         if (numGoldParts != shrine.numGoldParts) return false;
         if (!name.equals(shrine.name)) return false;
         if (!imageId.equals(shrine.imageId)) return false;
-        if (!movementMap.equals(shrine.movementMap)) return false;
-        return numShipMap.equals(shrine.numShipMap);
+        if (!departureMap.equals(shrine.departureMap)) return false;
+        return arrivalMap.equals(shrine.arrivalMap);
 
     }
 
@@ -462,11 +401,12 @@ public class Shrine  {
         result = 31 * result + numUsedWorker;
         result = 31 * result + numAltarParts;
         result = 31 * result + numUsedAltar;
+        result = 31 * result + numFighterParts;
         result = 31 * result + miningRateParts;
         result = 31 * result + miningDegradationRateParts;
         result = 31 * result + numGoldParts;
-        result = 31 * result + movementMap.hashCode();
-        result = 31 * result + numShipMap.hashCode();
+        result = 31 * result + departureMap.hashCode();
+        result = 31 * result + arrivalMap.hashCode();
         return result;
     }
 
@@ -477,11 +417,12 @@ public class Shrine  {
         numUsedWorker = other.numUsedWorker;
         numAltarParts = other.numAltarParts;
         numUsedAltar = other.numUsedAltar;
+        numFighterParts = other.numFighterParts;
         miningRateParts = other.miningRateParts;
         miningDegradationRateParts = other.miningDegradationRateParts;
         numGoldParts = other.numGoldParts;
-        numShipMap = new HashMap<>(other.numShipMap);
-        movementMap = new HashMap<>(other.movementMap);
+        departureMap = new HashMap<>(other.departureMap);
+        arrivalMap = new HashMap<>(other.arrivalMap);
     }
 
     /**
@@ -494,15 +435,22 @@ public class Shrine  {
         numUsedWorker = idx++;
         numAltarParts = idx++;
         numUsedAltar = idx++;
+        numFighterParts = idx++;
         miningRateParts = idx++;
         miningDegradationRateParts = idx++;
         numGoldParts = idx++;
-        for (ShipType shipType : ShipType.values()) {
-            numShipMap.put(shipType, idx++);
-        }
+
+        departureMap.clear();
         for (String destinationName : new String[] { "foo", "bar"}) {
-            for (ShipType type : ShipType.values()) {
-                addMove(destinationName, type, idx++);
+            for (MovableType type : MovableType.values()) {
+                addDeparture(destinationName, type, idx++);
+            }
+        }
+
+        arrivalMap.clear();
+        for (String homeId : new String[] { "foo", "bar"}) {
+            for (MovableType type : MovableType.values()) {
+                addArrival(homeId, type, idx++);
             }
         }
     }
@@ -517,33 +465,13 @@ public class Shrine  {
                 ", numUsedWorker=" + numUsedWorker +
                 ", numAltarParts=" + numAltarParts +
                 ", numUsedAltar=" + numUsedAltar +
+                ", numFighterParts=" + numFighterParts +
                 ", miningRateParts=" + miningRateParts +
                 ", miningDegradationRateParts=" + miningDegradationRateParts +
                 ", numGoldParts=" + numGoldParts +
-                ", movementMap=" + movementMap +
-                ", numShipMap=" + numShipMap +
+                ", departureMap=" + departureMap +
+                ", arrivalMap=" + arrivalMap +
                 '}';
     }
-//
-//    Map<Pair<String, ShipType>, Integer> getConvertedMovementMap() {
-//        Map<Pair<String, ShipType>, Integer> map = new HashMap<>();
-//
-//        for (String key : movementMap.keySet()) {
-//            Pair<String, ShipType> pair = stringToNameAndShipType(key);
-//            map.put(pair, movementMap.get(key));
-//        }
-//
-//        return map;
-//    }
-//
-//    private String nameAndShipTypeToString(String name, ShipType type) {
-//        return name + "," + type;
-//    }
-//
-//    private Pair<String, ShipType> stringToNameAndShipType(String s) {
-//        String[] parts = s.split(",");
-//        Pair<String, ShipType> pair = new Pair<>(parts[0], ShipType.valueOf(parts[1]));
-//        return pair;
-//    }
 
 }
