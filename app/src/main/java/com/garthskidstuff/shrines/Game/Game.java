@@ -66,6 +66,7 @@ public class Game {
             if (homeNumGold != constants.homeNumGold) return false;
             if (homeNumWorkers != constants.homeNumWorkers) return false;
             if (minHomeDistance != constants.minHomeDistance) return false;
+            //noinspection SimplifiableIfStatement
             if (maxHomeDistance != constants.maxHomeDistance) return false;
             return seed == constants.seed;
 

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * Created by garthupshaw1 on 5/10/17.
@@ -17,7 +18,11 @@ public class Shrine  {
 
     private final String name;
 
-    final static int PARTS_MULTIPLIER = 1000;
+    final static int PARTS_MULTIPLIER = 100 * 1000;
+
+    // All costs need to divide PARTS_MULTIPLIER evenly.
+    final static int BUILD_FIGHTER_COST = 5;
+    final static int BUILD_ALTAR_COST = 10;
 
     private final String imageId;
 
@@ -73,6 +78,13 @@ public class Shrine  {
         BUILD_ALTAR,
     };
 
+    private Shrine(String name, Shrine shrine_) {
+        this.name = name;
+        this.imageId = shrine_.imageId;
+        ownerName = name;
+        setShrine(shrine_);
+    }
+
     public Shrine(String name, String imageId) {
         this.name = name;
         this.imageId = imageId;
@@ -105,22 +117,6 @@ public class Shrine  {
 
     public int getMaxWorkers() {
         return maxWorkers;
-    }
-
-    public String getOwnerName() {
-        return ownerName;
-    }
-
-    public void setOwnerName(String ownerName) {
-        this.ownerName = ownerName;
-    }
-
-    public Map<String, Map<MovableType, Integer>> getArrivalMapCopy() {
-        return copyMap(arrivalMap);
-    }
-
-    public void clearArrivalMap() {
-        arrivalMap.clear();
     }
 
     public void setMaxWorkers(int maxWorkers) {
@@ -163,16 +159,8 @@ public class Shrine  {
         return miningRateParts;
     }
 
-    public void setMiningRateParts(int miningRateParts) {
-        this.miningRateParts = miningRateParts;
-    }
-
     public int getMiningDegradationRateParts() {
         return miningDegradationRateParts;
-    }
-
-    public void setMiningDegradationRateParts(int miningDegradationRateParts) {
-        this.miningDegradationRateParts = miningDegradationRateParts;
     }
 
     public int getNumGoldParts() {
@@ -305,8 +293,10 @@ public class Shrine  {
         switch (order) {
             case MINE:
                 success = useWorkers(num);
-                numGoldParts += num * miningRateParts;
-                miningRateParts -= num * miningDegradationRateParts;
+                for (int i = 0; i < num; i++) {
+                    numGoldParts += miningRateParts - miningDegradationRateParts/2;
+                    miningRateParts -= miningDegradationRateParts;
+                }
                 break;
 
             case BUILD_FIGHTER:
@@ -339,7 +329,7 @@ public class Shrine  {
         }
     }
 
-    boolean useMovable(MovableType type, int num) {
+    private boolean useMovable(MovableType type, int num) {
         int numParts = num * PARTS_MULTIPLIER;
         switch(type) {
             case WORKER:
@@ -366,14 +356,14 @@ public class Shrine  {
         return getFromMap(departureMap, destinationName, type);
     }
 
+
     void addArrival(String homeName, MovableType type, int num) {
         addToMap(arrivalMap, homeName, type, num);
     }
 
-    int getArrival(String destinationName, MovableType type) {
-        return getFromMap(arrivalMap, destinationName, type);
+    Map<String, Map<MovableType, Integer>> getArrivalMapCopy() {
+        return copyMap(departureMap);
     }
-
     private void addToMap(Map<String, Map<MovableType, Integer>> map, String destinationName, MovableType type, int num) {
         if (0 != num) {
             Map<MovableType, Integer> subMap = map.get(destinationName);
@@ -420,7 +410,7 @@ public class Shrine  {
         return (numAltarParts >= 0);
     }
 
-    public void moveAllToArrivalMap() {
+    void moveAllToArrivalMap() {
         for (MovableType type : MovableType.values()) {
             addArrival(name, type, getMovableType(type));
             int fractionalPart = getMovableTypeParts(type) % PARTS_MULTIPLIER;
@@ -428,7 +418,7 @@ public class Shrine  {
         }
     }
 
-    public void fight(Roller roller) {
+    void fight(Roller roller) {
 
         // Do fights
         Map<String, Map<MovableType, Integer>> copyMap = getArrivalMapCopy();
@@ -472,7 +462,7 @@ public class Shrine  {
         // move everything with non-zero fight (e.g. FIGHTER) back to shrine
         if (1 == copyMap.keySet().size()) {
             for (String key : copyMap.keySet()) {
-                setOwnerName(key);
+                ownerName = key;
                 Map<MovableType, Integer> subMap = copyMap.get(key);
                 for (MovableType type : subMap.keySet()) {
                     if (0 < type.fight) {
@@ -484,7 +474,7 @@ public class Shrine  {
 
         // move everything with zero fight (e.g. GOLD) back to shrine
         for (String key : arrivalMap.keySet()) {
-            setOwnerName(key);
+            ownerName = key;
             Map<MovableType, Integer> subMap = arrivalMap.get(key);
             for (MovableType type : subMap.keySet()) {
                 if (0 == type.fight) {
@@ -529,7 +519,7 @@ public class Shrine  {
         return sumMap;
     }
 
-    public void endTurn() {
+    void endTurn() {
         // Unused workers automatically mine
         doOrder(Order.MINE, getNumWorker());
 
@@ -554,27 +544,6 @@ public class Shrine  {
     }
 
     @Override
-    public String toString() {
-        return "Shrine{" +
-                "name='" + name + '\'' +
-                ", imageId='" + imageId + '\'' +
-                ", ownerName='" + ownerName + '\'' +
-                ", maxWorkers=" + maxWorkers +
-                ", numWorkerParts=" + numWorkerParts +
-                ", numUsedWorker=" + numUsedWorker +
-                ", numAltarParts=" + numAltarParts +
-                ", numUsedAltar=" + numUsedAltar +
-                ", numFighterParts=" + numFighterParts +
-                ", miningRateParts=" + miningRateParts +
-                ", miningDegradationRateParts=" + miningDegradationRateParts +
-                ", numGoldParts=" + numGoldParts +
-                ", workerRateParts=" + workerRateParts +
-                ", departureMap=" + departureMap +
-                ", arrivalMap=" + arrivalMap +
-                '}';
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -594,6 +563,7 @@ public class Shrine  {
         if (!name.equals(shrine.name)) return false;
         if (!imageId.equals(shrine.imageId)) return false;
         if (!ownerName.equals(shrine.ownerName)) return false;
+        //noinspection SimplifiableIfStatement
         if (!departureMap.equals(shrine.departureMap)) return false;
         return arrivalMap.equals(shrine.arrivalMap);
 
@@ -620,7 +590,7 @@ public class Shrine  {
     }
 
     // This does not set name and imageId
-    public void setShrine(Shrine other) {
+    private void setShrine(Shrine other) {
         maxWorkers = other.maxWorkers;
         numWorkerParts = other.numWorkerParts;
         numUsedWorker = other.numUsedWorker;
@@ -633,6 +603,10 @@ public class Shrine  {
         workerRateParts = other.workerRateParts;
         departureMap = new HashMap<>(other.departureMap);
         arrivalMap = new HashMap<>(other.arrivalMap);
+    }
+
+    Shrine makeCopy(String newName) {
+        return new Shrine(newName, this);
     }
 
     /**
@@ -664,6 +638,25 @@ public class Shrine  {
                 addArrival(homeId, type, idx++);
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Shrine{" +
+                "name='" + name + '\'' +
+                ", imageId='" + imageId + '\'' +
+                ", maxWorkers=" + maxWorkers +
+                ", numWorkerParts=" + numWorkerParts +
+                ", numUsedWorker=" + numUsedWorker +
+                ", numAltarParts=" + numAltarParts +
+                ", numUsedAltar=" + numUsedAltar +
+                ", numFighterParts=" + numFighterParts +
+                ", miningRateParts=" + miningRateParts +
+                ", miningDegradationRateParts=" + miningDegradationRateParts +
+                ", numGoldParts=" + numGoldParts +
+                ", departureMap=" + departureMap +
+                ", arrivalMap=" + arrivalMap +
+                '}';
     }
 
 }
