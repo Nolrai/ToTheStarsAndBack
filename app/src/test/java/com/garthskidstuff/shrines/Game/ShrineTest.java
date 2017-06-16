@@ -4,9 +4,11 @@ import com.garthskidstuff.shrines.Game.Shrine.*;
 
 import com.google.gson.Gson;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Map;
+import java.util.Random;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -19,6 +21,13 @@ public class ShrineTest {
     private static int maxWorker = 100;
     private static int miningRateParts = 10;
     private static int miningDegradationRateParts = 1;
+
+    private Random mRandom;
+
+    @Before
+    public void setup() {
+        mRandom = new Random(1);
+    }
 
 
     @Test
@@ -139,6 +148,33 @@ public class ShrineTest {
         }
     }
 
+    @Test
+    public void fight_trivial() {
+        Shrine shrine = makeBasicShrine("name", "iamgeId");
+
+        for (MovableType type : MovableType.values()) {
+            shrine.addArrival(shrine.getName(), type, 1);
+
+            shrine.fight(mRandom);
+
+            assertThat(shrine.getMovableType(type), is(1));
+        }
+    }
+
+    @Test
+    public void fight_combat1Vs1() {
+        Shrine shrine = makeBasicShrine("name", "iamgeId");
+
+        for (MovableType type : MovableType.values()) {
+            shrine.addArrival(shrine.getName(), type, 1);
+            shrine.addArrival("enemy", type, 1);
+
+            shrine.fight(mRandom);
+
+            assertThat(shrine.getMovableType(type), is(1));
+        }
+    }
+
     private Shrine makeBasicShrine(String name, String imageId) {
         Shrine shrine = new Shrine(name, imageId);
         shrine.initBasic(maxWorker, miningRateParts, miningDegradationRateParts);
@@ -166,10 +202,10 @@ public class ShrineTest {
 
         switch(order) {
             case BUILD_ALTAR:
-                assertThat(shrine.getNumAltarParts(), is(Shrine.PARTS_MULTIPLIER / Shrine.BUILD_ALTAR_COST));
+                assertThat(shrine.getNumAltarParts(), is(Shrine.PARTS_MULTIPLIER / MovableType.ALTAR.buildCost));
                 break;
             case BUILD_FIGHTER:
-                assertThat(shrine.getNumFighterParts(), is(Shrine.PARTS_MULTIPLIER / Shrine.BUILD_FIGHTER_COST));
+                assertThat(shrine.getNumFighterParts(), is(Shrine.PARTS_MULTIPLIER / MovableType.FIGHTER.buildCost));
                 break;
         }
     }

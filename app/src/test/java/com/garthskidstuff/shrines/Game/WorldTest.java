@@ -439,9 +439,9 @@ public class WorldTest {
             Map<String, Map<Shrine.MovableType, Integer>> departures = shrines.get(i).getDepartureMap();
             assertThat(departures.size(), is(0));
         }
-        Map<String, Map<Shrine.MovableType, Integer>> arrivals0 = shrines.get(0).getArrivalMap();
+        Map<String, Map<Shrine.MovableType, Integer>> arrivals0 = shrines.get(0).getArrivalMapCopy();
         assertThat(arrivals0.size(), is(0));
-        Map<String, Map<Shrine.MovableType, Integer>> arrivals1 = shrines.get(1).getArrivalMap();
+        Map<String, Map<Shrine.MovableType, Integer>> arrivals1 = shrines.get(1).getArrivalMapCopy();
         assertThat(arrivals1.size(), is(1));
         Map<Shrine.MovableType, Integer> subMap = arrivals1.get(shrines.get(0).getName());
         assertThat(subMap.size(), is(Shrine.MovableType.values().length));
@@ -489,7 +489,7 @@ public class WorldTest {
             Map<String, Map<Shrine.MovableType, Integer>> departures = shrines.get(i).getDepartureMap();
             assertThat(departures.size(), is(0));
         }
-        Map<String, Map<Shrine.MovableType, Integer>> arrivals0 = shrines.get(0).getArrivalMap();
+        Map<String, Map<Shrine.MovableType, Integer>> arrivals0 = shrines.get(0).getArrivalMapCopy();
         assertThat(arrivals0.size(), is(1));
         {
             Map<Shrine.MovableType, Integer> subMap = arrivals0.get(shrines.get(1).getName());
@@ -499,7 +499,7 @@ public class WorldTest {
             }
         }
 
-        Map<String, Map<Shrine.MovableType, Integer>> arrivals1 = shrines.get(1).getArrivalMap();
+        Map<String, Map<Shrine.MovableType, Integer>> arrivals1 = shrines.get(1).getArrivalMapCopy();
         assertThat(arrivals1.size(), is(1));
         {
             Map<Shrine.MovableType, Integer> subMap = arrivals1.get(shrines.get(0).getName());

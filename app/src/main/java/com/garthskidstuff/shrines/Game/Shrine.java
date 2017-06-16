@@ -3,7 +3,10 @@ package com.garthskidstuff.shrines.Game;
 import com.google.gson.Gson;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * Created by garthupshaw1 on 5/10/17.
@@ -16,10 +19,6 @@ public class Shrine  {
     private final String name;
 
     final static int PARTS_MULTIPLIER = 1000;
-
-    // All costs need to divide 1000 evenly.
-    final static int BUILD_FIGHTER_COST = 5;
-    final static int BUILD_ALTAR_COST = 10;
 
     private final String imageId;
 
@@ -43,16 +42,21 @@ public class Shrine  {
 
     private int numGoldParts;
 
+    // All build costs need to divide PARTS_MULTIPLIER evenly.
     enum MovableType {
-        GOLD(0),
-        WORKER(0),
-        ALTAR(5),
-        FIGHTER(0);
+        GOLD(-1, 0, 0),
+        WORKER(-1, 0, 1),
+        ALTAR(10, 5, 1),
+        FIGHTER(5, 0, 5);
 
+        final int buildCost;
         final int moveCost;
+        final int fight;
 
-        private MovableType(int moveCost) {
+        private MovableType(int buildCost, int moveCost, int fight) {
+            this.buildCost = buildCost;
             this.moveCost = moveCost;
+            this.fight = fight;
         }
     }
 
@@ -109,8 +113,12 @@ public class Shrine  {
         this.ownerName = ownerName;
     }
 
-    public Map<String, Map<MovableType, Integer>> getArrivalMap() {
-        return arrivalMap;
+    public Map<String, Map<MovableType, Integer>> getArrivalMapCopy() {
+        return copyMap(arrivalMap);
+    }
+
+    public void clearArrivalMap() {
+        arrivalMap.clear();
     }
 
     public void setMaxWorkers(int maxWorkers) {
@@ -182,7 +190,22 @@ public class Shrine  {
     }
 
     public Map<String, Map<MovableType, Integer>> getDepartureMap() {
-        return departureMap;
+        return copyMap(departureMap);
+    }
+
+    private Map<String, Map<MovableType, Integer>> copyMap(Map<String, Map<MovableType, Integer>>  map) {
+        Map<String, Map<MovableType, Integer>> copyMap = new HashMap<>();
+
+        for (String key : map.keySet()) {
+            Map<MovableType, Integer> copySubMap = new HashMap<>(map.get(key));
+            copyMap.put(key, copySubMap);
+        }
+
+        return copyMap;
+    }
+
+    public void clearDepartureMap() {
+        departureMap.clear();
     }
 
     // The following are convenience functions to get/set whole integer values
@@ -219,34 +242,47 @@ public class Shrine  {
     }
 
     public void setMovableType(MovableType type, int num) {
+        setMovableTypeParts(type, num * PARTS_MULTIPLIER);
+    }
+
+    public void setMovableTypeParts(MovableType type, int numParts) {
         switch (type) {
             case WORKER:
-                setNumWorker(num);
+                setNumWorkerParts(numParts);
                 break;
             case GOLD:
-                setNumGold(num);
+                setNumGoldParts(numParts);
                 break;
             case ALTAR:
-                setNumAltar(num);
+                setNumAltarParts(numParts);
                 break;
             case FIGHTER:
-                setNumFighter(num);
+                setNumFighterParts(numParts);
                 break;
         }
     }
 
     public Integer getMovableType(MovableType type) {
+        return getMovableTypeParts(type) / PARTS_MULTIPLIER;
+    }
+
+    public Integer getMovableTypeParts(MovableType type) {
         switch (type) {
             case WORKER:
-                return getNumWorker();
+                return getNumWorkerParts();
             case GOLD:
-                return getNumGold();
+                return getNumGoldParts();
             case ALTAR:
-                return getNumAltar();
+                return getNumAltarParts();
             case FIGHTER:
-                return getNumFighter();
+                return getNumFighterParts();
         }
         return null;
+    }
+
+    public void addMovableType(MovableType type, int num) {
+        int existingParts = getMovableTypeParts(type);
+        setMovableTypeParts(type, existingParts + num * PARTS_MULTIPLIER);
     }
 
     String makeSavedState() {
@@ -273,12 +309,12 @@ public class Shrine  {
 
             case BUILD_FIGHTER:
                 success = payBuildCost(num);
-                numFighterParts += (numParts / BUILD_FIGHTER_COST);
+                numFighterParts += (numParts / MovableType.FIGHTER.buildCost);
                 break;
 
             case BUILD_ALTAR:
                 success = payBuildCost(num);
-                numAltarParts += (numParts / BUILD_ALTAR_COST);
+                numAltarParts += (numParts / MovableType.ALTAR.buildCost);
                 break;
 
             default:
@@ -337,13 +373,15 @@ public class Shrine  {
     }
 
     private void addToMap(Map<String, Map<MovableType, Integer>> map, String destinationName, MovableType type, int num) {
-        Map<MovableType, Integer> subMap = map.get(destinationName);
-        if (null == subMap) {
-            subMap = new HashMap<>();
+        if (0 != num) {
+            Map<MovableType, Integer> subMap = map.get(destinationName);
+            if (null == subMap) {
+                subMap = new HashMap<>();
+            }
+            Integer curNum = subMap.get(type);
+            subMap.put(type, (null == curNum) ? num : curNum + num);
+            map.put(destinationName, subMap);
         }
-        Integer curNum = subMap.get(type);
-        subMap.put(type, (null == curNum) ? num : curNum + num);
-        map.put(destinationName, subMap);
     }
 
     private int getFromMap(Map<String, Map<MovableType, Integer>> map, String id, MovableType type) {
@@ -378,6 +416,156 @@ public class Shrine  {
         numUsedAltar += num;
         numAltarParts -= numParts;
         return (numAltarParts >= 0);
+    }
+
+    public void moveAllToArrivalMap() {
+        for (MovableType type : MovableType.values()) {
+            addArrival(name, type, getMovableType(type));
+            int fractionalPart = getMovableTypeParts(type) % PARTS_MULTIPLIER;
+            setMovableTypeParts(type, fractionalPart);
+        }
+    }
+
+    public void fight(Random random) {
+
+        // Do fights
+        Map<String, Map<MovableType, Integer>> copyMap = getArrivalMapCopy();
+        while (2 <= copyMap.keySet().size()) {
+            // Compute the fight values for each thing that's moving
+            Map<String, Integer> sumMap = computeSumMap(copyMap);
+
+            String winner = chooseWeightedKey(sumMap, random);
+            if (null != winner) {
+                // damage all other players
+                for (String key : copyMap.keySet()) {
+                    if (!Utils.equals(winner, key)) {
+                        Map<MovableType, Integer> subMap = copyMap.get(key);
+                        MovableType hit = chooseWeightedKey(subMap, random);
+                        subMap.put(hit, (subMap.get(hit) - 1));
+                    }
+                }
+            }
+
+            // Remove any player who is completely wiped out
+            Set<String> removeMe = new HashSet<>();
+            for (String key : copyMap.keySet()) {
+                //noinspection unchecked
+                Map<MovableType, Integer> subMap = copyMap.get(key);
+                boolean remove = true;
+                for (MovableType type : subMap.keySet()) {
+                    if ((0 < type.fight) && (0 < subMap.get(type))) { // Gold doesn't count
+                        remove = false;
+                        break;
+                    }
+                }
+                if (remove) {
+                    removeMe.add(key);
+                }
+            }
+            for (String key : removeMe) {
+                copyMap.remove(key);
+            }
+        }
+
+        // move everything back to shrine
+        if (1 == copyMap.keySet().size()) {
+            for (String key : copyMap.keySet()) {
+                setOwnerName(key);
+                Map<MovableType, Integer> subMap = copyMap.get(key);
+                for (MovableType type : subMap.keySet()) {
+                    if (0 < type.fight) {
+                        addMovableType(type, subMap.get(type));
+                    }
+                }
+            }
+        }
+
+        for (String key : arrivalMap.keySet()) {
+            setOwnerName(key);
+            Map<MovableType, Integer> subMap = arrivalMap.get(key);
+            for (MovableType type : subMap.keySet()) {
+                if (0 == type.fight) {
+                    addMovableType(type, subMap.get(type));
+                }
+            }
+        }
+
+
+        arrivalMap.clear();
+    }
+
+    private <T> T chooseWeightedKey(Map<T,Integer> map, Random random) {
+        T winner = null;
+        int totalSum = 0;
+        for (int num : map.values()) {
+            totalSum += num;
+        }
+        if (0 < totalSum) {
+            int hit = random.nextInt(totalSum); //TODO
+            for (T key : map.keySet()) {
+                hit -= map.get(key);
+                if (hit < 0) {
+                    winner = key;
+                    break;
+                }
+                hit -= map.get(key);
+            }
+        }
+        return winner;
+    }
+
+//    public void fight() {
+//
+//        // Do fights
+//        if (2 <= arrivalMap.keySet().size()) {
+//            // Get copy of arrivalMap
+//            Map<String, Map<MovableType, Integer>> copyMap = getArrivalMapCopy();
+//
+//            // Compute the fight values for each thing that's moving
+//            Map<String, Integer> sumMap = computeSumMap(copyMap);
+//
+//            // Find the winner
+//            String winner = null;
+//            int maxSum = -1;
+//            for (String key : sumMap.keySet()) {
+//                int num = sumMap.get(key);
+//                if (num > maxSum) {
+//                    maxSum = num;
+//                    winner = key;
+//                }
+//            }
+//            for (String key : sumMap.keySet()) {
+//                if (!Utils.equals(key, winner)) {
+//                    int winnerSum = sumMap.get(winner);
+//                    int loserSum = sumMap.get(key);
+//                    winnerSum *= winnerSum;
+//                    loserSum *= loserSum;
+//                    int winnerKeep = (int)Math.round(Math.sqrt(winnerSum - loserSum));
+//
+//                }
+//
+//            }
+//
+//        }
+//
+//        // move everything back to shrine
+//        if (1 == arrivalMap.keySet().size()) {
+//
+//        }
+//
+//    }
+
+    private Map<String, Integer> computeSumMap(Map<String, Map<MovableType, Integer>> map) {
+        Map<String, Integer> sumMap = new HashMap<>();
+        for (String key : map.keySet()) {
+            Map<MovableType, Integer> subMap = map.get(key);
+            int sum = 0;
+            for (MovableType type : subMap.keySet()) {
+                sum += subMap.get(type) * type.fight;
+            }
+            sumMap.put(key, sum);
+        }
+        return sumMap;
     }
 
     @Override

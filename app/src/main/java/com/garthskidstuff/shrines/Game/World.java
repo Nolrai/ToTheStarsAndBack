@@ -166,9 +166,9 @@ class World {
     }
 
     void processMoves() throws InvalidObjectException {
+        // Move everything from departuresMap to arrivalMap for all Shrines
         for (String shrineName : getShrineNames()) {
             Shrine shrine = getShrine(shrineName);
-            //TODO get copy
             Map<String, Map<Shrine.MovableType, Integer>> departureMap = shrine.getDepartureMap();
 
             for (String destinationName : departureMap.keySet()) {
@@ -184,7 +184,14 @@ class World {
                     throw new InvalidObjectException(shrine.getName() + " does not connect to " + destinationName);
                 }
             }
-            departureMap.clear();
+            shrine.clearDepartureMap();
+        }
+
+        // Move all stuff from each shrine to its own arrivalMap and then resolve conflict
+        for (String shrineName : getShrineNames()) {
+            Shrine shrine = getShrine(shrineName);
+            shrine.moveAllToArrivalMap();
+//            shrine.fight();
         }
     }
 
