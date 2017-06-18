@@ -311,4 +311,10 @@ public class Game {
         result = 31 * result + world.hashCode();
         return result;
     }
+
+    /////////////////////////////
+    public static void main(String[] args) {
+        System.out.println("Hello, World");
+    }
+
 }

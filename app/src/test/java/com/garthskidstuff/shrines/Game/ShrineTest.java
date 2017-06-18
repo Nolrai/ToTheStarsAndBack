@@ -13,7 +13,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 /**
- * This is a serries of tests of the Shrine class.
+ * This is a series of tests of the Shrine class.
  * Created by garthupshaw1 on 5/22/17.
  */
 public class ShrineTest {

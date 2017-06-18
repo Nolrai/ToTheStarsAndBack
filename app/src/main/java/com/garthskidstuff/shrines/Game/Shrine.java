@@ -300,7 +300,8 @@ public class Shrine  {
 
     void doOrder(Order order, int num) {
         int numParts = num * PARTS_MULTIPLIER;
-        String savedState = makeSavedState();
+        Shrine oldShrine = cloneShrine();
+
         boolean success = true;
         switch (order) {
             case MINE:
@@ -324,7 +325,7 @@ public class Shrine  {
                 break;
         }
         if (!success) {
-            restore(savedState);
+            setShrine(oldShrine);
         }
     }
 
@@ -551,6 +552,12 @@ public class Shrine  {
         if (getNumWorkerParts() > maxWorkers * PARTS_MULTIPLIER) {
             setNumWorker(maxWorkers);
         }
+    }
+
+    Shrine cloneShrine() {
+        Shrine s = new Shrine(getName() + " clone", getImageId());
+        s.setShrine(this);
+        return s;
     }
 
     @Override

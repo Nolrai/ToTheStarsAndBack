@@ -1,6 +1,5 @@
 package com.garthskidstuff.shrines.Game;
 
-import android.support.v4.util.Pair;
 
 import java.io.InvalidObjectException;
 import java.util.ArrayList;
