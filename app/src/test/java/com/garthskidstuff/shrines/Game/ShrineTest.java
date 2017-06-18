@@ -8,7 +8,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Map;
-import java.util.Random;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -22,11 +21,11 @@ public class ShrineTest {
     private static int miningRateParts = 10;
     private static int miningDegradationRateParts = 1;
 
-    private Random mRandom;
+    private Roller roller;
 
     @Before
     public void setup() {
-        mRandom = new Random(1);
+        roller = new Roller(1);
     }
 
 
@@ -155,23 +154,59 @@ public class ShrineTest {
         for (MovableType type : MovableType.values()) {
             shrine.addArrival(shrine.getName(), type, 1);
 
-            shrine.fight(mRandom);
+            shrine.fight(roller);
 
             assertThat(shrine.getMovableType(type), is(1));
         }
     }
 
     @Test
-    public void fight_combat1Vs1() {
-        Shrine shrine = makeBasicShrine("name", "iamgeId");
+    public void fight_combat1Vs1SameType() {
 
         for (MovableType type : MovableType.values()) {
-            shrine.addArrival(shrine.getName(), type, 1);
-            shrine.addArrival("enemy", type, 1);
+            if (0 < type.fight) {
+                Shrine shrine = makeBasicShrine("name", "imageId");
+                shrine.addArrival(shrine.getName(), type, 1);
+                shrine.addArrival("enemy", type, 1);
 
-            shrine.fight(mRandom);
+                shrine.fight(roller);
 
-            assertThat(shrine.getMovableType(type), is(1));
+                assertThat(shrine.getMovableType(type), is(1));
+            }
+        }
+    }
+
+    @Test
+    public void fight_move1Vs1ZeroFight() {
+
+        for (MovableType type : MovableType.values()) {
+            if (0 == type.fight) {
+                Shrine shrine = makeBasicShrine("name", "imageId");
+                shrine.addArrival(shrine.getName(), type, 1);
+                shrine.addArrival("enemy", type, 1);
+
+                shrine.fight(roller);
+
+                assertThat(shrine.getMovableType(type), is(2));
+            }
+        }
+    }
+
+    @Test
+    public void fight_combat1Vs1DifferentType() {
+
+        for (MovableType typeA : MovableType.values()) {
+            for (MovableType typeB : MovableType.values()) {
+                if (!Utils.equals(typeA, typeB) && (0 < typeA.fight) && (0 < typeB.fight)) {
+                    Shrine shrine = makeBasicShrine("name", "imageId");
+                    shrine.addArrival(shrine.getName(), typeA, 1);
+                    shrine.addArrival("enemy", typeB, 1);
+
+                    shrine.fight(roller);
+
+                    assertThat(shrine.getMovableType(typeA) + shrine.getMovableType(typeB), is(1));
+                }
+            }
         }
     }
 
@@ -250,7 +285,7 @@ public class ShrineTest {
 
         assertThat(shrine.getDeparture(dest, type), is(numToMove));
 
-        Map<String, Map<MovableType, Integer>> map = shrine.getDepartureMap();
+        Map<String, Map<MovableType, Integer>> map = shrine.getDepartureMapCopy();
         assertThat(map.size(), is(1));
         Map<MovableType, Integer> subMap = map.get(dest);
         assertThat(subMap.size(), is(1));
@@ -264,7 +299,7 @@ public class ShrineTest {
         shrine.doMoveOrder("destination", type, 1);
 
         Shrine oldShrine = copyShrine(shrine);
-        Map<String, Map<MovableType, Integer>> map = shrine.getDepartureMap();
+        Map<String, Map<MovableType, Integer>> map = shrine.getDepartureMapCopy();
 
         assertThat(map.size(), is(1));
         assertThat(shrine, is(oldShrine));
@@ -276,7 +311,7 @@ public class ShrineTest {
         shrine.doMoveOrder("destination", type, 1);
 
         Shrine oldShrine = copyShrine(shrine);
-        Map<String, Map<MovableType, Integer>> map = shrine.getDepartureMap();
+        Map<String, Map<MovableType, Integer>> map = shrine.getDepartureMapCopy();
 
         assertThat(map.size(), is(0));
         assertThat(shrine, is(oldShrine));

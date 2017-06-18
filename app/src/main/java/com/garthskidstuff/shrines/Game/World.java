@@ -1,6 +1,5 @@
 package com.garthskidstuff.shrines.Game;
 
-import android.renderscript.RSInvalidStateException;
 import android.support.v4.util.Pair;
 
 import java.io.InvalidObjectException;
@@ -19,15 +18,20 @@ import java.util.Set;
  */
 
 class World {
-    private Map<String, List<String>> connectionMap = new HashMap<>(); // shrine name --> its children's names
-    private Map<String, Shrine> shrineMap = new HashMap<>(); // shrine name -> shrine object
+    private final Map<String, List<String>> connectionMap = new HashMap<>(); // shrine name --> its children's names
+    private final Map<String, Shrine> shrineMap = new HashMap<>(); // shrine name -> shrine object
+
+    private final Roller roller;
+
+    public World(Roller randomRoller) {
+        this.roller = randomRoller;
+    }
 
     public Collection<Shrine> getShrines() {
         return shrineMap.values();
     }
 
-
-    enum FindPathType { USE_ALL_SHORTEST, USE_MAX_DEPTH }
+    private enum FindPathType { USE_ALL_SHORTEST, USE_MAX_DEPTH }
     static class FindPathSettings {
         FindPathType findPathType;
         int depth = -1;
@@ -165,11 +169,20 @@ class World {
         return shrineMap.keySet();
     }
 
+    void endTurn() throws InvalidObjectException {
+        for (String shrineName : getShrineNames()) {
+            Shrine shrine = getShrine(shrineName);
+            shrine.endTurn();
+        }
+
+        processMoves();
+    }
+
     void processMoves() throws InvalidObjectException {
         // Move everything from departuresMap to arrivalMap for all Shrines
         for (String shrineName : getShrineNames()) {
             Shrine shrine = getShrine(shrineName);
-            Map<String, Map<Shrine.MovableType, Integer>> departureMap = shrine.getDepartureMap();
+            Map<String, Map<Shrine.MovableType, Integer>> departureMap = shrine.getDepartureMapCopy();
 
             for (String destinationName : departureMap.keySet()) {
                 if (connectionMap.get(shrine.getName()).contains(destinationName)) { // Prevent moves to unconnected shrines
@@ -191,7 +204,7 @@ class World {
         for (String shrineName : getShrineNames()) {
             Shrine shrine = getShrine(shrineName);
             shrine.moveAllToArrivalMap();
-//            shrine.fight();
+            shrine.fight(roller);
         }
     }
 
@@ -205,7 +218,6 @@ class World {
         //noinspection SimplifiableIfStatement
         if (!connectionMap.equals(world.connectionMap)) return false;
         return shrineMap.equals(world.shrineMap);
-
     }
 
     @Override

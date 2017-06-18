@@ -22,7 +22,7 @@ public class WorldTest {
 
     @Before
     public void setUp() {
-        world = new World();
+        world = new World(new Roller(1));
     }
 
     @Test
@@ -291,7 +291,6 @@ public class WorldTest {
         allPaths.add(path0);
         allPaths.add(path1);
 
-        World world = new World();
         for (Shrine shrine : shrines) {
             world.addShrine(shrine);
         }
@@ -317,7 +316,6 @@ public class WorldTest {
         allPaths.add(path2);
         allPaths.add(path3);
 
-        World world = new World();
         for (Shrine shrine : shrines) {
             world.addShrine(shrine);
         }
@@ -332,7 +330,6 @@ public class WorldTest {
 
     @Test
     public void sortPaths_bigNetwork() {
-        World world = new World();
         int SIZE = 10;
         List<Shrine> shrines = Utils.generateShrines(SIZE);
         for (int i = 0; i < SIZE; i++) {
@@ -387,7 +384,6 @@ public class WorldTest {
 
     @Test
     public void isCompletelyConnected_bigConnected() {
-        World world = new World();
         int SIZE = 10;
         List<Shrine> shrines = Utils.generateShrines(SIZE);
         for (int i = 0; i < SIZE; i++) {
@@ -402,7 +398,6 @@ public class WorldTest {
 
     @Test
     public void isCompletelyConnected_semiConnected() {
-        World world = new World();
         int SIZE = 10;
         List<Shrine> shrines = Utils.generateShrines(SIZE);
         for (int i = 0; i < SIZE; i++) {
@@ -436,20 +431,20 @@ public class WorldTest {
         }
 
         for (int i = 0; i < shrines.size(); i++) {
-            Map<String, Map<Shrine.MovableType, Integer>> departures = shrines.get(i).getDepartureMap();
+            Map<String, Map<Shrine.MovableType, Integer>> departures = shrines.get(i).getDepartureMapCopy();
             assertThat(departures.size(), is(0));
         }
-        Map<String, Map<Shrine.MovableType, Integer>> arrivals0 = shrines.get(0).getArrivalMapCopy();
-        assertThat(arrivals0.size(), is(0));
-        Map<String, Map<Shrine.MovableType, Integer>> arrivals1 = shrines.get(1).getArrivalMapCopy();
-        assertThat(arrivals1.size(), is(1));
-        Map<Shrine.MovableType, Integer> subMap = arrivals1.get(shrines.get(0).getName());
-        assertThat(subMap.size(), is(Shrine.MovableType.values().length));
-        for (Shrine.MovableType type : subMap.keySet()) {
-            assertThat(subMap.get(type), is(type.ordinal() + 1));
+        for (int i = 0; i < shrines.size(); i++) {
+            Map<String, Map<Shrine.MovableType, Integer>> arrivals = shrines.get(i).getArrivalMapCopy();
+            assertThat(arrivals.size(), is(0));
+        }
+        for (Shrine.MovableType type : Shrine.MovableType.values()) {
+            assertThat(shrines.get(0).getMovableType(type), is(0));
+        }
+        for (Shrine.MovableType type : Shrine.MovableType.values()) {
+            assertThat(shrines.get(1).getMovableType(type), is(type.ordinal() + 1));
         }
     }
-
 
     @Test
     public void processMoves_catchException() {
@@ -486,27 +481,20 @@ public class WorldTest {
         }
 
         for (int i = 0; i < shrines.size(); i++) {
-            Map<String, Map<Shrine.MovableType, Integer>> departures = shrines.get(i).getDepartureMap();
+            Map<String, Map<Shrine.MovableType, Integer>> departures = shrines.get(i).getDepartureMapCopy();
             assertThat(departures.size(), is(0));
         }
-        Map<String, Map<Shrine.MovableType, Integer>> arrivals0 = shrines.get(0).getArrivalMapCopy();
-        assertThat(arrivals0.size(), is(1));
-        {
-            Map<Shrine.MovableType, Integer> subMap = arrivals0.get(shrines.get(1).getName());
-            assertThat(subMap.size(), is(Shrine.MovableType.values().length));
-            for (Shrine.MovableType type : subMap.keySet()) {
-                assertThat(subMap.get(type), is(type.ordinal() + 10));
-            }
+        for (int i = 0; i < shrines.size(); i++) {
+            Map<String, Map<Shrine.MovableType, Integer>> arrivals = shrines.get(i).getArrivalMapCopy();
+            assertThat(arrivals.size(), is(0));
         }
 
-        Map<String, Map<Shrine.MovableType, Integer>> arrivals1 = shrines.get(1).getArrivalMapCopy();
-        assertThat(arrivals1.size(), is(1));
-        {
-            Map<Shrine.MovableType, Integer> subMap = arrivals1.get(shrines.get(0).getName());
-            assertThat(subMap.size(), is(Shrine.MovableType.values().length));
-            for (Shrine.MovableType type : subMap.keySet()) {
-                assertThat(subMap.get(type), is(type.ordinal() + 1));
-            }
+        for (Shrine.MovableType type : Shrine.MovableType.values()) {
+            assertThat(shrines.get(0).getMovableType(type), is(type.ordinal() + 10));
+        }
+
+        for (Shrine.MovableType type : Shrine.MovableType.values()) {
+            assertThat(shrines.get(1).getMovableType(type), is(type.ordinal() + 1));
         }
     }
 
