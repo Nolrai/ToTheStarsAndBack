@@ -415,7 +415,7 @@ public class WorldTest {
     }
 
     @Test
-    public void processMoves_trivial() {
+    public void endTurn_processMovestrivial() {
         List<Shrine> shrines = Utils.generateShrines(2);
         world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getName()));
         world.addShrine(shrines.get(1));
@@ -425,7 +425,7 @@ public class WorldTest {
         }
 
         try {
-            world.processMoves();
+            world.endTurn();
         } catch (InvalidObjectException e) {
             assertThat(e.getMessage(), true, is(false));
         }
@@ -447,7 +447,7 @@ public class WorldTest {
     }
 
     @Test
-    public void processMoves_catchException() {
+    public void endTurn_processMovescatchException() {
         List<Shrine> shrines = Utils.generateShrines(2);
         world.addShrine(shrines.get(0));
         world.addShrine(shrines.get(1));
@@ -456,7 +456,7 @@ public class WorldTest {
 
         boolean thrown = false;
         try {
-            world.processMoves();
+            world.endTurn();
         } catch (InvalidObjectException e) {
             thrown = true;
         }
@@ -464,7 +464,7 @@ public class WorldTest {
     }
 
     @Test
-    public void processMoves_backAndForth() {
+    public void endTurn_processMovesbackAndForth() {
         List<Shrine> shrines = Utils.generateShrines(2);
         world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getName()));
         world.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(0).getName()));
@@ -475,7 +475,7 @@ public class WorldTest {
         }
 
         try {
-            world.processMoves();
+            world.endTurn();
         } catch (InvalidObjectException e) {
             assertThat(e.getMessage(), true, is(false));
         }
@@ -495,6 +495,28 @@ public class WorldTest {
 
         for (Shrine.MovableType type : Shrine.MovableType.values()) {
             assertThat(shrines.get(1).getMovableType(type), is(type.ordinal() + 1));
+        }
+    }
+
+    @Test
+    public void endTurn_callShrineEndTurn() {
+        List<Shrine> shrines = Utils.generateShrines(3);
+        world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getName()));
+        world.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(0).getName()));
+        world.addShrine(shrines.get(2));
+        for (Shrine shrine : shrines) {
+            shrine.setNumUsedWorker(1);
+            shrine.setNumGold(1);
+        }
+
+        try {
+            world.endTurn();
+        } catch (InvalidObjectException e) {
+            assertThat(e.getMessage(), true, is(false));
+        }
+
+        for (Shrine shrine : shrines) {
+            assertThat(shrine.getNumWorker(), is(1));
         }
     }
 

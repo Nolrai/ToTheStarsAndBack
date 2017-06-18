@@ -178,7 +178,7 @@ class World {
         processMoves();
     }
 
-    void processMoves() throws InvalidObjectException {
+    private void processMoves() throws InvalidObjectException {
         // Move everything from departuresMap to arrivalMap for all Shrines
         for (String shrineName : getShrineNames()) {
             Shrine shrine = getShrine(shrineName);

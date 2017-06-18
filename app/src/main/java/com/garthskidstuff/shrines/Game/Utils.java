@@ -32,6 +32,7 @@ public class Utils {
 
         for (int i = 0; i < num; i++) {
             Shrine shrine = new Shrine("" + i, "" + i);
+            shrine.initBasic(100, 0, 0, 0);
             shrines.add(shrine);
         }
 

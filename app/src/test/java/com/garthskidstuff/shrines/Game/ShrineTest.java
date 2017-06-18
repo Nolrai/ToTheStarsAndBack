@@ -18,8 +18,9 @@ import static org.junit.Assert.assertThat;
  */
 public class ShrineTest {
     private static int maxWorker = 100;
-    private static int miningRateParts = 10;
-    private static int miningDegradationRateParts = 1;
+    private static int miningRateParts = (int)(Shrine.PARTS_MULTIPLIER * 1.5);
+    private static int miningDegradationRateParts = Shrine.PARTS_MULTIPLIER / 1000;
+    private static int workerRateParts = Shrine.PARTS_MULTIPLIER / 20;
 
     private Roller roller;
 
@@ -194,7 +195,6 @@ public class ShrineTest {
 
     @Test
     public void fight_combat1Vs1DifferentType() {
-
         for (MovableType typeA : MovableType.values()) {
             for (MovableType typeB : MovableType.values()) {
                 if (!Utils.equals(typeA, typeB) && (0 < typeA.fight) && (0 < typeB.fight)) {
@@ -210,9 +210,98 @@ public class ShrineTest {
         }
     }
 
+    @Test
+    public void endTurn_unusedWorkersMine() {
+        Shrine shrine = makeBasicShrine("name", "imageId");
+        shrine.setNumWorker(90);
+
+        shrine.endTurn();
+
+        assertThat("" + shrine.getNumGoldParts() + " <= 0", (0 < shrine.getNumGoldParts()), is(true));
+    }
+
+    @Test
+    public void endTurn_resetUsedWorkers() {
+        Shrine shrine = makeBasicShrine("name", "imageId");
+        shrine.setNumWorker(1);
+        shrine.setNumUsedWorker(1);
+        shrine.setNumGold(100); // so they won't starve
+
+        shrine.endTurn();
+
+        assertThat(shrine.getNumUsedWorker(), is(0));
+        assertThat(shrine.getNumWorker(), is(2));
+    }
+
+    @Test
+    public void endTurn_resetUsedAltars() {
+        Shrine shrine = makeBasicShrine("name", "imageId");
+        shrine.setNumAltar(10);
+        shrine.setNumUsedAltar(10);
+
+        shrine.endTurn();
+
+        assertThat(shrine.getNumUsedAltar(), is(0));
+        assertThat(shrine.getNumAltar(), is(20));
+    }
+
+    @Test
+    public void endTurn_workersStarveIfNoGold() {
+        Shrine shrine = makeBasicShrine("name", "imageId");
+        shrine.setNumUsedWorker(10);
+
+        shrine.endTurn();
+
+        assertThat(shrine.getNumWorker(), is(0));
+    }
+
+    @Test
+    public void endTurn_workersDontStarveIfEnoughGold() {
+        Shrine shrine = makeBasicShrine("name", "imageId");
+        shrine.setNumUsedWorker(1);
+        shrine.setNumGold(1);
+
+        shrine.endTurn();
+
+        assertThat(shrine.getNumWorker(), is(1));
+    }
+
+    @Test
+    public void endTurn_someWorkersStarve() {
+        Shrine shrine = makeBasicShrine("name", "imageId");
+        shrine.setNumUsedWorker(2);
+        shrine.setNumGold(1);
+
+        shrine.endTurn();
+
+        assertThat(shrine.getNumWorker(), is(1));
+    }
+
+    @Test
+    public void endTurn_workersReproduce() {
+        Shrine shrine = makeBasicShrine("name", "imageId");
+        shrine.setNumUsedWorker(10);
+        shrine.setNumGold(10);
+
+        shrine.endTurn();
+
+        assertThat(shrine.getNumWorkerParts(), is(10 * Shrine.PARTS_MULTIPLIER + 10 * workerRateParts));
+    }
+
+    @Test
+    public void endTurn_workersDontGrowPastMax() {
+        Shrine shrine = makeBasicShrine("name", "imageId");
+        shrine.setNumUsedWorker(maxWorker - 1);
+        shrine.setNumGold(maxWorker);
+
+        shrine.endTurn();
+
+        assertThat(shrine.getNumWorker(), is(maxWorker));
+    }
+
     private Shrine makeBasicShrine(String name, String imageId) {
         Shrine shrine = new Shrine(name, imageId);
-        shrine.initBasic(maxWorker, miningRateParts, miningDegradationRateParts);
+        shrine.initBasic(maxWorker, miningRateParts, miningDegradationRateParts, workerRateParts);
         return shrine;
     }
     
