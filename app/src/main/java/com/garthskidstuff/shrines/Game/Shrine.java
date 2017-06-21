@@ -298,7 +298,7 @@ public class Shrine  {
         setShrine(shrine);
     }
 
-    void doOrder(Order order, int num) {
+    boolean doOrder(Order order, int num) {
         int numParts = num * PARTS_MULTIPLIER;
         Shrine oldShrine = cloneShrine();
 
@@ -327,6 +327,8 @@ public class Shrine  {
         if (!success) {
             setShrine(oldShrine);
         }
+
+        return success;
     }
 
     public void doMoveOrder(String destinationName, MovableType type, int num) {

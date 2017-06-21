@@ -1,5 +1,9 @@
 package com.garthskidstuff.shrines.Game;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -20,18 +24,18 @@ public class Game {
         public int maxConnections = 5;
         public int minMaxPopulation = 5; // The max size pop can grow is between min/max
         public int maxMaxPopulation = 40;
-        public int minMiningRateParts = (int)(Shrine.PARTS_MULTIPLIER * 1.5);
-        public int maxMiningRateParts = (int)(Shrine.PARTS_MULTIPLIER * 5);
+        public int minMiningRateParts = (int) (Shrine.PARTS_MULTIPLIER * 1.5);
+        public int maxMiningRateParts = (int) (Shrine.PARTS_MULTIPLIER * 5);
         public int miningDegradationRateParts = Shrine.PARTS_MULTIPLIER / 1000; // amount mining rate goes down each time a worker mines
         public int minWorkerRateParts = Shrine.PARTS_MULTIPLIER / 100;
         public int maxWorkerRateParts = Shrine.PARTS_MULTIPLIER / 5;
         public int homeMaxPopulation = 100;
-        public int homeMiningRateParts = (int)(Shrine.PARTS_MULTIPLIER * 2);
+        public int homeMiningRateParts = (int) (Shrine.PARTS_MULTIPLIER * 2);
         public int homeWorkerRateParts = Shrine.PARTS_MULTIPLIER / 10;
         public int homeNumAlters = 10;
         public int homeNumGold = 30;
         public int homeNumWorkers = 50;
-        
+
         @SuppressWarnings("FieldCanBeLocal")
         public int minHomeDistance = 3;
         @SuppressWarnings("FieldCanBeLocal")
@@ -94,8 +98,34 @@ public class Game {
             result = 31 * result + (int) (seed ^ (seed >>> 32));
             return result;
         }
+
+        @Override
+        public String toString() {
+            return "Constants{" +
+                    "minShrines=" + minShrines +
+                    ", maxShrines=" + maxShrines +
+                    ", minConnections=" + minConnections +
+                    ", maxConnections=" + maxConnections +
+                    ", minMaxPopulation=" + minMaxPopulation +
+                    ", maxMaxPopulation=" + maxMaxPopulation +
+                    ", minMiningRateParts=" + minMiningRateParts +
+                    ", maxMiningRateParts=" + maxMiningRateParts +
+                    ", miningDegradationRateParts=" + miningDegradationRateParts +
+                    ", minWorkerRateParts=" + minWorkerRateParts +
+                    ", maxWorkerRateParts=" + maxWorkerRateParts +
+                    ", homeMaxPopulation=" + homeMaxPopulation +
+                    ", homeMiningRateParts=" + homeMiningRateParts +
+                    ", homeWorkerRateParts=" + homeWorkerRateParts +
+                    ", homeNumAlters=" + homeNumAlters +
+                    ", homeNumGold=" + homeNumGold +
+                    ", homeNumWorkers=" + homeNumWorkers +
+                    ", minHomeDistance=" + minHomeDistance +
+                    ", maxHomeDistance=" + maxHomeDistance +
+                    ", seed=" + seed +
+                    '}';
+        }
     }
-    
+
     final Constants constants;
     final List<String> homeNames;
     World world;
@@ -255,6 +285,7 @@ public class Game {
         /**
          * As long as the innerList isn't empty then we can run Next.
          * (_Which_ item is next is decided in next().)
+         *
          * @return can we run next safely.
          */
         @Override
@@ -312,9 +343,225 @@ public class Game {
         return result;
     }
 
-    /////////////////////////////
-    public static void main(String[] args) {
-        System.out.println("Hello, World");
+    static List<String> readFile(String path) throws IOException {
+        List<String> lines = new ArrayList<>();
+        BufferedReader br = new BufferedReader(new FileReader(path));
+        try {
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                lines.add(line);
+            }
+        } finally {
+            br.close();
+        }
+        return lines;
     }
 
+    private static Integer parseForParameter(String[] words) {
+        Integer param = null;
+        if (2 == words.length) {
+            param = Integer.parseInt(words[1]);
+        } else if (4 == words.length) {
+            if ("*" == words[2]) {
+                param = (int) (Shrine.PARTS_MULTIPLIER * Double.parseDouble(words[3]));
+            } else if ("/" == words[2]) {
+                param = (int) (Shrine.PARTS_MULTIPLIER / Double.parseDouble(words[3]));
+            }
+        }
+        return param;
+    }
+
+    private static Game makeGameFromConfig(String pathToConfig) throws IOException {
+        Constants constants = new Constants(-1);
+        List<String> lines = readFile(pathToConfig);
+        for(String line: lines) {
+            String[] words = line.split(": ");
+            if ((2 == words.length) || (4 == words.length)) {
+                switch (words[0]) {
+                    case "minShrines":
+                        constants.minShrines = parseForParameter(words);
+                        break;
+                    case "maxShrines":
+                        constants.maxShrines = parseForParameter(words);
+                        break;
+                    case "minConnections":
+                        constants.minConnections = parseForParameter(words);
+                        break;
+                    case "maxConnections":
+                        constants.maxConnections = parseForParameter(words);
+                        break;
+                    case "minMaxPopulation":
+                        constants.minMaxPopulation = parseForParameter(words);
+                        break;
+                    case "maxMaxPopulation":
+                        constants.maxMaxPopulation = parseForParameter(words);
+                        break;
+                    case "minMiningRateParts":
+                        constants.minMiningRateParts = parseForParameter(words);
+                        break;
+                    case "maxMiningRateParts":
+                        constants.maxMiningRateParts = parseForParameter(words);
+                        break;
+                    case "miningDegradationRateParts":
+                        constants.miningDegradationRateParts = parseForParameter(words);
+                        break;
+                    case "minWorkerRateParts":
+                        constants.minWorkerRateParts = parseForParameter(words);
+                        break;
+                    case "maxWorkerRateParts":
+                        constants.maxWorkerRateParts = parseForParameter(words);
+                        break;
+                    case "homeMaxPopulation":
+                        constants.homeMaxPopulation = parseForParameter(words);
+                        break;
+                    case "homeMiningRateParts":
+                        constants.homeMiningRateParts = parseForParameter(words);
+                        break;
+                    case "homeWorkerRateParts":
+                        constants.homeWorkerRateParts = parseForParameter(words);
+                        break;
+                    case "homeNumAlters":
+                        constants.homeNumAlters = parseForParameter(words);
+                        break;
+                    case "homeNumGold":
+                        constants.homeNumGold = parseForParameter(words);
+                        break;
+                    case "homeNumWorkers":
+                        constants.homeNumWorkers = parseForParameter(words);
+                        break;
+                    case "minHomeDistance":
+                        constants.minHomeDistance = parseForParameter(words);
+                        break;
+                    case "maxHomeDistance":
+                        constants.maxHomeDistance = parseForParameter(words);
+                        break;
+                    case "seed":
+                        constants.seed = parseForParameter(words);
+                        break;
+                }
+            }
+        }
+        System.out.println(constants.toString());
+
+        return mkTestGame(constants);
+    }
+
+    enum Order {
+        HELP("?", "help ex: ?"),
+        SHOW_SHRINE("show", "shows a shrine. Default is home world.  ex: 'show <shrine_name>'"),
+        BUILD_FIGHTER("buildFighter", "builds fighter(s) with a number of workers at a shrine (default is last shown shrine).  ex: 'buildFighter <num_workers> <shrine_name>'"),
+        BUILD_ALTAR("buildAltar", "builds altar(s) with a number of workers at a shrine (default is last shown shrine).  ex: 'buildAltar <num_workers> <shrine_name>'"),
+        NEXT("next", "ends the current player's turn"),
+        QUIT("quit", "quits the game");
+
+        String order;
+        String helpText;
+
+        Order(String order, String helpText) {
+            this.order = order;
+            this.helpText = helpText;
+        }
+    }
+
+    static String lastShownShrine = null;
+
+    String runOrder(Order order, String currentPlayer, String[] words) {
+        if (null == lastShownShrine) {
+            lastShownShrine = currentPlayer;
+        }
+        switch (order) {
+            case HELP: {
+                for (Order o : Order.values()) {
+                    System.out.println(o.order + ":  " + o.helpText);
+                }
+                break;
+            }
+            case SHOW_SHRINE: {
+                Shrine shrine = world.getShrine((1 < words.length) ? words[1] : currentPlayer);
+                if (null != shrine) {
+                    lastShownShrine = shrine.getName();
+                    System.out.println(shrine.toString());
+                    System.out.println(world.getConnections(shrine.getName()).toString());
+                } else {
+                    System.out.println(words[1] + " not found");
+                }
+                break;
+            }
+            case BUILD_FIGHTER: {
+                if (1 < words.length) {
+                    Shrine shrine = world.getShrine((2 < words.length) ? words[2] : lastShownShrine);
+                    int num = Integer.parseInt(words[1]);
+                    if (!shrine.doOrder(Shrine.Order.BUILD_FIGHTER, num)) {
+                        System.out.println("Error building!");
+                    }
+
+                    runOrder(Order.SHOW_SHRINE, currentPlayer, new String[] { Order.SHOW_SHRINE.order });
+                }
+                break;
+            }
+            case BUILD_ALTAR: {
+                if (1 < words.length) {
+                    Shrine shrine = world.getShrine((2 < words.length) ? words[2] : lastShownShrine);
+                    int num = Integer.parseInt(words[1]);
+                    if (!shrine.doOrder(Shrine.Order.BUILD_ALTAR, num)) {
+                        System.out.println("Error building!");
+                    }
+                    runOrder(Order.SHOW_SHRINE, currentPlayer, new String[] { Order.SHOW_SHRINE.order });
+                }
+                break;
+            }
+            case NEXT: { //TODO Will fail if > 2 players
+                for (String player : homeNames) {
+                    if (!Utils.equals(player, currentPlayer)) {
+                        currentPlayer = player;
+                        break;
+                    }
+                }
+                break;
+            }
+            case QUIT: {
+                currentPlayer = null;
+                break;
+            }
+        }
+
+        return currentPlayer;
+    }
+
+    String getAndRunOrder(String currentPlayer) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        System.out.println("Enter an order, " + currentPlayer);
+
+        String line = reader.readLine();
+        System.out.println("line: " + line);
+        String[] words = line.split(" ");
+        if (0 < words.length) {
+            for (Order order : Order.values()) {
+                if (Utils.equals(order.order, words[0])) {
+                    currentPlayer = runOrder(order, currentPlayer, words);
+                    break;
+                }
+            }
+        }
+
+        return currentPlayer;
+    }
+
+    /////////////////////////////
+    public static void main(String[] args) {
+        try {
+            if (1 != args.length) {
+                System.out.println("Enter a configuration file!");
+            } else {
+                Game game = makeGameFromConfig(args[0]);
+
+                String currentPlayer = game.homeNames.get(0);
+                do {
+                    currentPlayer = game.getAndRunOrder(currentPlayer);
+                } while (null != currentPlayer);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+    }
 }
