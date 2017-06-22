@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.InvalidObjectException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -15,7 +14,7 @@ import java.util.Set;
  * Created by garthupshaw1 on 5/10/17.
  */
 
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "TryFinallyCanBeTryWithResources"})
 public class Game {
 
     public static class Constants {
@@ -71,6 +70,7 @@ public class Game {
             if (homeNumGold != constants.homeNumGold) return false;
             if (homeNumWorkers != constants.homeNumWorkers) return false;
             if (minHomeDistance != constants.minHomeDistance) return false;
+            //noinspection SimplifiableIfStatement
             if (maxHomeDistance != constants.maxHomeDistance) return false;
             return seed == constants.seed;
 
@@ -361,9 +361,9 @@ public class Game {
         if (2 == words.length) {
             param = Integer.parseInt(words[1]);
         } else if (4 == words.length) {
-            if ("*" == words[2]) {
+            if (Utils.equals("*", words[2])) {
                 param = (int) (Shrine.PARTS_MULTIPLIER * Double.parseDouble(words[3]));
-            } else if ("/" == words[2]) {
+            } else if (Utils.equals("/", words[2])) {
                 param = (int) (Shrine.PARTS_MULTIPLIER / Double.parseDouble(words[3]));
             }
         }
@@ -522,13 +522,13 @@ public class Game {
                     int id = Integer.parseInt(words[3]);
                     Integer destinationId = world.getConnections(lastShownShrineId).contains(id) ? id : null;
                     Shrine shrine = world.getShrine(lastShownShrineId);
-                    if (!shrine.doMoveOrder(destinationId, type, num)) {
+                    if ((null == destinationId) || !shrine.doMoveOrder(destinationId, type, num)) {
                         System.out.println("Error moving!");
                     }
                 }
                 break;
             }
-            case NEXT: { //TODO Will fail if > 2 players
+            case NEXT: {
                 currentPlayerIndex++;
                 if(currentPlayerIndex == homeIds.size()) {
                     currentPlayerIndex = 0;

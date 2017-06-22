@@ -12,7 +12,8 @@ import java.util.Set;
  * A single node in the World graph
  */
 
-public class Shrine  {
+class Shrine  {
+    @SuppressWarnings("unused")
     private static final String TAG = "Shrine";
 
     private final int id;
@@ -73,23 +74,23 @@ public class Shrine  {
         MINE,
         BUILD_FIGHTER,
         BUILD_ALTAR,
-    };
+    }
 
-    public Shrine(int id, String displayName, String imageId) {
+    Shrine(int id, String displayName, String imageId) {
         this.id = id;
         this.displayName = displayName;
         this.imageId = imageId;
         ownerId = id;
     }
 
-    public void initBasic(int maxPopulation, int miningRateParts, int miningDegradationRateParts, int workerRateParts) {
+    void initBasic(int maxPopulation, int miningRateParts, int miningDegradationRateParts, int workerRateParts) {
         this.maxWorkers = maxPopulation;
         this.miningRateParts = miningRateParts;
         this.miningDegradationRateParts = miningDegradationRateParts;
         this.workerRateParts = workerRateParts;
     }
 
-    public void initHome(int maxPopulation, int miningRate, int miningDegradationRateParts,
+    void initHome(int maxPopulation, int miningRate, int miningDegradationRateParts,
                          int workerRateParts, int numWorkers, int numAlters, int numGold) {
         initBasic(maxPopulation, miningRate, miningDegradationRateParts, workerRateParts);
         
@@ -98,107 +99,91 @@ public class Shrine  {
         numGoldParts = numGold * PARTS_MULTIPLIER;
     }
 
-    public int getId() {
+    int getId() {
         return id;
     }
 
-    public String getDisplayName() {
+    String getDisplayName() {
         return displayName;
     }
 
-    public String getImageId() {
+    String getImageId() {
         return imageId;
     }
 
-    public int getMaxWorkers() {
+    int getMaxWorkers() {
         return maxWorkers;
     }
 
-    public int getOwnerId() {
+    int getOwnerId() {
         return ownerId;
     }
 
-    public void setOwnerId(int ownerId) {
+    private void setOwnerId(int ownerId) {
         this.ownerId = ownerId;
     }
 
-    public Map<Integer, Map<MovableType, Integer>> getArrivalMapCopy() {
+    Map<Integer, Map<MovableType, Integer>> getArrivalMapCopy() {
         return copyMap(arrivalMap);
     }
 
-    public void clearArrivalMap() {
-        arrivalMap.clear();
-    }
-
-    public void setMaxWorkers(int maxWorkers) {
-        this.maxWorkers = maxWorkers;
-    }
-
-    public int getNumWorkerParts() {
+    int getNumWorkerParts() {
         return numWorkerParts;
     }
 
-    public void setNumWorkerParts(int numWorkerParts) {
+    private void setNumWorkerParts(int numWorkerParts) {
         this.numWorkerParts = numWorkerParts;
     }
 
-    public int getNumUsedWorker() {
+    int getNumUsedWorker() {
         return numUsedWorker;
     }
 
-    public void setNumUsedWorker(int numUsedWorker) {
+    void setNumUsedWorker(int numUsedWorker) {
         this.numUsedWorker = numUsedWorker;
     }
 
-    public int getNumAltarParts() {
+    int getNumAltarParts() {
         return numAltarParts;
     }
 
-    public void setNumAltarParts(int numAltarParts) {
+    private void setNumAltarParts(int numAltarParts) {
         this.numAltarParts = numAltarParts;
     }
 
-    public int getNumUsedAltar() {
+    int getNumUsedAltar() {
         return numUsedAltar;
     }
 
-    public void setNumUsedAltar(int numUsedAltar) {
+    void setNumUsedAltar(int numUsedAltar) {
         this.numUsedAltar = numUsedAltar;
     }
 
-    public int getMiningRateParts() {
+    int getMiningRateParts() {
         return miningRateParts;
     }
 
-    public void setMiningRateParts(int miningRateParts) {
-        this.miningRateParts = miningRateParts;
-    }
-
-    public int getMiningDegradationRateParts() {
+    int getMiningDegradationRateParts() {
         return miningDegradationRateParts;
     }
 
-    public void setMiningDegradationRateParts(int miningDegradationRateParts) {
-        this.miningDegradationRateParts = miningDegradationRateParts;
-    }
-
-    public int getNumGoldParts() {
+    int getNumGoldParts() {
         return numGoldParts;
     }
 
-    public void setNumGoldParts(int numGoldParts) {
+    private void setNumGoldParts(int numGoldParts) {
         this.numGoldParts = numGoldParts;
     }
 
-    public int getNumFighterParts() {
+    int getNumFighterParts() {
         return numFighterParts;
     }
 
-    public void setNumFighterParts(int numFighterParts) {
+    private void setNumFighterParts(int numFighterParts) {
         this.numFighterParts = numFighterParts;
     }
 
-    public Map<Integer, Map<MovableType, Integer>> getDepartureMapCopy() {
+    Map<Integer, Map<MovableType, Integer>> getDepartureMapCopy() {
         return copyMap(departureMap);
     }
 
@@ -213,48 +198,40 @@ public class Shrine  {
         return copyMap;
     }
 
-    public void clearDepartureMap() {
+    void clearDepartureMap() {
         departureMap.clear();
     }
 
     // The following are convenience functions to get/set whole integer values
-    public int getNumGold() {
+    int getNumGold() {
         return numGoldParts / PARTS_MULTIPLIER;
     }
 
-    public void setNumGold(int num) {
+    void setNumGold(int num) {
         numGoldParts = num * PARTS_MULTIPLIER;
     }
 
-    public int getNumWorker() {
+    int getNumWorker() {
         return numWorkerParts / PARTS_MULTIPLIER;
     }
 
-    public void setNumWorker(int num) {
+    void setNumWorker(int num) {
         numWorkerParts = num * PARTS_MULTIPLIER;
     }
 
-    public int getNumAltar() {
+    int getNumAltar() {
         return numAltarParts / PARTS_MULTIPLIER;
     }
 
-    public void setNumAltar(int num) {
+    void setNumAltar(int num) {
         numAltarParts = num * PARTS_MULTIPLIER;
     }
 
-    public int getNumFighter() {
-        return numFighterParts / PARTS_MULTIPLIER;
-    }
-
-    public void setNumFighter(int num) {
-        numFighterParts = num * PARTS_MULTIPLIER;
-    }
-
-    public void setMovableType(MovableType type, int num) {
+    void setMovableType(MovableType type, int num) {
         setMovableTypeParts(type, num * PARTS_MULTIPLIER);
     }
 
-    public void setMovableTypeParts(MovableType type, int numParts) {
+    private void setMovableTypeParts(MovableType type, int numParts) {
         switch (type) {
             case WORKER:
                 setNumWorkerParts(numParts);
@@ -271,11 +248,12 @@ public class Shrine  {
         }
     }
 
-    public Integer getMovableType(MovableType type) {
+    Integer getMovableType(MovableType type) {
+        //noinspection ConstantConditions
         return getMovableTypeParts(type) / PARTS_MULTIPLIER;
     }
 
-    public Integer getMovableTypeParts(MovableType type) {
+    private Integer getMovableTypeParts(MovableType type) {
         switch (type) {
             case WORKER:
                 return getNumWorkerParts();
@@ -289,7 +267,8 @@ public class Shrine  {
         return null;
     }
 
-    public void addMovableType(MovableType type, int num) {
+    private void addMovableType(MovableType type, int num) {
+        //noinspection ConstantConditions
         int existingParts = getMovableTypeParts(type);
         setMovableTypeParts(type, existingParts + num * PARTS_MULTIPLIER);
     }
@@ -338,7 +317,7 @@ public class Shrine  {
         return success;
     }
 
-    public boolean doMoveOrder(int destinationId, MovableType type, int num) {
+    boolean doMoveOrder(int destinationId, MovableType type, int num) {
         Shrine oldShrine = new Shrine(-1, "name", "image");
         oldShrine.setShrine(this);
 
@@ -351,7 +330,7 @@ public class Shrine  {
         return success;
     }
 
-    boolean useMovable(MovableType type, int num) {
+    private boolean useMovable(MovableType type, int num) {
         int numParts = num * PARTS_MULTIPLIER;
         switch(type) {
             case WORKER:
@@ -380,10 +359,6 @@ public class Shrine  {
 
     void addArrival(int homeId, MovableType type, int num) {
         addToMap(arrivalMap, homeId, type, num);
-    }
-
-    int getArrival(int destinationId, MovableType type) {
-        return getFromMap(arrivalMap, destinationId, type);
     }
 
     private void addToMap(Map<Integer, Map<MovableType, Integer>> map, int destinationId, MovableType type, int num) {
@@ -432,15 +407,16 @@ public class Shrine  {
         return (numAltarParts >= 0);
     }
 
-    public void moveAllToArrivalMap() {
+    void moveAllToArrivalMap() {
         for (MovableType type : MovableType.values()) {
             addArrival(id, type, getMovableType(type));
+            //noinspection ConstantConditions
             int fractionalPart = getMovableTypeParts(type) % PARTS_MULTIPLIER;
             setMovableTypeParts(type, fractionalPart);
         }
     }
 
-    public void fight(Roller roller) {
+    void fight(Roller roller) {
 
         // Do fights
         Map<Integer, Map<MovableType, Integer>> copyMap = getArrivalMapCopy();
@@ -541,7 +517,7 @@ public class Shrine  {
         return sumMap;
     }
 
-    public void endTurn() {
+    void endTurn() {
         // Unused workers automatically mine
         doOrder(Order.MINE, getNumWorker());
 
@@ -571,7 +547,7 @@ public class Shrine  {
         return s;
     }
 
-    public String toCLIString() {
+    String toCLIString() {
         return "Shrine " + id + "\n    " +
                 " ownerId=" + ownerId +
                 " maxWorkers=" + maxWorkers +
@@ -629,6 +605,7 @@ public class Shrine  {
         if (workerRateParts != shrine.workerRateParts) return false;
         if (!displayName.equals(shrine.displayName)) return false;
         if (!imageId.equals(shrine.imageId)) return false;
+        //noinspection SimplifiableIfStatement
         if (!departureMap.equals(shrine.departureMap)) return false;
         return arrivalMap.equals(shrine.arrivalMap);
 
@@ -656,7 +633,7 @@ public class Shrine  {
     }
 
     // This does not set id and imageId
-    public void setShrine(Shrine other) {
+    void setShrine(Shrine other) {
         maxWorkers = other.maxWorkers;
         numWorkerParts = other.numWorkerParts;
         numUsedWorker = other.numUsedWorker;

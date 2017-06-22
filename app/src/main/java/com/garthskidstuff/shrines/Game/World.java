@@ -22,7 +22,7 @@ class World {
 
     private final Roller roller;
 
-    public World(Roller randomRoller) {
+    World(Roller randomRoller) {
         this.roller = randomRoller;
     }
 
@@ -67,6 +67,7 @@ class World {
         return shrineMap.get(shrineId);
     }
 
+    @SuppressWarnings("unused")
     List<Shrine> getShrines(List<Integer> shrineIds) {
         List<Shrine> shrines = new ArrayList<>();
         for (Integer id : shrineIds) {
