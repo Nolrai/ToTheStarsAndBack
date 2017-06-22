@@ -571,6 +571,22 @@ public class Shrine  {
         return s;
     }
 
+    public String toCLIString() {
+        return "Shrine " + id + "\n    " +
+                " ownerId=" + ownerId +
+                " maxWorkers=" + maxWorkers +
+                " workers=" + numWorkerParts +
+                " numUsedWorker=" + numUsedWorker +
+                " numAltarParts=" + numAltarParts +
+                " numUsedAltar=" + numUsedAltar + "\n    " +
+                " numFighterParts=" + numFighterParts +
+                " miningRateParts=" + miningRateParts +
+                " numGoldParts=" + numGoldParts +
+                " workerRateParts=" + workerRateParts +
+                " departureMap=" + departureMap +
+                " arrivalMap=" + arrivalMap;
+    }
+
     @Override
     public String toString() {
         return "Shrine{" +
