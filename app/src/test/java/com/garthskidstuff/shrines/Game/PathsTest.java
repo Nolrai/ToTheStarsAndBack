@@ -1,10 +1,8 @@
-package com.garthskidstuff.shrineNames.Game;
-
-import com.garthskidstuff.shrines.Game.Paths;
-import com.garthskidstuff.shrines.Game.Utils;
+package com.garthskidstuff.shrines.Game;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.core.Is.is;
@@ -18,26 +16,35 @@ public class PathsTest {
 
     @Test
     public void putAndGet_singleItem() {
-        List<String> shrineNames = Utils.generateShrineNames(2);
-        Paths path = new Paths(shrineNames.get(0), shrineNames.get(1));
-        List<String> connections = Utils.makeConnections(shrineNames.get(1));
+        List<Integer> shrineIds = generateShrineIds(2);
+        Paths path = new Paths(shrineIds.get(0), shrineIds.get(1));
+        List<Integer> connections = Utils.makeConnections(shrineIds.get(1));
 
-        path.put(shrineNames.get(0), connections);
-        List<String> testConnections = path.get(shrineNames.get(0));
+        path.put(shrineIds.get(0), connections);
+        List<Integer> testConnections = path.get(shrineIds.get(0));
 
         assertThat(testConnections, is(connections));
     }
 
     @Test
     public void putAndGet_itemNotInPath() {
-        List<String> shrineNames = Utils.generateShrineNames(2);
-        Paths path = new Paths(shrineNames.get(0), shrineNames.get(1));
-        List<String> connections = Utils.makeConnections(shrineNames.get(1));
+        List<Integer> shrineIds = generateShrineIds(2);
+        Paths path = new Paths(shrineIds.get(0), shrineIds.get(1));
+        List<Integer> connections = Utils.makeConnections(shrineIds.get(1));
 
-        path.put(shrineNames.get(0), connections);
-        List<String> testConnections = path.get(shrineNames.get(1));
+        path.put(shrineIds.get(0), connections);
+        List<Integer> testConnections = path.get(shrineIds.get(1));
 
         assertThat((null == testConnections), is(true));
     }
 
+
+    private List<Integer> generateShrineIds(int num) {
+        List<Integer> shrineIds = new ArrayList<>();
+        for (int i = 0; i < num; i++) {
+            shrineIds.add(i);
+        }
+
+        return shrineIds;
+    }
 }

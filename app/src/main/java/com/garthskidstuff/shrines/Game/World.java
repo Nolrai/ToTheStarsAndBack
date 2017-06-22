@@ -17,8 +17,8 @@ import java.util.Set;
  */
 
 class World {
-    private final Map<String, List<String>> connectionMap = new HashMap<>(); // shrine name --> its children's names
-    private final Map<String, Shrine> shrineMap = new HashMap<>(); // shrine name -> shrine object
+    private final Map<Integer, List<Integer>> connectionMap = new HashMap<>(); // shrine Id --> its children's Ids
+    private final Map<Integer, Shrine> shrineMap = new HashMap<>(); // shrine Id -> shrine object
 
     private final Roller roller;
 
@@ -49,28 +49,28 @@ class World {
         }
     }
 
-    void addShrine(Shrine shrine, List<String> connectionNames) {
-        connectionMap.put(shrine.getName(), connectionNames);
-        shrineMap.put(shrine.getName(), shrine);
+    void addShrine(Shrine shrine, List<Integer> connectionIds) {
+        connectionMap.put(shrine.getId(), connectionIds);
+        shrineMap.put(shrine.getId(), shrine);
      }
 
     void addShrine(Shrine shrine) {
-        connectionMap.put(shrine.getName(), new ArrayList<String>());
-        shrineMap.put(shrine.getName(), shrine);
+        connectionMap.put(shrine.getId(), new ArrayList<Integer>());
+        shrineMap.put(shrine.getId(), shrine);
     }
 
-    List<String> getConnections(String shrineName) {
-        return connectionMap.get(shrineName);
+    List<Integer> getConnections(Integer shrineId) {
+        return connectionMap.get(shrineId);
     }
 
-    Shrine getShrine(String shrineName) {
-        return shrineMap.get(shrineName);
+    Shrine getShrine(Integer shrineId) {
+        return shrineMap.get(shrineId);
     }
 
-    List<Shrine> getShrines(List<String> shrineNames) {
+    List<Shrine> getShrines(List<Integer> shrineIds) {
         List<Shrine> shrines = new ArrayList<>();
-        for (String name : shrineNames) {
-            shrines.add(getShrine(name));
+        for (Integer id : shrineIds) {
+            shrines.add(getShrine(id));
         }
         return shrines;
     }
@@ -79,49 +79,49 @@ class World {
         connectionMap.clear();
     }
 
-    Set<List<String>> getPaths(String startName, String endName) {
-        return getPaths(connectionMap.keySet(), startName, endName, FindPathSettings.useAllShortest());
+    Set<List<Integer>> getPaths(Integer startId, Integer endId) {
+        return getPaths(connectionMap.keySet(), startId, endId, FindPathSettings.useAllShortest());
     }
 
-    Set<List<String>> getPaths(Set<String> knownShrines, String startName, String endName) {
-        return getPaths(knownShrines, startName, endName, FindPathSettings.useAllShortest());
+    Set<List<Integer>> getPaths(Set<Integer> knownShrines, Integer startId, Integer endId) {
+        return getPaths(knownShrines, startId, endId, FindPathSettings.useAllShortest());
     }
 
-    Set<List<String>> getPaths(String startName, String endName, FindPathSettings findPathSettings) {
-        return getPaths(connectionMap.keySet(), startName, endName, findPathSettings);
+    Set<List<Integer>> getPaths(Integer startId, Integer endId, FindPathSettings findPathSettings) {
+        return getPaths(connectionMap.keySet(), startId, endId, findPathSettings);
     }
 
-    Set<List<String>> getPaths(Set<String> knownShrines, String startName, String endName, FindPathSettings findPathSettings) {
-        Paths paths = makePathsTo(knownShrines, startName, endName, findPathSettings);
+    Set<List<Integer>> getPaths(Set<Integer> knownShrines, Integer startId, Integer endId, FindPathSettings findPathSettings) {
+        Paths paths = makePathsTo(knownShrines, startId, endId, findPathSettings);
         return paths.makeSetOfPathsFrom();
     }
 
-    private Paths makePathsTo(Set<String> knownShrines, String start, String end, FindPathSettings findPathSettings) {
+    private Paths makePathsTo(Set<Integer> knownShrines, Integer start, Integer end, FindPathSettings findPathSettings) {
         Paths paths = new Paths(start, end);
-        List<Pair<Integer, String>> q = new ArrayList<>();
-        q.add(new Pair<>(0, paths.startName));
+        List<Pair<Integer, Integer>> q = new ArrayList<>();
+        q.add(new Pair<>(0, paths.startId));
 
         //noinspection WhileLoopReplaceableByForEach
         for (int i = 0; i < q.size(); i++) {
-            Pair<Integer, String> item = q.get(i);
+            Pair<Integer, Integer> item = q.get(i);
             if (null == paths.get(item.second)) {
-                List<String> connections = getConnections(item.second);
+                List<Integer> connections = getConnections(item.second);
                 if ((null != connections) &&
                         ((FindPathType.USE_ALL_SHORTEST == findPathSettings.findPathType) ||
                                 (item.first < findPathSettings.depth))) {
-                    List<String> pathConnections = new ArrayList<>();
-                    for (String shrineName : connections) {
-                        if (knownShrines.contains(shrineName)) {
-                            pathConnections.add(shrineName);
+                    List<Integer> pathConnections = new ArrayList<>();
+                    for (Integer shrineId : connections) {
+                        if (knownShrines.contains(shrineId)) {
+                            pathConnections.add(shrineId);
                         }
                     }
                     paths.put(item.second, pathConnections);
-                    for (String shrineName : pathConnections) {
-                        q.add(new Pair<>(item.first + 1, shrineName));
+                    for (Integer shrineId : pathConnections) {
+                        q.add(new Pair<>(item.first + 1, shrineId));
                     }
                 }
                 if ((FindPathType.USE_ALL_SHORTEST == findPathSettings.findPathType) &&
-                        (Utils.equals(item.second, paths.endName))) {
+                        (Utils.equals(item.second, paths.endId))) {
                     findPathSettings.findPathType = FindPathType.USE_MAX_DEPTH;
                     findPathSettings.depth = item.first;
                     paths.shortestLength = item.first;
@@ -131,21 +131,21 @@ class World {
         return paths;
     }
 
-    static Comparator<List<String>> SORT_SHORTEST_FIRST = new Comparator<List<String>>() {
+    static Comparator<List<Integer>> SORT_SHORTEST_FIRST = new Comparator<List<Integer>>() {
         @Override
-        public int compare(List<String> lhs, List<String> rhs) {
+        public int compare(List<Integer> lhs, List<Integer> rhs) {
             Integer lhsSize = lhs.size();
             Integer rhsSize = rhs.size();
             return lhsSize.compareTo(rhsSize);
         }
     };
 
-    List<List<String>> sortPaths(Set<List<String>> allPaths) {
+    List<List<Integer>> sortPaths(Set<List<Integer>> allPaths) {
         return sortPaths(allPaths, SORT_SHORTEST_FIRST);
     }
 
-    List<List<String>> sortPaths(Set<List<String>> allPaths, Comparator<List<String>> comparator) {
-        List<List<String>> sortedPaths = new ArrayList<>();
+    List<List<Integer>> sortPaths(Set<List<Integer>> allPaths, Comparator<List<Integer>> comparator) {
+        List<List<Integer>> sortedPaths = new ArrayList<>();
         sortedPaths.addAll(allPaths);
         Collections.sort(sortedPaths, comparator);
         return sortedPaths;
@@ -153,8 +153,8 @@ class World {
 
     boolean isCompletelyConnected() {
         boolean connected = true;
-        for (String shrineName : connectionMap.keySet()) {
-            Paths paths = makePathsTo(connectionMap.keySet(), shrineName, null, FindPathSettings.useMaxDepth(Integer.MAX_VALUE));
+        for (Integer shrineId : connectionMap.keySet()) {
+            Paths paths = makePathsTo(connectionMap.keySet(), shrineId, null, FindPathSettings.useMaxDepth(Integer.MAX_VALUE));
             if (paths.map.keySet().size() != connectionMap.size()) {
                 connected = false;
                 break;
@@ -164,13 +164,13 @@ class World {
         return connected;
     }
 
-    Set<String> getShrineNames() {
+    Set<Integer> getShrineIds() {
         return shrineMap.keySet();
     }
 
     void endTurn() throws InvalidObjectException {
-        for (String shrineName : getShrineNames()) {
-            Shrine shrine = getShrine(shrineName);
+        for (Integer shrineId : getShrineIds()) {
+            Shrine shrine = getShrine(shrineId);
             shrine.endTurn();
         }
 
@@ -179,29 +179,29 @@ class World {
 
     private void processMoves() throws InvalidObjectException {
         // Move everything from departuresMap to arrivalMap for all Shrines
-        for (String shrineName : getShrineNames()) {
-            Shrine shrine = getShrine(shrineName);
-            Map<String, Map<Shrine.MovableType, Integer>> departureMap = shrine.getDepartureMapCopy();
+        for (Integer shrineId : getShrineIds()) {
+            Shrine shrine = getShrine(shrineId);
+            Map<Integer, Map<Shrine.MovableType, Integer>> departureMap = shrine.getDepartureMapCopy();
 
-            for (String destinationName : departureMap.keySet()) {
-                if (connectionMap.get(shrine.getName()).contains(destinationName)) { // Prevent moves to unconnected shrines
-                    Shrine destination = getShrine(destinationName);
-                    Map<Shrine.MovableType, Integer> subMap = departureMap.get(destinationName);
+            for (Integer destinationId : departureMap.keySet()) {
+                if (connectionMap.get(shrine.getId()).contains(destinationId)) { // Prevent moves to unconnected shrines
+                    Shrine destination = getShrine(destinationId);
+                    Map<Shrine.MovableType, Integer> subMap = departureMap.get(destinationId);
                     for (Shrine.MovableType type : subMap.keySet()) {
                         int num = subMap.get(type);
 
-                        destination.addArrival(shrine.getOwnerName(), type, num);
+                        destination.addArrival(shrine.getOwnerId(), type, num);
                     }
                 } else {
-                    throw new InvalidObjectException(shrine.getName() + " does not connect to " + destinationName);
+                    throw new InvalidObjectException(shrine.getId() + " does not connect to " + destinationId);
                 }
             }
             shrine.clearDepartureMap();
         }
 
         // Move all stuff from each shrine to its own arrivalMap and then resolve conflict
-        for (String shrineName : getShrineNames()) {
-            Shrine shrine = getShrine(shrineName);
+        for (Integer shrineId : getShrineIds()) {
+            Shrine shrine = getShrine(shrineId);
             shrine.moveAllToArrivalMap();
             shrine.fight(roller);
         }

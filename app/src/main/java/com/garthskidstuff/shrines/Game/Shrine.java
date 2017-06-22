@@ -15,13 +15,15 @@ import java.util.Set;
 public class Shrine  {
     private static final String TAG = "Shrine";
 
-    private final String name;
+    private final int id;
+
+    private final String displayName;
 
     final static int PARTS_MULTIPLIER = 1000;
 
     private final String imageId;
 
-    private String ownerName = ""; // name of the home world that owns this shrine
+    private int ownerId; // id of the home world that owns this shrine
 
     private int maxWorkers; // This is really final, but set in an init call AND is the actual int -- not 100th
 
@@ -54,7 +56,7 @@ public class Shrine  {
         final int moveCost;
         final int fight;
 
-        private MovableType(int buildCost, int moveCost, int fight) {
+        MovableType(int buildCost, int moveCost, int fight) {
             this.buildCost = buildCost;
             this.moveCost = moveCost;
             this.fight = fight;
@@ -62,10 +64,10 @@ public class Shrine  {
     }
 
     // destination --> (type --> number)
-    private Map<String, Map<MovableType, Integer>> departureMap = new HashMap<>();
+    private Map<Integer, Map<MovableType, Integer>> departureMap = new HashMap<>();
 
     // home --> (type --> number)
-    private Map<String, Map<MovableType, Integer>> arrivalMap = new HashMap<>();
+    private Map<Integer, Map<MovableType, Integer>> arrivalMap = new HashMap<>();
 
     enum Order {
         MINE,
@@ -73,10 +75,11 @@ public class Shrine  {
         BUILD_ALTAR,
     };
 
-    public Shrine(String name, String imageId) {
-        this.name = name;
+    public Shrine(int id, String displayName, String imageId) {
+        this.id = id;
+        this.displayName = displayName;
         this.imageId = imageId;
-        ownerName = name;
+        ownerId = id;
     }
 
     public void initBasic(int maxPopulation, int miningRateParts, int miningDegradationRateParts, int workerRateParts) {
@@ -95,8 +98,12 @@ public class Shrine  {
         numGoldParts = numGold * PARTS_MULTIPLIER;
     }
 
-    public String getName() {
-        return name;
+    public int getId() {
+        return id;
+    }
+
+    public String getDisplayName() {
+        return displayName;
     }
 
     public String getImageId() {
@@ -107,15 +114,15 @@ public class Shrine  {
         return maxWorkers;
     }
 
-    public String getOwnerName() {
-        return ownerName;
+    public int getOwnerId() {
+        return ownerId;
     }
 
-    public void setOwnerName(String ownerName) {
-        this.ownerName = ownerName;
+    public void setOwnerId(int ownerId) {
+        this.ownerId = ownerId;
     }
 
-    public Map<String, Map<MovableType, Integer>> getArrivalMapCopy() {
+    public Map<Integer, Map<MovableType, Integer>> getArrivalMapCopy() {
         return copyMap(arrivalMap);
     }
 
@@ -191,14 +198,14 @@ public class Shrine  {
         this.numFighterParts = numFighterParts;
     }
 
-    public Map<String, Map<MovableType, Integer>> getDepartureMapCopy() {
+    public Map<Integer, Map<MovableType, Integer>> getDepartureMapCopy() {
         return copyMap(departureMap);
     }
 
-    private Map<String, Map<MovableType, Integer>> copyMap(Map<String, Map<MovableType, Integer>>  map) {
-        Map<String, Map<MovableType, Integer>> copyMap = new HashMap<>();
+    private Map<Integer, Map<MovableType, Integer>> copyMap(Map<Integer, Map<MovableType, Integer>>  map) {
+        Map<Integer, Map<MovableType, Integer>> copyMap = new HashMap<>();
 
-        for (String key : map.keySet()) {
+        for (Integer key : map.keySet()) {
             Map<MovableType, Integer> copySubMap = new HashMap<>(map.get(key));
             copyMap.put(key, copySubMap);
         }
@@ -331,15 +338,17 @@ public class Shrine  {
         return success;
     }
 
-    public void doMoveOrder(String destinationName, MovableType type, int num) {
-        Shrine oldShrine = new Shrine("name", "id");
+    public boolean doMoveOrder(int destinationId, MovableType type, int num) {
+        Shrine oldShrine = new Shrine(-1, "name", "image");
         oldShrine.setShrine(this);
 
-        addDeparture(destinationName, type, num);
+        addDeparture(destinationId, type, num);
 
-        if (!useGold(type.moveCost) || !useMovable(type, num)) {
+        boolean success = useGold(type.moveCost) && useMovable(type, num);
+        if (!success) {
             setShrine(oldShrine);
         }
+        return success;
     }
 
     boolean useMovable(MovableType type, int num) {
@@ -361,35 +370,35 @@ public class Shrine  {
         return false;
     }
 
-    void addDeparture(String destinationName, MovableType type, int num) {
-        addToMap(departureMap, destinationName, type, num);
+    void addDeparture(int destinationId, MovableType type, int num) {
+        addToMap(departureMap, destinationId, type, num);
     }
 
-    int getDeparture(String destinationName, MovableType type) {
-        return getFromMap(departureMap, destinationName, type);
+    int getDeparture(int destinationId, MovableType type) {
+        return getFromMap(departureMap, destinationId, type);
     }
 
-    void addArrival(String homeName, MovableType type, int num) {
-        addToMap(arrivalMap, homeName, type, num);
+    void addArrival(int homeId, MovableType type, int num) {
+        addToMap(arrivalMap, homeId, type, num);
     }
 
-    int getArrival(String destinationName, MovableType type) {
-        return getFromMap(arrivalMap, destinationName, type);
+    int getArrival(int destinationId, MovableType type) {
+        return getFromMap(arrivalMap, destinationId, type);
     }
 
-    private void addToMap(Map<String, Map<MovableType, Integer>> map, String destinationName, MovableType type, int num) {
+    private void addToMap(Map<Integer, Map<MovableType, Integer>> map, int destinationId, MovableType type, int num) {
         if (0 != num) {
-            Map<MovableType, Integer> subMap = map.get(destinationName);
+            Map<MovableType, Integer> subMap = map.get(destinationId);
             if (null == subMap) {
                 subMap = new HashMap<>();
             }
             Integer curNum = subMap.get(type);
             subMap.put(type, (null == curNum) ? num : curNum + num);
-            map.put(destinationName, subMap);
+            map.put(destinationId, subMap);
         }
     }
 
-    private int getFromMap(Map<String, Map<MovableType, Integer>> map, String id, MovableType type) {
+    private int getFromMap(Map<Integer, Map<MovableType, Integer>> map, int id, MovableType type) {
         Integer num = 0;
         Map<MovableType, Integer> subMap = map.get(id);
         if (null != subMap) {
@@ -425,7 +434,7 @@ public class Shrine  {
 
     public void moveAllToArrivalMap() {
         for (MovableType type : MovableType.values()) {
-            addArrival(name, type, getMovableType(type));
+            addArrival(id, type, getMovableType(type));
             int fractionalPart = getMovableTypeParts(type) % PARTS_MULTIPLIER;
             setMovableTypeParts(type, fractionalPart);
         }
@@ -434,17 +443,17 @@ public class Shrine  {
     public void fight(Roller roller) {
 
         // Do fights
-        Map<String, Map<MovableType, Integer>> copyMap = getArrivalMapCopy();
+        Map<Integer, Map<MovableType, Integer>> copyMap = getArrivalMapCopy();
         while (2 <= copyMap.keySet().size()) {
             // Square the sum of the fight values for each player
-            Map<String, Integer> sumMap = computeSquareSumMap(copyMap);
+            Map<Integer, Integer> sumMap = computeSquareSumMap(copyMap);
 
             // Given the above, pick a winner for this round (null ==> no winner)
-            String winner = chooseWeightedKey(sumMap, roller);
-            if (null != winner) {
+            Integer winnerId = chooseWeightedKey(sumMap, roller);
+            if (null != winnerId) {
                 // damage all other players
-                for (String key : copyMap.keySet()) {
-                    if (!Utils.equals(winner, key)) {
+                for (Integer key : copyMap.keySet()) {
+                    if (!Utils.equals(winnerId, key)) {
                         Map<MovableType, Integer> subMap = copyMap.get(key);
                         MovableType hit = chooseWeightedKey(subMap, roller);
                         subMap.put(hit, (subMap.get(hit) - 1));
@@ -453,8 +462,8 @@ public class Shrine  {
             }
 
             // Remove any player who is completely wiped out
-            Set<String> removeMe = new HashSet<>();
-            for (String key : copyMap.keySet()) {
+            Set<Integer> removeMe = new HashSet<>();
+            for (Integer key : copyMap.keySet()) {
                 Map<MovableType, Integer> subMap = copyMap.get(key);
                 boolean remove = true;
                 for (MovableType type : subMap.keySet()) {
@@ -467,15 +476,15 @@ public class Shrine  {
                     removeMe.add(key);
                 }
             }
-            for (String key : removeMe) {
+            for (Integer key : removeMe) {
                 copyMap.remove(key);
             }
         }
 
         // move everything with non-zero fight (e.g. FIGHTER) back to shrine
         if (1 == copyMap.keySet().size()) {
-            for (String key : copyMap.keySet()) {
-                setOwnerName(key);
+            for (Integer key : copyMap.keySet()) {
+                setOwnerId(key);
                 Map<MovableType, Integer> subMap = copyMap.get(key);
                 for (MovableType type : subMap.keySet()) {
                     if (0 < type.fight) {
@@ -486,8 +495,8 @@ public class Shrine  {
         }
 
         // move everything with zero fight (e.g. GOLD) back to shrine
-        for (String key : arrivalMap.keySet()) {
-            setOwnerName(key);
+        for (Integer key : arrivalMap.keySet()) {
+            setOwnerId(key);
             Map<MovableType, Integer> subMap = arrivalMap.get(key);
             for (MovableType type : subMap.keySet()) {
                 if (0 == type.fight) {
@@ -519,9 +528,9 @@ public class Shrine  {
         return winner;
     }
 
-    private Map<String, Integer> computeSquareSumMap(Map<String, Map<MovableType, Integer>> map) {
-        Map<String, Integer> sumMap = new HashMap<>();
-        for (String key : map.keySet()) {
+    private Map<Integer, Integer> computeSquareSumMap(Map<Integer, Map<MovableType, Integer>> map) {
+        Map<Integer, Integer> sumMap = new HashMap<>();
+        for (Integer key : map.keySet()) {
             Map<MovableType, Integer> subMap = map.get(key);
             int sum = 0;
             for (MovableType type : subMap.keySet()) {
@@ -556,8 +565,8 @@ public class Shrine  {
         }
     }
 
-    Shrine cloneShrine() {
-        Shrine s = new Shrine(getName() + " clone", getImageId());
+    private Shrine cloneShrine() {
+        Shrine s = new Shrine(-1, getDisplayName(), getImageId());
         s.setShrine(this);
         return s;
     }
@@ -565,9 +574,9 @@ public class Shrine  {
     @Override
     public String toString() {
         return "Shrine{" +
-                "name='" + name + '\'' +
+                "id='" + id + '\'' +
                 ", imageId='" + imageId + '\'' +
-                ", ownerName='" + ownerName + '\'' +
+                ", ownerId='" + ownerId + '\'' +
                 ", maxWorkers=" + maxWorkers +
                 ", numWorkerParts=" + numWorkerParts +
                 ", numUsedWorker=" + numUsedWorker +
@@ -590,6 +599,8 @@ public class Shrine  {
 
         Shrine shrine = (Shrine) o;
 
+        if (id != shrine.id) return false;
+        if (ownerId != shrine.ownerId) return false;
         if (maxWorkers != shrine.maxWorkers) return false;
         if (numWorkerParts != shrine.numWorkerParts) return false;
         if (numUsedWorker != shrine.numUsedWorker) return false;
@@ -600,9 +611,8 @@ public class Shrine  {
         if (miningDegradationRateParts != shrine.miningDegradationRateParts) return false;
         if (numGoldParts != shrine.numGoldParts) return false;
         if (workerRateParts != shrine.workerRateParts) return false;
-        if (!name.equals(shrine.name)) return false;
+        if (!displayName.equals(shrine.displayName)) return false;
         if (!imageId.equals(shrine.imageId)) return false;
-        if (!ownerName.equals(shrine.ownerName)) return false;
         if (!departureMap.equals(shrine.departureMap)) return false;
         return arrivalMap.equals(shrine.arrivalMap);
 
@@ -610,9 +620,10 @@ public class Shrine  {
 
     @Override
     public int hashCode() {
-        int result = name.hashCode();
+        int result = id;
+        result = 31 * result + displayName.hashCode();
         result = 31 * result + imageId.hashCode();
-        result = 31 * result + ownerName.hashCode();
+        result = 31 * result + ownerId;
         result = 31 * result + maxWorkers;
         result = 31 * result + numWorkerParts;
         result = 31 * result + numUsedWorker;
@@ -628,7 +639,7 @@ public class Shrine  {
         return result;
     }
 
-    // This does not set name and imageId
+    // This does not set id and imageId
     public void setShrine(Shrine other) {
         maxWorkers = other.maxWorkers;
         numWorkerParts = other.numWorkerParts;
@@ -661,14 +672,14 @@ public class Shrine  {
         workerRateParts = idx++;
 
         departureMap.clear();
-        for (String destinationName : new String[] { "foo", "bar"}) {
+        for (Integer destinationId : new Integer[] { idx++, idx++}) {
             for (MovableType type : MovableType.values()) {
-                addDeparture(destinationName, type, idx++);
+                addDeparture(destinationId, type, idx++);
             }
         }
 
         arrivalMap.clear();
-        for (String homeId : new String[] { "foo", "bar"}) {
+        for (Integer homeId : new Integer[] { idx++, idx++}) {
             for (MovableType type : MovableType.values()) {
                 addArrival(homeId, type, idx++);
             }

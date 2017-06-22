@@ -127,7 +127,7 @@ public class Game {
     }
 
     final Constants constants;
-    final List<String> homeNames;
+    final List<Integer> homeIds;
     World world;
 
     private volatile Roller roller;
@@ -161,7 +161,7 @@ public class Game {
 
         List<Shrine> shrines = new ArrayList<>();
         for (int i = 0; i < numShrines; i++) {
-            Shrine shrine = new Shrine(namesShuffled.next(), imagesShuffled.next());
+            Shrine shrine = new Shrine(i, namesShuffled.next(), imagesShuffled.next());
             shrines.add(shrine);
         }
 
@@ -169,22 +169,22 @@ public class Game {
 
         // Create the directed graph of Connections.
         boolean validGraph; // = false by default
-        List<String> candidates = null;
+        List<Integer> candidates = null;
         do {
             world.clear();
 
             //generate raw web
             for (Shrine shrine : shrines) {
                 int numConnections = roller.roll(constants.minConnections, constants.maxConnections);
-                List<String> connections = new ArrayList<>();
+                List<Integer> connections = new ArrayList<>();
                 do {
-                    String newConnection = shrines.get(roller.roll(0, numShrines - 1)).getName();
+                    Integer newConnectionId = shrines.get(roller.roll(0, numShrines - 1)).getId();
                     //  our graph is a simply connected graph. So at most one edge A to B, and no
                     //      edges A to A
                     //  I.E. all connections from the same shrine
                     //      must go to distinct shrines that aren't the origin shrine.
-                    if (!connections.contains(newConnection) && !Utils.equals(newConnection, shrine.getName())) {
-                        connections.add(newConnection);
+                    if (!connections.contains(newConnectionId) && !Utils.equals(newConnectionId, shrine.getId())) {
+                        connections.add(newConnectionId);
                     }
                 } while (connections.size() < numConnections);
 
@@ -199,7 +199,7 @@ public class Game {
                 validGraph = null != candidates;
             }
         } while (!validGraph);
-        homeNames = candidates;
+        homeIds = candidates;
 
         // Init all the default shrine values
         for (Shrine shrine : world.getShrines()) {
@@ -211,7 +211,7 @@ public class Game {
         }
 
         // Init the home worlds
-        for (String name : homeNames) {
+        for (Integer name : homeIds) {
             Shrine shrine = world.getShrine(name);
             shrine.initHome(constants.homeMaxPopulation, constants.homeMiningRateParts,
                     constants.miningDegradationRateParts, constants.homeWorkerRateParts,
@@ -220,18 +220,18 @@ public class Game {
 
     }
 
-    private List<String> findHomeWorlds(World world) {
-        for (String home0 : world.getShrineNames()) {
-            for (String home1 : world.getShrineNames()) {
+    private List<Integer> findHomeWorlds(World world) {
+        for (Integer home0 : world.getShrineIds()) {
+            for (Integer home1 : world.getShrineIds()) {
                 if (!Utils.equals(home0, home1) && (world.getConnections(home0).size() == world.getConnections(home1).size())) {
-                    Set<List<String>> from0to1 = world.getPaths(world.getShrineNames(), home0, home1, World.FindPathSettings.useAllShortest());
-                    Set<List<String>> from1to0 = world.getPaths(world.getShrineNames(), home1, home0, World.FindPathSettings.useAllShortest());
-                    List<List<String>> sorted0to1 = world.sortPaths(from0to1);
-                    List<List<String>> sorted1to0 = world.sortPaths(from1to0);
+                    Set<List<Integer>> from0to1 = world.getPaths(world.getShrineIds(), home0, home1, World.FindPathSettings.useAllShortest());
+                    Set<List<Integer>> from1to0 = world.getPaths(world.getShrineIds(), home1, home0, World.FindPathSettings.useAllShortest());
+                    List<List<Integer>> sorted0to1 = world.sortPaths(from0to1);
+                    List<List<Integer>> sorted1to0 = world.sortPaths(from1to0);
                     int length0to1 = sorted0to1.get(0).size();
                     int length1to0 = sorted1to0.get(0).size();
                     if ((length0to1 == length1to0) && (length0to1 >= constants.minHomeDistance) && (length0to1 <= constants.maxHomeDistance)) {
-                        List<String> homes = new ArrayList<>();
+                        List<Integer> homes = new ArrayList<>();
                         homes.add(home0);
                         homes.add(home1);
                         return homes;
@@ -246,11 +246,10 @@ public class Game {
         List<String> names = new ArrayList<>();
         List<String> images = new ArrayList<>();
         for (int i = 0; i < 150; i++) {
-            String number = Integer.toString(i);
-            String name = "Name_" + number;
-            String imageID = "Image_" + number;
+            String name = "Name_" + i;
+            String imageId = "Image_" + i;
             names.add(name);
-            images.add(imageID);
+            images.add(imageId);
         }
 //        Utils.Logd("MainActivity", "random seed = " + seed);
         return new Game(names, images, constants);
@@ -330,7 +329,7 @@ public class Game {
 
         if (!constants.equals(game.constants)) return false;
         //noinspection SimplifiableIfStatement
-        if (!homeNames.equals(game.homeNames)) return false;
+        if (!homeIds.equals(game.homeIds)) return false;
         return world.equals(game.world);
 
     }
@@ -338,7 +337,7 @@ public class Game {
     @Override
     public int hashCode() {
         int result = constants.hashCode();
-        result = 31 * result + homeNames.hashCode();
+        result = 31 * result + homeIds.hashCode();
         result = 31 * result + world.hashCode();
         return result;
     }
@@ -450,6 +449,7 @@ public class Game {
         SHOW_SHRINE("show", "shows a shrine. Default is home world.  ex: 'show <shrine_name>'"),
         BUILD_FIGHTER("buildFighter", "builds fighter(s) with a number of workers at a shrine (default is last shown shrine).  ex: 'buildFighter <num_workers> <shrine_name>'"),
         BUILD_ALTAR("buildAltar", "builds altar(s) with a number of workers at a shrine (default is last shown shrine).  ex: 'buildAltar <num_workers> <shrine_name>'"),
+        MOVE("move", "moves items to a destination (must be connected). ex: 'move <num> <type> <destination>' Where type is MovableType"),
         NEXT("next", "ends the current player's turn"),
         QUIT("quit", "quits the game");
 
@@ -462,11 +462,11 @@ public class Game {
         }
     }
 
-    static String lastShownShrine = null;
+    static Integer lastShownShrineId = null;
 
-    String runOrder(Order order, String currentPlayer, String[] words) {
-        if (null == lastShownShrine) {
-            lastShownShrine = currentPlayer;
+    Integer runOrder(Order order, Integer currentPlayerId, String[] words) {
+        if (null == lastShownShrineId) {
+            lastShownShrineId = currentPlayerId;
         }
         switch (order) {
             case HELP: {
@@ -476,11 +476,11 @@ public class Game {
                 break;
             }
             case SHOW_SHRINE: {
-                Shrine shrine = world.getShrine((1 < words.length) ? words[1] : currentPlayer);
+                Shrine shrine = world.getShrine((1 < words.length) ? Integer.parseInt(words[1]) : currentPlayerId);
                 if (null != shrine) {
-                    lastShownShrine = shrine.getName();
+                    lastShownShrineId = shrine.getId();
                     System.out.println(shrine.toString());
-                    System.out.println(world.getConnections(shrine.getName()).toString());
+                    System.out.println(world.getConnections(shrine.getId()).toString());
                 } else {
                     System.out.println(words[1] + " not found");
                 }
@@ -488,62 +488,79 @@ public class Game {
             }
             case BUILD_FIGHTER: {
                 if (1 < words.length) {
-                    Shrine shrine = world.getShrine((2 < words.length) ? words[2] : lastShownShrine);
+                    Shrine shrine = world.getShrine((2 < words.length) ? Integer.parseInt(words[2]) : lastShownShrineId);
                     int num = Integer.parseInt(words[1]);
                     if (!shrine.doOrder(Shrine.Order.BUILD_FIGHTER, num)) {
                         System.out.println("Error building!");
                     }
 
-                    runOrder(Order.SHOW_SHRINE, currentPlayer, new String[] { Order.SHOW_SHRINE.order });
+                    runOrder(Order.SHOW_SHRINE, currentPlayerId, new String[] { Order.SHOW_SHRINE.order });
                 }
                 break;
             }
             case BUILD_ALTAR: {
                 if (1 < words.length) {
-                    Shrine shrine = world.getShrine((2 < words.length) ? words[2] : lastShownShrine);
+                    Shrine shrine = world.getShrine((2 < words.length) ? Integer.parseInt(words[2]) : lastShownShrineId);
                     int num = Integer.parseInt(words[1]);
                     if (!shrine.doOrder(Shrine.Order.BUILD_ALTAR, num)) {
                         System.out.println("Error building!");
                     }
-                    runOrder(Order.SHOW_SHRINE, currentPlayer, new String[] { Order.SHOW_SHRINE.order });
+
+                    runOrder(Order.SHOW_SHRINE, currentPlayerId, new String[] { Order.SHOW_SHRINE.order });
+                }
+                break;
+            }
+            case MOVE: {
+                if (4 == words.length) {
+                    int num = Integer.parseInt(words[1]);
+                    Shrine.MovableType type = Shrine.MovableType.valueOf(words[2]);
+                    int id = Integer.parseInt(words[3]);
+                    Integer destinationId = world.getConnections(lastShownShrineId).contains(id) ? id : null;
+                    Shrine shrine = world.getShrine(lastShownShrineId);
+                    if (!shrine.doMoveOrder(destinationId, type, num)) {
+                        System.out.println("Error moving!");
+                    }
+
+                    runOrder(Order.SHOW_SHRINE, currentPlayerId, new String[] { Order.SHOW_SHRINE.order });
                 }
                 break;
             }
             case NEXT: { //TODO Will fail if > 2 players
-                for (String player : homeNames) {
-                    if (!Utils.equals(player, currentPlayer)) {
-                        currentPlayer = player;
+                for (Integer player : homeIds) {
+                    if (!Utils.equals(player, currentPlayerId)) {
+                        currentPlayerId = player;
                         break;
                     }
                 }
                 break;
             }
             case QUIT: {
-                currentPlayer = null;
+                currentPlayerId = null;
                 break;
             }
         }
 
-        return currentPlayer;
+        return currentPlayerId;
     }
 
-    String getAndRunOrder(String currentPlayer) throws IOException {
+    Integer getAndRunOrder(Integer currentPlayerId) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        System.out.println("Enter an order, " + currentPlayer);
+        System.out.println("Enter an order, " + currentPlayerId);
 
         String line = reader.readLine();
+        line = line.toLowerCase();
         System.out.println("line: " + line);
         String[] words = line.split(" ");
         if (0 < words.length) {
             for (Order order : Order.values()) {
                 if (Utils.equals(order.order, words[0])) {
-                    currentPlayer = runOrder(order, currentPlayer, words);
+                    currentPlayerId = runOrder(order, currentPlayerId, words);
                     break;
                 }
             }
         }
 
-        return currentPlayer;
+        return currentPlayerId;
     }
 
     /////////////////////////////
@@ -554,10 +571,10 @@ public class Game {
             } else {
                 Game game = makeGameFromConfig(args[0]);
 
-                String currentPlayer = game.homeNames.get(0);
+                Integer currentPlayerId = game.homeIds.get(0);
                 do {
-                    currentPlayer = game.getAndRunOrder(currentPlayer);
-                } while (null != currentPlayer);
+                    currentPlayerId = game.getAndRunOrder(currentPlayerId);
+                } while (null != currentPlayerId);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());

@@ -9,30 +9,30 @@ import java.util.Set;
 
 /**
  * Created by garthtroubleupshaw on 6/1/17.
- * Capture all map from a startName String to an endName String
+ * Capture all map from a startId Integer to an endId Integer
  */
 
 public class Paths {
-    String startName;
-    String endName;
+    Integer startId;
+    Integer endId;
     int shortestLength = -1;
-    public Map<String, List<String>> map = new HashMap<>();
+    public Map<Integer, List<Integer>> map = new HashMap<>();
 
-    public Paths(String startName, String endName) {
-        this.startName = startName;
-        this.endName = endName;
+    public Paths(Integer startId, Integer endId) {
+        this.startId = startId;
+        this.endId = endId;
     }
 
-    public void put(String shrineName, List<String> connections) {
-        map.put(shrineName, connections);
+    public void put(Integer shrineId, List<Integer> connections) {
+        map.put(shrineId, connections);
     }
 
-    public List<String> get(String shrineName) {
-        return map.get(shrineName);
+    public List<Integer> get(Integer shrineId) {
+        return map.get(shrineId);
     }
 
-    public void remove(String shrineName) {
-        map.remove(shrineName);
+    public void remove(Integer shrineId) {
+        map.remove(shrineId);
     }
 
     @Override
@@ -43,48 +43,48 @@ public class Paths {
         Paths paths = (Paths) o;
 
         if (shortestLength != paths.shortestLength) return false;
-        if (!startName.equals(paths.startName)) return false;
-        if (!endName.equals(paths.endName)) return false;
+        if (!startId.equals(paths.startId)) return false;
+        if (!endId.equals(paths.endId)) return false;
         return map.equals(paths.map);
 
     }
 
     @Override
     public int hashCode() {
-        int result = startName.hashCode();
-        result = 31 * result + endName.hashCode();
+        int result = startId.hashCode();
+        result = 31 * result + endId.hashCode();
         result = 31 * result + shortestLength;
         result = 31 * result + map.hashCode();
         return result;
     }
 
-    Set<List<String>> makeSetOfPathsFrom() {
-        Set<List<String>> allPaths = new HashSet<>();
-        List<String> path1 = new ArrayList<>();
-        path1.add(startName);
+    Set<List<Integer>> makeSetOfPathsFrom() {
+        Set<List<Integer>> allPaths = new HashSet<>();
+        List<Integer> path1 = new ArrayList<>();
+        path1.add(startId);
         allPaths.add(path1);
 
         boolean keepGoing = false;
         do {
             keepGoing = false;
-            Set<List<String>> newAllPaths = new HashSet<>();
+            Set<List<Integer>> newAllPaths = new HashSet<>();
             newAllPaths.addAll(allPaths);
 
-            for (List<String> path : allPaths) {
-                String endPath = path.get(path.size() - 1);
+            for (List<Integer> path : allPaths) {
+                Integer endPath = path.get(path.size() - 1);
                 boolean tooLong = (-1 != shortestLength) && (shortestLength < path.size());
-                if (!tooLong && !Utils.equals(endPath, endName)) { // partial path hasn't hit endName
-                    List<String> connections = get(endPath);
+                if (!tooLong && !Utils.equals(endPath, endId)) { // partial path hasn't hit endId
+                    List<Integer> connections = get(endPath);
                     newAllPaths.remove(path);
                     if (null != connections) {
-                        for (String shrineName : connections) {
-                            if (!path.contains(shrineName)) { // not a loop
-                                List<String> newPath = new ArrayList<>();
+                        for (Integer shrineId : connections) {
+                            if (!path.contains(shrineId)) { // not a loop
+                                List<Integer> newPath = new ArrayList<>();
                                 newPath.addAll(path);
                                 if ((-1 == shortestLength) ||
                                         (newPath.size() < shortestLength) ||
-                                        (shrineName == endName)) {
-                                    newPath.add(shrineName);
+                                        (shrineId == endId)) {
+                                    newPath.add(shrineId);
                                     newAllPaths.add(newPath);
                                     keepGoing = true;
                                 }
