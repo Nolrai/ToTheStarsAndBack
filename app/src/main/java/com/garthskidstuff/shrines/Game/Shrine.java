@@ -115,12 +115,10 @@ public class Shrine  {
         return imageId;
     }
 
+    public String getOwnerName() {return ownerName;};
+
     public int getMaxWorkers() {
         return maxWorkers;
-    }
-
-    public void setMaxWorkers(int maxWorkers) {
-        this.maxWorkers = maxWorkers;
     }
 
     public int getNumWorkerParts() {
@@ -181,6 +179,10 @@ public class Shrine  {
 
     public Map<String, Map<MovableType, Integer>> getDepartureMapCopy() {
         return copyMap(departureMap);
+    }
+
+    public Map<String, Map<MovableType, Integer>> getArrivalMapCopy () {
+        return copyMap(arrivalMap);
     }
 
     private Map<String, Map<MovableType, Integer>> copyMap(Map<String, Map<MovableType, Integer>>  map) {
@@ -293,10 +295,9 @@ public class Shrine  {
         switch (order) {
             case MINE:
                 success = useWorkers(num);
-                for (int i = 0; i < num; i++) {
-                    numGoldParts += miningRateParts - miningDegradationRateParts/2;
-                    miningRateParts -= miningDegradationRateParts;
-                }
+                int newMiningRateParts = miningRateParts - num * miningDegradationRateParts;
+                numGoldParts += (num * (miningRateParts + newMiningRateParts)) / 2;
+                miningRateParts = newMiningRateParts;
                 break;
 
             case BUILD_FIGHTER:
@@ -361,9 +362,6 @@ public class Shrine  {
         addToMap(arrivalMap, homeName, type, num);
     }
 
-    Map<String, Map<MovableType, Integer>> getArrivalMapCopy() {
-        return copyMap(departureMap);
-    }
     private void addToMap(Map<String, Map<MovableType, Integer>> map, String destinationName, MovableType type, int num) {
         if (0 != num) {
             Map<MovableType, Integer> subMap = map.get(destinationName);

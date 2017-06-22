@@ -54,7 +54,7 @@ public class ShrineTest {
         shrine.setNumWorker(1);
         shrine.doOrder(Order.MINE, 1);
 
-        assertThat(shrine.getNumGoldParts(), is(miningRateParts));
+        assertThat(shrine.getNumGoldParts(), is(miningRateParts - miningDegradationRateParts/2));
         assertThat(shrine.getMiningRateParts(), is(miningRateParts - miningDegradationRateParts));
         assertThat(shrine.getNumWorker(), is(0));
         assertThat(shrine.getNumUsedWorker(), is(1));
@@ -137,7 +137,7 @@ public class ShrineTest {
             shrine.setNumWorker(totalWorkers);
             shrine.doOrder(order, totalWorkers);
 
-            assertThat(shrine.getNumWorker() + shrine.getNumUsedWorker(), is(startValue));
+            assertThat(totalValueParts(shrine), is(startValue));
         }
     }
 
@@ -183,7 +183,7 @@ public class ShrineTest {
         for (MovableType type : MovableType.values()) {
             if (0 < type.fight) {
                 Shrine shrine = makeBasicShrine("name", "imageId");
-                shrine.addArrival(shrine.getName(), type, 1);
+                shrine.addArrival(shrine.getOwnerName(), type, 1);
                 shrine.addArrival("enemy", type, 1);
 
                 shrine.fight(roller);
@@ -419,18 +419,17 @@ public class ShrineTest {
     }
 
     private int totalValueParts(Shrine shrine_) {
-        final int big_enough = 10000;
-
         int value = 0;
         if (null != shrine_) {
             Shrine shrine = shrine_.makeCopy("totalValueParts");
+            value = shrine.getNumGoldParts();
             // Gold in built things
             value += shrine.getNumAltarParts() * Shrine.BUILD_ALTAR_COST;
             value += shrine.getNumFighterParts() * Shrine.BUILD_FIGHTER_COST;
 
-            shrine.setNumWorker(big_enough);
-            shrine.doOrder(Order.MINE, big_enough);
-            value += shrine.getNumGoldParts();
+            // Gold not mined yet
+            value += (int) (((long) miningRateParts * (long) miningRateParts) /
+                    (long) (miningDegradationRateParts * 2));
         }
         return value;
     }
