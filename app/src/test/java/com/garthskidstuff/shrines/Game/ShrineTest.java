@@ -418,8 +418,8 @@ public class ShrineTest {
         assertThat(shrine, is(oldShrine));
     }
 
-    private int totalValueParts(Shrine shrine) {
-        int value = 0;
+    private Integer totalValueParts(Shrine shrine) {
+        Integer value = null;
         if (null != shrine) {
             value = shrine.getNumGoldParts();
             // Gold in built things
