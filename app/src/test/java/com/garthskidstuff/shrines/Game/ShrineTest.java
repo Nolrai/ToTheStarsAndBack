@@ -418,18 +418,17 @@ public class ShrineTest {
         assertThat(shrine, is(oldShrine));
     }
 
-    private int totalValueParts(Shrine shrine_) {
+    private int totalValueParts(Shrine shrine) {
         int value = 0;
-        if (null != shrine_) {
-            Shrine shrine = shrine_.makeCopy("totalValueParts");
+        if (null != shrine) {
             value = shrine.getNumGoldParts();
             // Gold in built things
             value += shrine.getNumAltarParts() * Shrine.BUILD_ALTAR_COST;
             value += shrine.getNumFighterParts() * Shrine.BUILD_FIGHTER_COST;
 
             // Gold not mined yet
-            value += (int) (((long) miningRateParts * (long) miningRateParts) /
-                    (long) (miningDegradationRateParts * 2));
+            value += (int) (((long) shrine.getMiningRateParts() * (long) shrine.getMiningRateParts()) /
+                    (long) (shrine.getMiningDegradationRateParts() * 2));
         }
         return value;
     }
