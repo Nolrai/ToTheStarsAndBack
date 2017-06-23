@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * Created by garthupshaw1 on 5/10/17.
@@ -20,7 +21,11 @@ class Shrine  {
 
     private final String displayName;
 
-    final static int PARTS_MULTIPLIER = 1000;
+    final static int PARTS_MULTIPLIER = 100 * 1000;
+
+    // All costs need to divide PARTS_MULTIPLIER evenly.
+    final static int BUILD_FIGHTER_COST = 5;
+    final static int BUILD_ALTAR_COST = 10;
 
     private final String imageId;
 
@@ -74,9 +79,17 @@ class Shrine  {
         MINE,
         BUILD_FIGHTER,
         BUILD_ALTAR,
+    };
+
+    private Shrine(int id, Shrine shrine) {
+        this.id = id;
+        this.displayName = shrine.displayName;
+        this.imageId = shrine.imageId;
+        this.ownerId = id;
+        setShrine(shrine);
     }
 
-    Shrine(int id, String displayName, String imageId) {
+    public Shrine(int id, String displayName, String imageId) {
         this.id = id;
         this.displayName = displayName;
         this.imageId = imageId;
@@ -107,27 +120,21 @@ class Shrine  {
         return displayName;
     }
 
-    String getImageId() {
+    public String getImageId() {
         return imageId;
     }
 
-    int getMaxWorkers() {
-        return maxWorkers;
-    }
+    public int getOwnerId() {return ownerId;};
 
-    int getOwnerId() {
-        return ownerId;
+    public int getMaxWorkers() {
+        return maxWorkers;
     }
 
     private void setOwnerId(int ownerId) {
         this.ownerId = ownerId;
     }
 
-    Map<Integer, Map<MovableType, Integer>> getArrivalMapCopy() {
-        return copyMap(arrivalMap);
-    }
-
-    int getNumWorkerParts() {
+    public int getNumWorkerParts() {
         return numWorkerParts;
     }
 
@@ -163,11 +170,11 @@ class Shrine  {
         return miningRateParts;
     }
 
-    int getMiningDegradationRateParts() {
+    public int getMiningDegradationRateParts() {
         return miningDegradationRateParts;
     }
 
-    int getNumGoldParts() {
+    public int getNumGoldParts() {
         return numGoldParts;
     }
 
@@ -175,7 +182,7 @@ class Shrine  {
         this.numGoldParts = numGoldParts;
     }
 
-    int getNumFighterParts() {
+    public int getNumFighterParts() {
         return numFighterParts;
     }
 
@@ -185,6 +192,10 @@ class Shrine  {
 
     Map<Integer, Map<MovableType, Integer>> getDepartureMapCopy() {
         return copyMap(departureMap);
+    }
+
+    public Map<Integer, Map<MovableType, Integer>> getArrivalMapCopy () {
+        return copyMap(arrivalMap);
     }
 
     private Map<Integer, Map<MovableType, Integer>> copyMap(Map<Integer, Map<MovableType, Integer>>  map) {
@@ -203,7 +214,7 @@ class Shrine  {
     }
 
     // The following are convenience functions to get/set whole integer values
-    int getNumGold() {
+    public int getNumGold() {
         return numGoldParts / PARTS_MULTIPLIER;
     }
 
@@ -211,7 +222,7 @@ class Shrine  {
         numGoldParts = num * PARTS_MULTIPLIER;
     }
 
-    int getNumWorker() {
+    public int getNumWorker() {
         return numWorkerParts / PARTS_MULTIPLIER;
     }
 
@@ -219,12 +230,16 @@ class Shrine  {
         numWorkerParts = num * PARTS_MULTIPLIER;
     }
 
-    int getNumAltar() {
+    public int getNumAltar() {
         return numAltarParts / PARTS_MULTIPLIER;
     }
 
     void setNumAltar(int num) {
         numAltarParts = num * PARTS_MULTIPLIER;
+    }
+
+    public int getNumFighter() {
+        return numFighterParts / PARTS_MULTIPLIER;
     }
 
     void setMovableType(MovableType type, int num) {
@@ -286,14 +301,15 @@ class Shrine  {
 
     boolean doOrder(Order order, int num) {
         int numParts = num * PARTS_MULTIPLIER;
-        Shrine oldShrine = cloneShrine();
+        Shrine oldShrine = cloneShrine(-1);
 
         boolean success = true;
         switch (order) {
             case MINE:
                 success = useWorkers(num);
-                numGoldParts += num * miningRateParts;
-                miningRateParts -= num * miningDegradationRateParts;
+                int newMiningRateParts = miningRateParts - num * miningDegradationRateParts;
+                numGoldParts += (num * (miningRateParts + newMiningRateParts)) / 2;
+                miningRateParts = newMiningRateParts;
                 break;
 
             case BUILD_FIGHTER:
@@ -541,8 +557,8 @@ class Shrine  {
         }
     }
 
-    private Shrine cloneShrine() {
-        Shrine s = new Shrine(-1, getDisplayName(), getImageId());
+    Shrine cloneShrine(int newID) {
+        Shrine s = new Shrine(newID, getDisplayName(), getImageId());
         s.setShrine(this);
         return s;
     }
@@ -632,7 +648,7 @@ class Shrine  {
         return result;
     }
 
-    // This does not set id and imageId
+    // This does not set id, imageId or displayName
     void setShrine(Shrine other) {
         maxWorkers = other.maxWorkers;
         numWorkerParts = other.numWorkerParts;

@@ -24,13 +24,15 @@ public class Game {
         public int maxConnections = 5;
         public int minMaxPopulation = 5; // The max size pop can grow is between min/max
         public int maxMaxPopulation = 40;
-        public int minMiningRateParts = (int) (Shrine.PARTS_MULTIPLIER * 1.5);
-        public int maxMiningRateParts = (int) (Shrine.PARTS_MULTIPLIER * 5);
-        public int miningDegradationRateParts = Shrine.PARTS_MULTIPLIER / 1000; // amount mining rate goes down each time a worker mines
+        public int minMiningRateParts = (int)(Shrine.PARTS_MULTIPLIER * 1.5);
+        public int maxMiningRateParts = (int)(Shrine.PARTS_MULTIPLIER * 5);
+        // amount mining rate goes down each time a worker mines. 
+        // The result after deviding needs to be even.
+        public int miningDegradationRateParts = Shrine.PARTS_MULTIPLIER / 1000; 
         public int minWorkerRateParts = Shrine.PARTS_MULTIPLIER / 100;
         public int maxWorkerRateParts = Shrine.PARTS_MULTIPLIER / 5;
         public int homeMaxPopulation = 100;
-        public int homeMiningRateParts = (int) (Shrine.PARTS_MULTIPLIER * 2);
+        public int homeMiningRateParts = (int)(Shrine.PARTS_MULTIPLIER * 2);
         public int homeWorkerRateParts = Shrine.PARTS_MULTIPLIER / 10;
         public int homeNumAlters = 10;
         public int homeNumGold = 30;
@@ -285,7 +287,6 @@ public class Game {
         /**
          * As long as the innerList isn't empty then we can run Next.
          * (_Which_ item is next is decided in next().)
-         *
          * @return can we run next safely.
          */
         @Override
