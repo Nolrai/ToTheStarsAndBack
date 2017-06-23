@@ -1,7 +1,7 @@
 package com.garthskidstuff.shrines.Game;
 
-import com.garthskidstuff.shrines.Game.Shrine.*;
-
+import com.garthskidstuff.shrines.Game.Shrine.MovableType;
+import com.garthskidstuff.shrines.Game.Shrine.Order;
 import com.google.gson.Gson;
 
 import org.junit.Before;
@@ -54,7 +54,7 @@ public class ShrineTest {
         shrine.setNumWorker(1);
         shrine.doOrder(Order.MINE, 1);
 
-        assertThat(shrine.getNumGoldParts(), is(miningRateParts));
+        assertThat(shrine.getNumGoldParts(), is(miningRateParts - miningDegradationRateParts/2));
         assertThat(shrine.getMiningRateParts(), is(miningRateParts - miningDegradationRateParts));
         assertThat(shrine.getNumWorker(), is(0));
         assertThat(shrine.getNumUsedWorker(), is(1));
@@ -114,7 +114,7 @@ public class ShrineTest {
 
     @Test
     public void doOrder_workerInvariant() {
-        int totalWorkers = 1;
+        int totalWorkers = 5;
 
         for (Order order : Order.values()) {
             Shrine shrine = makeBasicShrine("name", "imageId");
@@ -122,6 +122,22 @@ public class ShrineTest {
             shrine.doOrder(order, totalWorkers);
 
             assertThat(shrine.getNumWorker() + shrine.getNumUsedWorker(), is(totalWorkers));
+        }
+    }
+
+    @Test
+    public void doOrder_goldInvariant() {
+        int totalWorkers = 5;
+        int startValue;
+
+        for (Order order : Order.values()) {
+            Shrine shrine = makeBasicShrine("name", "imageId");
+            shrine.setNumGold(100);
+            startValue = totalValueParts(shrine);
+            shrine.setNumWorker(totalWorkers);
+            shrine.doOrder(order, totalWorkers);
+
+            assertThat(totalValueParts(shrine), is(startValue));
         }
     }
 
@@ -167,7 +183,7 @@ public class ShrineTest {
         for (MovableType type : MovableType.values()) {
             if (0 < type.fight) {
                 Shrine shrine = makeBasicShrine("name", "imageId");
-                shrine.addArrival(shrine.getName(), type, 1);
+                shrine.addArrival(shrine.getOwnerName(), type, 1);
                 shrine.addArrival("enemy", type, 1);
 
                 shrine.fight(roller);
@@ -304,12 +320,6 @@ public class ShrineTest {
         shrine.initBasic(maxWorker, miningRateParts, miningDegradationRateParts, workerRateParts);
         return shrine;
     }
-    
-    private Shrine copyShrine(Shrine shrine) {
-        Shrine copy = makeBasicShrine(shrine.getName(), shrine.getImageId());
-        copy.setShrine(shrine);
-        return copy;
-    }
 
     private void testBuildSuccess(Order order) {
         Shrine shrine = makeBasicShrine("name", "imageId");
@@ -335,20 +345,22 @@ public class ShrineTest {
     }
 
     private void testBuildFailWorker(Order order) {
-        Shrine shrine = makeBasicShrine("name", "imageId");
+        String name = "name";
+        Shrine shrine = makeBasicShrine(name, "imageId");
         shrine.setNumGold(1);
         shrine.setNumAltar(1);
-        Shrine oldShrine = copyShrine(shrine);
+        Shrine oldShrine = shrine.makeCopy("name");
         shrine.doOrder(order, 1);
 
         assertThat(shrine, is(oldShrine));
     }
 
     private void testBuildFailGold(Order order) {
-        Shrine shrine = makeBasicShrine("name", "imageId");
+	String name = "name";
+        Shrine shrine = makeBasicShrine(name, "imageId");
         shrine.setNumWorker(1);
         shrine.setNumAltar(1);
-        Shrine oldShrine = copyShrine(shrine);
+        Shrine oldShrine = shrine.makeCopy(name);
         shrine.doOrder(order, 1);
 
         assertThat(shrine, is(oldShrine));
@@ -358,7 +370,7 @@ public class ShrineTest {
         Shrine shrine = makeBasicShrine("name", "imageId");
         shrine.setNumWorker(1);
         shrine.setNumGold(1);
-        Shrine oldShrine = copyShrine(shrine);
+        Shrine oldShrine = shrine.makeCopy("name");
         shrine.doOrder(order, 1);
 
         assertThat(shrine, is(oldShrine));
@@ -387,7 +399,7 @@ public class ShrineTest {
         shrine.setNumGold(type.moveCost);
         shrine.doMoveOrder("destination", type, 1);
 
-        Shrine oldShrine = copyShrine(shrine);
+        Shrine oldShrine = shrine.makeCopy("name");
         Map<String, Map<MovableType, Integer>> map = shrine.getDepartureMapCopy();
 
         assertThat(map.size(), is(1));
@@ -399,11 +411,26 @@ public class ShrineTest {
         shrine.setMovableType(type, 1000);
         shrine.doMoveOrder("destination", type, 1);
 
-        Shrine oldShrine = copyShrine(shrine);
+        Shrine oldShrine = shrine.makeCopy("name");
         Map<String, Map<MovableType, Integer>> map = shrine.getDepartureMapCopy();
 
         assertThat(map.size(), is(0));
         assertThat(shrine, is(oldShrine));
+    }
+
+    private Integer totalValueParts(Shrine shrine) {
+        Integer value = null;
+        if (null != shrine) {
+            value = shrine.getNumGoldParts();
+            // Gold in built things
+            value += shrine.getNumAltarParts() * Shrine.BUILD_ALTAR_COST;
+            value += shrine.getNumFighterParts() * Shrine.BUILD_FIGHTER_COST;
+
+            // Gold not mined yet
+            value += (int) (((long) shrine.getMiningRateParts() * (long) shrine.getMiningRateParts()) /
+                    (long) (shrine.getMiningDegradationRateParts() * 2));
+        }
+        return value;
     }
 
 }

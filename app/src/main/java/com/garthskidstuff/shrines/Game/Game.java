@@ -22,7 +22,7 @@ public class Game {
         public int maxMaxPopulation = 40;
         public int minMiningRateParts = (int)(Shrine.PARTS_MULTIPLIER * 1.5);
         public int maxMiningRateParts = (int)(Shrine.PARTS_MULTIPLIER * 5);
-        public int miningDegradationRateParts = Shrine.PARTS_MULTIPLIER / 1000; // amount mining rate goes down each time a worker mines
+        public int miningDegradationRateParts = Shrine.PARTS_MULTIPLIER / 1000; // the fraction needs to include less powers of two then Shrine.PARTS_MULTIPLIER does.
         public int minWorkerRateParts = Shrine.PARTS_MULTIPLIER / 100;
         public int maxWorkerRateParts = Shrine.PARTS_MULTIPLIER / 5;
         public int homeMaxPopulation = 100;
@@ -66,6 +66,7 @@ public class Game {
             if (homeNumGold != constants.homeNumGold) return false;
             if (homeNumWorkers != constants.homeNumWorkers) return false;
             if (minHomeDistance != constants.minHomeDistance) return false;
+            //noinspection SimplifiableIfStatement
             if (maxHomeDistance != constants.maxHomeDistance) return false;
             return seed == constants.seed;
 
