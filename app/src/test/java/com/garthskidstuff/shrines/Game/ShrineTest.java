@@ -11,12 +11,15 @@ import java.util.Map;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * This is a series of tests of the Shrine class.
  * Created by garthupshaw1 on 5/22/17.
  */
-public class ShrineTest {
+public class ShrineTest extends BaseTest {
     private static int maxWorker = 100;
     private static int miningRateParts = (int)(Shrine.PARTS_MULTIPLIER * 1.5);
     private static int miningDegradationRateParts = Shrine.PARTS_MULTIPLIER / 1000;
@@ -26,6 +29,7 @@ public class ShrineTest {
 
     @Before
     public void setup() {
+        super.setup();
         roller = new Roller(1);
     }
 
@@ -38,6 +42,14 @@ public class ShrineTest {
         Shrine newShrine = gson.fromJson(json, Shrine.class);
 
         assertThat(newShrine, is(shrine));
+    }
+
+    @Test
+    public void doOrder_log() {
+        Shrine shrine = makeBasicShrine(0, "name", "imageId");
+        shrine.doOrder(Order.MINE, 10);
+
+        verify(testLogs).i(eq(Shrine.TAG), eq(Shrine.ORDER + Order.MINE + " " + Shrine.NUM + 10));
     }
 
     @Test

@@ -14,8 +14,11 @@ import java.util.StringTokenizer;
  */
 
 class Shrine  {
-    @SuppressWarnings("unused")
-    private static final String TAG = "Shrine";
+    public static final String TAG = "Shrine";
+
+    public static final String ORDER = "Order: ";
+
+    public static final String NUM = "Num: ";
 
     private final int id;
 
@@ -300,6 +303,7 @@ class Shrine  {
     }
 
     boolean doOrder(Order order, int num) {
+        Logger.i(TAG, ORDER + order + " " + NUM + num);
         int numParts = num * PARTS_MULTIPLIER;
         Shrine oldShrine = cloneShrine(-1);
 

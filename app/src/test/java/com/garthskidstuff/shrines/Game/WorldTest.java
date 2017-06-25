@@ -17,7 +17,7 @@ import static org.junit.Assert.*;
  * Created by garthupshaw1 on 6/3/17.
  * Test World logic with paths etc.
  */
-public class WorldTest {
+public class WorldTest extends BaseTest {
     private World world;
 
     @Before

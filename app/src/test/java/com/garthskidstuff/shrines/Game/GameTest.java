@@ -2,6 +2,7 @@ package com.garthskidstuff.shrines.Game;
 
 import com.google.gson.Gson;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -9,12 +10,15 @@ import java.util.Set;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
 
 /**
  * Created by garthupshaw1 on 6/4/17.
  *
  */
-public class GameTest {
+public class GameTest extends BaseTest {
 
     @Test
     public void gameConstructor_2Homes() {

@@ -12,7 +12,7 @@ import static org.junit.Assert.assertThat;
  * Created by garthtroubleupshaw on 6/1/17.
  * Test Paths
  */
-public class PathsTest {
+public class PathsTest extends BaseTest {
 
     @Test
     public void putAndGet_singleItem() {

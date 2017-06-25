@@ -16,6 +16,7 @@ import java.util.Set;
 
 @SuppressWarnings({"WeakerAccess", "TryFinallyCanBeTryWithResources"})
 public class Game {
+    static final String TAG = "Game";
 
     public static class Constants {
         public int minShrines = 40;
