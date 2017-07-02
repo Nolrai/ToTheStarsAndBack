@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,8 +18,12 @@ import java.util.Set;
  */
 
 class World {
-    private final Map<Integer, List<Integer>> connectionMap = new HashMap<>(); // shrine Id --> its children's Ids
-    private final Map<Integer, Shrine> shrineMap = new HashMap<>(); // shrine Id -> shrine object
+    //shrine Id --> its children's Ids
+    private final Map<Integer, List<Integer>> connectionMap = new HashMap<>();
+    // shrine Id -> shrine object
+    private final Map<Integer, Shrine> shrineMap = new HashMap<>();
+    // homeId --> (shrineId --> Shrine): Saves a shrine state at the "last seen" moment
+    private final Map<Integer, Map<Integer, Shrine>> knownShrineStatesMap = new HashMap<>();
 
     private final Roller roller;
 
@@ -46,6 +51,12 @@ class World {
             findPathSettings.findPathType = FindPathType.USE_MAX_DEPTH;
             findPathSettings.depth = depth;
             return findPathSettings;
+        }
+    }
+
+    void initForHomeIds(List<Integer> homeIds) {
+        for (Integer id : homeIds) {
+            knownShrineStatesMap.put(id, new HashMap<Integer, Shrine>());
         }
     }
 
@@ -172,10 +183,26 @@ class World {
     void endTurn() throws InvalidObjectException {
         for (Integer shrineId : getShrineIds()) {
             Shrine shrine = getShrine(shrineId);
-            shrine.endTurn();
+            shrine.endTurn(); // grow workers etc.
         }
 
-        processMoves();
+        saveShrineStates();
+
+        processMoves(); // and fight if needed
+    }
+
+    private void saveShrineStates() {
+        for (Integer shrineId : getShrineIds()) {
+            Shrine shrine = getShrine(shrineId);
+            Integer ownerId = shrine.getOwnerId();
+            Shrine shrineCopy = shrine.cloneShrine(-1);
+            Map<Integer, Shrine> shrineStates = knownShrineStatesMap.get(ownerId);
+            if (null == shrineStates) {
+                shrineStates = new HashMap<>();
+                knownShrineStatesMap.put(ownerId, shrineStates);
+            }
+            shrineStates.put(shrine.getId(), shrineCopy);
+        }
     }
 
     private void processMoves() throws InvalidObjectException {
@@ -190,7 +217,6 @@ class World {
                     Map<Shrine.MovableType, Integer> subMap = departureMap.get(destinationId);
                     for (Shrine.MovableType type : subMap.keySet()) {
                         int num = subMap.get(type);
-
                         destination.addArrival(shrine.getOwnerId(), type, num);
                     }
                 } else {
@@ -200,12 +226,50 @@ class World {
             shrine.clearDepartureMap();
         }
 
-        // Move all stuff from each shrine to its own arrivalMap and then resolve conflict
+        // Move all stuff from each shrine to its own arrivalMap, resolve conflict, and update known shrine states
         for (Integer shrineId : getShrineIds()) {
             Shrine shrine = getShrine(shrineId);
+            Set<Integer> playerIdsForUpdate = new HashSet<>();
+            playerIdsForUpdate.addAll(shrine.getArrivalMapCopy().keySet());
+            playerIdsForUpdate.add(shrine.getOwnerId());
             shrine.moveAllToArrivalMap();
             shrine.fight(roller);
+            updateShrineState(playerIdsForUpdate, shrine);
         }
+    }
+
+    private void updateShrineState(Set<Integer> playerIds, Shrine shrine) {
+        Shrine shrineCopy = shrine.cloneShrine(-1);
+
+        for (Integer id : playerIds) {
+            Map<Integer, Shrine> shrineStates = knownShrineStatesMap.get(id);
+            if (shrine.getOwnerId() != id) {
+                shrineStates.put(shrine.getId(), shrineCopy);
+            } else {
+                shrineStates.remove(shrine.getId());
+            }
+        }
+    }
+
+    Set<Integer> getKnownIds(Integer playerId) {
+        // Add all shrines owned by the player
+        Set<Integer> knownIds = new HashSet<>();
+        for (Integer id : shrineMap.keySet()) {
+            Shrine shrine = shrineMap.get(id);
+            if (shrine.getOwnerId() == playerId) {
+                knownIds.add(id);
+            }
+        }
+
+        // Add shrines this player knows about (but doesn't own)
+        Map<Integer, Shrine> knownShrines = getKnownShrineState(playerId);
+        knownIds.addAll(knownShrines.keySet());
+
+        return knownIds;
+    }
+
+    Map<Integer, Shrine> getKnownShrineState(Integer playerId) {
+        return knownShrineStatesMap.get(playerId);
     }
 
     @Override

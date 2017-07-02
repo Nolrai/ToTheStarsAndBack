@@ -23,6 +23,10 @@ public class WorldTest extends BaseTest {
     @Before
     public void setUp() {
         world = new World(new Roller(1));
+        List<Integer> homeIds = new ArrayList<>();
+        homeIds.add(0);
+        homeIds.add(1);
+        world.initForHomeIds(homeIds);
     }
 
     @Test
@@ -415,7 +419,7 @@ public class WorldTest extends BaseTest {
     }
 
     @Test
-    public void endTurn_processMovestrivial() {
+    public void endTurn_processMovesTrivial() {
         List<Shrine> shrines = Utils.generateShrines(2);
         world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
         world.addShrine(shrines.get(1));
@@ -447,7 +451,7 @@ public class WorldTest extends BaseTest {
     }
 
     @Test
-    public void endTurn_processMovescatchException() {
+    public void endTurn_processMovesCatchException() {
         List<Shrine> shrines = Utils.generateShrines(2);
         world.addShrine(shrines.get(0));
         world.addShrine(shrines.get(1));
@@ -464,7 +468,7 @@ public class WorldTest extends BaseTest {
     }
 
     @Test
-    public void endTurn_processMovesbackAndForth() {
+    public void endTurn_processMovesBackAndForth() {
         List<Shrine> shrines = Utils.generateShrines(2);
         world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
         world.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(0).getId()));
@@ -499,6 +503,66 @@ public class WorldTest extends BaseTest {
     }
 
     @Test
+    public void endTurn_processMovesAddToKnownShrines() {
+        List<Shrine> shrines = Utils.generateShrines(2);
+        world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
+        world.addShrine(shrines.get(1));
+
+        shrines.get(0).addDeparture(shrines.get(1).getId(), Shrine.MovableType.WORKER, 1);
+
+        try {
+            world.endTurn();
+        } catch (InvalidObjectException e) {
+            assertThat(e.getMessage(), true, is(false));
+        }
+
+        Set<Integer> knownIds = world.getKnownIds(0);
+
+        assertThat(knownIds.size(), is(2));
+        assertThat(knownIds.contains(0), is(true));
+        assertThat(knownIds.contains(1), is(true));
+    }
+
+    @Test
+    public void endTurn_processMovesDontAddToKnownShrinesIfZero() {
+        List<Shrine> shrines = Utils.generateShrines(2);
+        world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
+        world.addShrine(shrines.get(1));
+
+        shrines.get(0).addDeparture(shrines.get(1).getId(), Shrine.MovableType.WORKER, 0);
+
+        try {
+            world.endTurn();
+        } catch (InvalidObjectException e) {
+            assertThat(e.getMessage(), true, is(false));
+        }
+
+        Set<Integer> knownIds = world.getKnownIds(0);
+
+        assertThat(knownIds.size(), is(1));
+        assertThat(knownIds.contains(0), is(true));
+    }
+
+    @Test
+    public void endTurn_processMovesUpdateShrineState() {
+        List<Shrine> shrines = Utils.generateShrines(2);
+        world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
+        world.addShrine(shrines.get(1));
+
+        shrines.get(0).addDeparture(shrines.get(1).getId(), Shrine.MovableType.WORKER, 1);
+
+        try {
+            world.endTurn();
+        } catch (InvalidObjectException e) {
+            assertThat(e.getMessage(), true, is(false));
+        }
+
+        Map<Integer, Shrine> knownStates = world.getKnownShrineState(0);
+
+        assertThat(knownStates.size(), is(0));
+     }
+
+    @Test
     public void endTurn_callShrineEndTurn() {
         List<Shrine> shrines = Utils.generateShrines(3);
         world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
@@ -518,6 +582,33 @@ public class WorldTest extends BaseTest {
         for (Shrine shrine : shrines) {
             assertThat(shrine.getNumWorker(), is(1));
         }
+    }
+
+    @Test
+    public void getKnownIds_returnHomeId() {
+        List<Shrine> shrines = Utils.generateShrines(2);
+        world.addShrine(shrines.get(0));
+        world.addShrine(shrines.get(1));
+
+        Set<Integer> knownIds = world.getKnownIds(0);
+
+        assertThat(knownIds.size(), is(1));
+        assertThat(knownIds.contains(0), is(true));
+    }
+
+    @Test
+    public void getKnownIds_returnHomeIdAndKnown() {
+//        List<Shrine> shrines = Utils.generateShrines(2);
+//        world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
+//        world.addShrine(shrines.get(1));
+//
+//        shrines.get(0).addDeparture(shrines.get(1).getId(), Shrine.MovableType.WORKER, 1);
+//
+//        try {
+//            world.endTurn();
+//        } catch (InvalidObjectException e) {
+//            assertThat(e.getMessage(), true, is(false));
+//        }
     }
 
     /* Helper Functions */

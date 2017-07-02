@@ -5,8 +5,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -16,6 +19,7 @@ import java.util.Set;
 
 @SuppressWarnings({"WeakerAccess", "TryFinallyCanBeTryWithResources"})
 public class Game {
+    @SuppressWarnings("unused")
     static final String TAG = "Game";
 
     public static class Constants {
@@ -215,13 +219,14 @@ public class Game {
         }
 
         // Init the home worlds
-        for (Integer name : homeIds) {
-            Shrine shrine = world.getShrine(name);
+        for (Integer id : homeIds) {
+            Shrine shrine = world.getShrine(id);
             shrine.initHome(constants.homeMaxPopulation, constants.homeMiningRateParts,
                     constants.miningDegradationRateParts, constants.homeWorkerRateParts,
                     constants.homeNumWorkers, constants.homeNumAlters, constants.homeNumGold);
         }
 
+        world.initForHomeIds(homeIds);
     }
 
     private List<Integer> findHomeWorlds(World world) {
