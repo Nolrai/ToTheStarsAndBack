@@ -23,6 +23,8 @@ class Shrine  {
 
     private final String displayName;
 
+    private int lastSeenTurnNum; // For copies of shrine in knownShrineStateMap
+
     final static int PARTS_MULTIPLIER = 100 * 1000;
 
     // All costs need to divide PARTS_MULTIPLIER evenly.
@@ -201,6 +203,14 @@ class Shrine  {
     @SuppressWarnings("WeakerAccess")
     public Map<Integer, Map<MovableType, Integer>> getDepartureMapCopy() {
         return copyMap(departureMap);
+    }
+
+    public int getLastSeenTurnNum() {
+        return lastSeenTurnNum;
+    }
+
+    void setLastSeenTurnNum(int lastSeenTurnNum) {
+        this.lastSeenTurnNum = lastSeenTurnNum;
     }
 
     Map<Integer, Map<MovableType, Integer>> getArrivalMapCopy () {
@@ -596,9 +606,11 @@ class Shrine  {
     @Override
     public String toString() {
         return "Shrine{" +
-                "id='" + id + '\'' +
+                "id=" + id +
+                ", displayName='" + displayName + '\'' +
+                ", lastSeenTurnNum=" + lastSeenTurnNum +
                 ", imageId='" + imageId + '\'' +
-                ", ownerId='" + ownerId + '\'' +
+                ", ownerId=" + ownerId +
                 ", maxWorkers=" + maxWorkers +
                 ", numWorkerParts=" + numWorkerParts +
                 ", numUsedWorker=" + numUsedWorker +
@@ -622,6 +634,7 @@ class Shrine  {
         Shrine shrine = (Shrine) o;
 
         if (id != shrine.id) return false;
+        if (lastSeenTurnNum != shrine.lastSeenTurnNum) return false;
         if (ownerId != shrine.ownerId) return false;
         if (maxWorkers != shrine.maxWorkers) return false;
         if (numWorkerParts != shrine.numWorkerParts) return false;
@@ -645,6 +658,7 @@ class Shrine  {
     public int hashCode() {
         int result = id;
         result = 31 * result + displayName.hashCode();
+        result = 31 * result + lastSeenTurnNum;
         result = 31 * result + imageId.hashCode();
         result = 31 * result + ownerId;
         result = 31 * result + maxWorkers;
@@ -664,6 +678,7 @@ class Shrine  {
 
     // This does not set id, imageId or displayName
     private void setShrine(Shrine other) {
+        lastSeenTurnNum = other.lastSeenTurnNum;
         maxWorkers = other.maxWorkers;
         numWorkerParts = other.numWorkerParts;
         numUsedWorker = other.numUsedWorker;
@@ -683,6 +698,7 @@ class Shrine  {
      */
     void setAllValues() {
         int idx = 1;
+        lastSeenTurnNum = idx++;
         maxWorkers = idx++;
         numWorkerParts = idx++;
         numUsedWorker = idx++;
