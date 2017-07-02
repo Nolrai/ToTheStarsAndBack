@@ -598,17 +598,46 @@ public class WorldTest extends BaseTest {
 
     @Test
     public void getKnownIds_returnHomeIdAndKnown() {
-//        List<Shrine> shrines = Utils.generateShrines(2);
-//        world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
-//        world.addShrine(shrines.get(1));
-//
-//        shrines.get(0).addDeparture(shrines.get(1).getId(), Shrine.MovableType.WORKER, 1);
-//
-//        try {
-//            world.endTurn();
-//        } catch (InvalidObjectException e) {
-//            assertThat(e.getMessage(), true, is(false));
-//        }
+        List<Shrine> shrines = Utils.generateShrines(2);
+        world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
+        world.addShrine(shrines.get(1));
+
+        shrines.get(0).addDeparture(shrines.get(1).getId(), Shrine.MovableType.WORKER, 1);
+
+        try {
+            world.endTurn();
+        } catch (InvalidObjectException e) {
+            assertThat(e.getMessage(), true, is(false));
+        }
+
+        Set<Integer> knownIds = world.getKnownIds(0);
+
+        assertThat(knownIds.size(), is(2));
+        assertThat(knownIds.contains(0), is(true));
+        assertThat(knownIds.contains(1), is(true));
+    }
+
+    @Test
+    public void getKnownIds_returnSuicideScout() {
+        List<Shrine> shrines = Utils.generateShrines(2);
+        world.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
+        world.addShrine(shrines.get(1));
+
+        shrines.get(1).setMovableType(Shrine.MovableType.FIGHTER, 100);
+        shrines.get(0).addDeparture(shrines.get(1).getId(), Shrine.MovableType.WORKER, 1);
+
+        try {
+            world.endTurn();
+        } catch (InvalidObjectException e) {
+            assertThat(e.getMessage(), true, is(false));
+        }
+
+        Set<Integer> knownIds = world.getKnownIds(0);
+
+        assertThat(knownIds.size(), is(2));
+        assertThat(knownIds.contains(0), is(true));
+        assertThat(knownIds.contains(1), is(true));
+        assertThat(shrines.get(1).getOwnerId(), is(1));
     }
 
     /* Helper Functions */

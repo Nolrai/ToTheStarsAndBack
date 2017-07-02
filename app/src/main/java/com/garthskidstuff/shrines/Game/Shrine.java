@@ -14,7 +14,7 @@ import java.util.StringTokenizer;
  */
 
 class Shrine  {
-    public static final String TAG = "Shrine";
+    static final String TAG = "Shrine";
 
     public static final String ORDER = "Order: ";
 
@@ -84,15 +84,7 @@ class Shrine  {
         BUILD_ALTAR,
     };
 
-    private Shrine(int id, Shrine shrine) {
-        this.id = id;
-        this.displayName = shrine.displayName;
-        this.imageId = shrine.imageId;
-        this.ownerId = id;
-        setShrine(shrine);
-    }
-
-    public Shrine(int id, String displayName, String imageId) {
+    Shrine(int id, String displayName, String imageId) {
         this.id = id;
         this.displayName = displayName;
         this.imageId = imageId;
