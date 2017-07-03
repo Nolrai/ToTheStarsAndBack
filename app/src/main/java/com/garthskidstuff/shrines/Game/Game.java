@@ -5,11 +5,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -136,7 +133,7 @@ public class Game {
 
     final Constants constants;
     final List<Integer> homeIds;
-    World world;
+    Board board;
 
     private volatile Roller roller;
 
@@ -173,13 +170,13 @@ public class Game {
             shrines.add(shrine);
         }
 
-        world = new World(roller);
+        board = new Board(roller);
 
         // Create the directed graph of Connections.
         boolean validGraph; // = false by default
         List<Integer> candidates = null;
         do {
-            world.clear();
+            board.clear();
 
             //generate raw web
             for (Shrine shrine : shrines) {
@@ -196,21 +193,21 @@ public class Game {
                     }
                 } while (connections.size() < numConnections);
 
-                // Add connections to World
-                world.addShrine(shrine, connections);
+                // Add connections to Board
+                board.addShrine(shrine, connections);
             }
 
             // Validate the web just created above.
-            validGraph = world.isCompletelyConnected();
+            validGraph = board.isCompletelyConnected();
             if (validGraph) {
-                candidates = findHomeWorlds(world);
+                candidates = findHomeWorlds(board);
                 validGraph = null != candidates;
             }
         } while (!validGraph);
         homeIds = candidates;
 
         // Init all the default shrine values
-        for (Shrine shrine : world.getShrines()) {
+        for (Shrine shrine : board.getShrines()) {
             int maxPopulation = roller.roll(constants.minMaxPopulation, constants.maxMaxPopulation);
             int miningRateParts = roller.roll(constants.minMiningRateParts, constants.maxMiningRateParts);
             int miningDegradationRateParts = constants.miningDegradationRateParts;
@@ -220,23 +217,23 @@ public class Game {
 
         // Init the home worlds
         for (Integer id : homeIds) {
-            Shrine shrine = world.getShrine(id);
+            Shrine shrine = board.getShrine(id);
             shrine.initHome(constants.homeMaxPopulation, constants.homeMiningRateParts,
                     constants.miningDegradationRateParts, constants.homeWorkerRateParts,
                     constants.homeNumWorkers, constants.homeNumAlters, constants.homeNumGold);
         }
 
-        world.initForHomeIds(homeIds);
+        board.initForHomeIds(homeIds);
     }
 
-    private List<Integer> findHomeWorlds(World world) {
-        for (Integer home0 : world.getShrineIds()) {
-            for (Integer home1 : world.getShrineIds()) {
-                if (!Utils.equals(home0, home1) && (world.getConnections(home0).size() == world.getConnections(home1).size())) {
-                    Set<List<Integer>> from0to1 = world.getPaths(world.getShrineIds(), home0, home1, World.FindPathSettings.useAllShortest());
-                    Set<List<Integer>> from1to0 = world.getPaths(world.getShrineIds(), home1, home0, World.FindPathSettings.useAllShortest());
-                    List<List<Integer>> sorted0to1 = world.sortPaths(from0to1);
-                    List<List<Integer>> sorted1to0 = world.sortPaths(from1to0);
+    private List<Integer> findHomeWorlds(Board board) {
+        for (Integer home0 : board.getShrineIds()) {
+            for (Integer home1 : board.getShrineIds()) {
+                if (!Utils.equals(home0, home1) && (board.getConnections(home0).size() == board.getConnections(home1).size())) {
+                    Set<List<Integer>> from0to1 = board.getPaths(board.getShrineIds(), home0, home1, Board.FindPathSettings.useAllShortest());
+                    Set<List<Integer>> from1to0 = board.getPaths(board.getShrineIds(), home1, home0, Board.FindPathSettings.useAllShortest());
+                    List<List<Integer>> sorted0to1 = board.sortPaths(from0to1);
+                    List<List<Integer>> sorted1to0 = board.sortPaths(from1to0);
                     int length0to1 = sorted0to1.get(0).size();
                     int length1to0 = sorted1to0.get(0).size();
                     if ((length0to1 == length1to0) && (length0to1 >= constants.minHomeDistance) && (length0to1 <= constants.maxHomeDistance)) {
@@ -338,7 +335,7 @@ public class Game {
         if (!constants.equals(game.constants)) return false;
         //noinspection SimplifiableIfStatement
         if (!homeIds.equals(game.homeIds)) return false;
-        return world.equals(game.world);
+        return board.equals(game.board);
 
     }
 
@@ -346,7 +343,7 @@ public class Game {
     public int hashCode() {
         int result = constants.hashCode();
         result = 31 * result + homeIds.hashCode();
-        result = 31 * result + world.hashCode();
+        result = 31 * result + board.hashCode();
         return result;
     }
 
@@ -454,7 +451,7 @@ public class Game {
 
     enum Order {
         HELP("?", "help ex: ?"),
-        SHOW_SHRINE("show", "shows a shrine. Default is home world.  ex: 'show <shrine_name>'"),
+        SHOW_SHRINE("show", "shows a shrine. Default is home shrine.  ex: 'show <shrine_name>'"),
         BUILD_FIGHTER("buildfighter", "builds fighter(s) with a number of workers at a shrine (default is last shown shrine).  ex: 'buildFighter <num_workers> <shrine_name>'"),
         BUILD_ALTAR("buildAltar", "builds altar(s) with a number of workers at a shrine (default is last shown shrine).  ex: 'buildAltar <num_workers> <shrine_name>'"),
         MOVE("move", "moves items to a destination (must be connected). ex: 'move <num> <type> <destination>' Where type is MovableType"),
@@ -486,14 +483,14 @@ public class Game {
             }
             case SHOW_SHRINE: {
                 if ((1 < words.length) && Utils.equals("all", words[1])) {
-                    for (Shrine shrine : world.getShrines()) {
+                    for (Shrine shrine : board.getShrines()) {
                         if (shrine.getOwnerId() == currentPlayerId) {
                           showShrine(shrine);
                         }
                     }
                     System.out.println(">>>>");
                 } else {
-                    Shrine shrine = world.getShrine((1 < words.length) ? Integer.parseInt(words[1]) : lastShownShrineId);
+                    Shrine shrine = board.getShrine((1 < words.length) ? Integer.parseInt(words[1]) : lastShownShrineId);
                     if (null != shrine) {
                         lastShownShrineId = shrine.getId();
                     } else {
@@ -504,7 +501,7 @@ public class Game {
             }
             case BUILD_FIGHTER: {
                 if (1 < words.length) {
-                    Shrine shrine = world.getShrine((2 < words.length) ? Integer.parseInt(words[2]) : lastShownShrineId);
+                    Shrine shrine = board.getShrine((2 < words.length) ? Integer.parseInt(words[2]) : lastShownShrineId);
                     int num = Integer.parseInt(words[1]);
                     if (!shrine.doOrder(Shrine.Order.BUILD_FIGHTER, num)) {
                         System.out.println("Error building!");
@@ -514,7 +511,7 @@ public class Game {
             }
             case BUILD_ALTAR: {
                 if (1 < words.length) {
-                    Shrine shrine = world.getShrine((2 < words.length) ? Integer.parseInt(words[2]) : lastShownShrineId);
+                    Shrine shrine = board.getShrine((2 < words.length) ? Integer.parseInt(words[2]) : lastShownShrineId);
                     int num = Integer.parseInt(words[1]);
                     if (!shrine.doOrder(Shrine.Order.BUILD_ALTAR, num)) {
                         System.out.println("Error building!");
@@ -527,8 +524,8 @@ public class Game {
                     int num = Integer.parseInt(words[1]);
                     Shrine.MovableType type = Shrine.MovableType.valueOf(words[2].toUpperCase());
                     int id = Integer.parseInt(words[3]);
-                    Integer destinationId = world.getConnections(lastShownShrineId).contains(id) ? id : null;
-                    Shrine shrine = world.getShrine(lastShownShrineId);
+                    Integer destinationId = board.getConnections(lastShownShrineId).contains(id) ? id : null;
+                    Shrine shrine = board.getShrine(lastShownShrineId);
                     if ((null == destinationId) || !shrine.doMoveOrder(destinationId, type, num)) {
                         System.out.println("Error moving!");
                     }
@@ -539,7 +536,7 @@ public class Game {
                 currentPlayerIndex++;
                 if(currentPlayerIndex == homeIds.size()) {
                     currentPlayerIndex = 0;
-                    world.endTurn();
+                    board.endTurn();
                 }
                 break;
             }
@@ -547,13 +544,13 @@ public class Game {
                 return null;
             }
         }
-        showShrine(world.getShrine(lastShownShrineId));
+        showShrine(board.getShrine(lastShownShrineId));
         return currentPlayerIndex;
     }
 
     private void showShrine(Shrine shrine) {
         System.out.println(shrine.toCLIString());
-        System.out.println("    " + world.getConnections(shrine.getId()).toString());
+        System.out.println("    " + board.getConnections(shrine.getId()).toString());
     }
 
     Integer getAndRunOrder(Integer currentPlayerIndex) throws Exception {

@@ -9,7 +9,7 @@ import java.util.Set;
 
 /**
  * Created by garthupshaw1 on 5/10/17.
- * A single node in the World graph
+ * A single node in the Board graph
  */
 
 class Shrine  {
@@ -33,7 +33,7 @@ class Shrine  {
 
     private final String imageId;
 
-    private int ownerId; // id of the home world that owns this shrine
+    private int ownerId; // id of the shrine that owns this shrine
 
     private int maxWorkers; // This is really final, but set in an init call AND is the actual int -- not 100th
 

@@ -14,10 +14,10 @@ import java.util.Set;
 
 /**
  * Created by garthtroubleupshaw on 6/1/17.
- * Map of all Shrines in the world: Shrine -> connections + convenience functions
+ * Map of all Shrines in the board: Shrine -> connections + convenience functions
  */
 
-class World {
+class Board {
     //shrine Id --> its children's Ids
     private final Map<Integer, List<Integer>> connectionMap = new HashMap<>();
     // shrine Id -> shrine object
@@ -29,7 +29,7 @@ class World {
 
     private final Roller roller;
 
-    World(Roller randomRoller) {
+    Board(Roller randomRoller) {
         this.roller = randomRoller;
     }
 
@@ -277,36 +277,17 @@ class World {
         return knownShrineStatesMap.get(playerId);
     }
 
-    /**
-     * Get all the owned AND known shrines (known shrines are as of the last seen turn)
-     */
-    @SuppressWarnings("unused")
-    Map<Integer, Shrine> getPlayerShrines(Integer playerId) {
-        Map<Integer, Shrine> shrines = new HashMap<>();
-        for (Integer id : shrineMap.keySet()) {
-            Shrine shrine = shrineMap.get(id);
-            if (shrine.getOwnerId() == playerId) {
-                shrines.put(shrine.getId(), shrine);
-            }
-        }
-
-        for (Shrine shrine : getKnownShrineState(playerId).values()) {
-            shrines.put(shrine.getId(), shrine);
-        }
-
-        return shrines;
-    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        World world = (World) o;
+        Board board = (Board) o;
 
         //noinspection SimplifiableIfStatement
-        if (!connectionMap.equals(world.connectionMap)) return false;
-        return shrineMap.equals(world.shrineMap);
+        if (!connectionMap.equals(board.connectionMap)) return false;
+        return shrineMap.equals(board.shrineMap);
     }
 
     @Override
