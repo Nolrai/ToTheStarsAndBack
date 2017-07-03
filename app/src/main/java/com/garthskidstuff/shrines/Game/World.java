@@ -25,6 +25,8 @@ class World {
     // homeId --> (shrineId --> Shrine): Saves a shrine state at the "last seen" moment
     private final Map<Integer, Map<Integer, Shrine>> knownShrineStatesMap = new HashMap<>();
 
+    private int turnNumber = 0;
+
     private final Roller roller;
 
     World(Roller randomRoller) {
@@ -181,6 +183,8 @@ class World {
     }
 
     void endTurn() throws InvalidObjectException {
+        turnNumber++;
+
         for (Integer shrineId : getShrineIds()) {
             Shrine shrine = getShrine(shrineId);
             shrine.endTurn(); // grow workers etc.
@@ -196,6 +200,7 @@ class World {
             Shrine shrine = getShrine(shrineId);
             Integer ownerId = shrine.getOwnerId();
             Shrine shrineCopy = shrine.cloneShrine(-1);
+            shrineCopy.setLastSeenTurnNum(turnNumber);
             Map<Integer, Shrine> shrineStates = knownShrineStatesMap.get(ownerId);
             if (null == shrineStates) {
                 shrineStates = new HashMap<>();
@@ -270,6 +275,26 @@ class World {
 
     Map<Integer, Shrine> getKnownShrineState(Integer playerId) {
         return knownShrineStatesMap.get(playerId);
+    }
+
+    /**
+     * Get all the owned AND known shrines (known shrines are as of the last seen turn)
+     */
+    @SuppressWarnings("unused")
+    Map<Integer, Shrine> getPlayerShrines(Integer playerId) {
+        Map<Integer, Shrine> shrines = new HashMap<>();
+        for (Integer id : shrineMap.keySet()) {
+            Shrine shrine = shrineMap.get(id);
+            if (shrine.getOwnerId() == playerId) {
+                shrines.put(shrine.getId(), shrine);
+            }
+        }
+
+        for (Shrine shrine : getKnownShrineState(playerId).values()) {
+            shrines.put(shrine.getId(), shrine);
+        }
+
+        return shrines;
     }
 
     @Override

@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 /**
  * Created by garthupshaw1 on 5/10/17.
@@ -16,13 +15,15 @@ import java.util.StringTokenizer;
 class Shrine  {
     static final String TAG = "Shrine";
 
-    public static final String ORDER = "Order: ";
+    static final String ORDER = "Order: ";
 
-    public static final String NUM = "Num: ";
+    static final String NUM = "Num: ";
 
     private final int id;
 
     private final String displayName;
+
+    private int lastSeenTurnNum; // For copies of shrine in knownShrineStateMap
 
     final static int PARTS_MULTIPLIER = 100 * 1000;
 
@@ -82,7 +83,7 @@ class Shrine  {
         MINE,
         BUILD_FIGHTER,
         BUILD_ALTAR,
-    };
+    }
 
     Shrine(int id, String displayName, String imageId) {
         this.id = id;
@@ -111,16 +112,20 @@ class Shrine  {
         return id;
     }
 
-    String getDisplayName() {
+    @SuppressWarnings("WeakerAccess")
+    public String getDisplayName() {
         return displayName;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public String getImageId() {
         return imageId;
     }
 
-    public int getOwnerId() {return ownerId;};
+    @SuppressWarnings("WeakerAccess")
+    public int getOwnerId() {return ownerId;}
 
+    @SuppressWarnings("WeakerAccess")
     public int getMaxWorkers() {
         return maxWorkers;
     }
@@ -129,6 +134,7 @@ class Shrine  {
         this.ownerId = ownerId;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public int getNumWorkerParts() {
         return numWorkerParts;
     }
@@ -137,15 +143,18 @@ class Shrine  {
         this.numWorkerParts = numWorkerParts;
     }
 
-    int getNumUsedWorker() {
+    @SuppressWarnings("WeakerAccess")
+    public int getNumUsedWorker() {
         return numUsedWorker;
     }
 
-    void setNumUsedWorker(int numUsedWorker) {
+    @SuppressWarnings("WeakerAccess")
+    public void setNumUsedWorker(int numUsedWorker) {
         this.numUsedWorker = numUsedWorker;
     }
 
-    int getNumAltarParts() {
+    @SuppressWarnings("WeakerAccess")
+    public int getNumAltarParts() {
         return numAltarParts;
     }
 
@@ -153,22 +162,27 @@ class Shrine  {
         this.numAltarParts = numAltarParts;
     }
 
-    int getNumUsedAltar() {
+    @SuppressWarnings("WeakerAccess")
+    public int getNumUsedAltar() {
         return numUsedAltar;
     }
 
-    void setNumUsedAltar(int numUsedAltar) {
+    @SuppressWarnings("WeakerAccess")
+    public void setNumUsedAltar(int numUsedAltar) {
         this.numUsedAltar = numUsedAltar;
     }
 
-    int getMiningRateParts() {
+    @SuppressWarnings("WeakerAccess")
+    public int getMiningRateParts() {
         return miningRateParts;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public int getMiningDegradationRateParts() {
         return miningDegradationRateParts;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public int getNumGoldParts() {
         return numGoldParts;
     }
@@ -177,6 +191,7 @@ class Shrine  {
         this.numGoldParts = numGoldParts;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public int getNumFighterParts() {
         return numFighterParts;
     }
@@ -185,11 +200,20 @@ class Shrine  {
         this.numFighterParts = numFighterParts;
     }
 
-    Map<Integer, Map<MovableType, Integer>> getDepartureMapCopy() {
+    @SuppressWarnings("WeakerAccess")
+    public Map<Integer, Map<MovableType, Integer>> getDepartureMapCopy() {
         return copyMap(departureMap);
     }
 
-    public Map<Integer, Map<MovableType, Integer>> getArrivalMapCopy () {
+    public int getLastSeenTurnNum() {
+        return lastSeenTurnNum;
+    }
+
+    void setLastSeenTurnNum(int lastSeenTurnNum) {
+        this.lastSeenTurnNum = lastSeenTurnNum;
+    }
+
+    Map<Integer, Map<MovableType, Integer>> getArrivalMapCopy () {
         return copyMap(arrivalMap);
     }
 
@@ -209,6 +233,7 @@ class Shrine  {
     }
 
     // The following are convenience functions to get/set whole integer values
+    @SuppressWarnings("WeakerAccess")
     public int getNumGold() {
         return numGoldParts / PARTS_MULTIPLIER;
     }
@@ -217,6 +242,7 @@ class Shrine  {
         numGoldParts = num * PARTS_MULTIPLIER;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public int getNumWorker() {
         return numWorkerParts / PARTS_MULTIPLIER;
     }
@@ -225,6 +251,7 @@ class Shrine  {
         numWorkerParts = num * PARTS_MULTIPLIER;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public int getNumAltar() {
         return numAltarParts / PARTS_MULTIPLIER;
     }
@@ -233,6 +260,7 @@ class Shrine  {
         numAltarParts = num * PARTS_MULTIPLIER;
     }
 
+    @SuppressWarnings({"WeakerAccess", "unused"})
     public int getNumFighter() {
         return numFighterParts / PARTS_MULTIPLIER;
     }
@@ -578,9 +606,11 @@ class Shrine  {
     @Override
     public String toString() {
         return "Shrine{" +
-                "id='" + id + '\'' +
+                "id=" + id +
+                ", displayName='" + displayName + '\'' +
+                ", lastSeenTurnNum=" + lastSeenTurnNum +
                 ", imageId='" + imageId + '\'' +
-                ", ownerId='" + ownerId + '\'' +
+                ", ownerId=" + ownerId +
                 ", maxWorkers=" + maxWorkers +
                 ", numWorkerParts=" + numWorkerParts +
                 ", numUsedWorker=" + numUsedWorker +
@@ -604,6 +634,7 @@ class Shrine  {
         Shrine shrine = (Shrine) o;
 
         if (id != shrine.id) return false;
+        if (lastSeenTurnNum != shrine.lastSeenTurnNum) return false;
         if (ownerId != shrine.ownerId) return false;
         if (maxWorkers != shrine.maxWorkers) return false;
         if (numWorkerParts != shrine.numWorkerParts) return false;
@@ -627,6 +658,7 @@ class Shrine  {
     public int hashCode() {
         int result = id;
         result = 31 * result + displayName.hashCode();
+        result = 31 * result + lastSeenTurnNum;
         result = 31 * result + imageId.hashCode();
         result = 31 * result + ownerId;
         result = 31 * result + maxWorkers;
@@ -645,7 +677,8 @@ class Shrine  {
     }
 
     // This does not set id, imageId or displayName
-    void setShrine(Shrine other) {
+    private void setShrine(Shrine other) {
+        lastSeenTurnNum = other.lastSeenTurnNum;
         maxWorkers = other.maxWorkers;
         numWorkerParts = other.numWorkerParts;
         numUsedWorker = other.numUsedWorker;
@@ -665,6 +698,7 @@ class Shrine  {
      */
     void setAllValues() {
         int idx = 1;
+        lastSeenTurnNum = idx++;
         maxWorkers = idx++;
         numWorkerParts = idx++;
         numUsedWorker = idx++;
