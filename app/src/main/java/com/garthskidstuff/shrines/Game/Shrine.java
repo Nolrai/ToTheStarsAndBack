@@ -205,6 +205,7 @@ class Shrine  {
         return copyMap(departureMap);
     }
 
+    @SuppressWarnings("WeakerAccess")
     public int getLastSeenTurnNum() {
         return lastSeenTurnNum;
     }
@@ -325,7 +326,7 @@ class Shrine  {
     boolean doOrder(Order order, int num) {
         Logger.i(TAG, ORDER + order + " " + NUM + num);
         int numParts = num * PARTS_MULTIPLIER;
-        Shrine oldShrine = cloneShrine(-1);
+        Shrine oldShrine = cloneShrine();
 
         boolean success = true;
         switch (order) {
@@ -557,7 +558,9 @@ class Shrine  {
         return sumMap;
     }
 
-    void endTurn() {
+    void endTurn(int turnNumber) {
+        setLastSeenTurnNum(turnNumber);
+
         // Unused workers automatically mine
         doOrder(Order.MINE, getNumWorker());
 
@@ -581,8 +584,8 @@ class Shrine  {
         }
     }
 
-    Shrine cloneShrine(int newID) {
-        Shrine s = new Shrine(newID, getDisplayName(), getImageId());
+    Shrine cloneShrine() {
+        Shrine s = new Shrine(getId(), getDisplayName(), getImageId());
         s.setShrine(this);
         return s;
     }

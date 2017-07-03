@@ -74,9 +74,9 @@ public class GameTest extends BaseTest {
 
         Integer homeId0 = game.homeIds.get(0);
         Integer homeId1 = game.homeIds.get(1);
-        Set<List<Integer>> allPaths0to1 = game.board.getPaths(homeId0, homeId1, Board.FindPathSettings.useAllShortest());
+        Set<List<Integer>> allPaths0to1 = game.board.getPaths(homeId0, homeId1, BoardEngine.FindPathSettings.useAllShortest());
         List<List<Integer>> sortedPaths0to1 = game.board.sortPaths(allPaths0to1);
-        Set<List<Integer>> allPaths1to0 = game.board.getPaths(homeId0, homeId1, Board.FindPathSettings.useAllShortest());
+        Set<List<Integer>> allPaths1to0 = game.board.getPaths(homeId0, homeId1, BoardEngine.FindPathSettings.useAllShortest());
         List<List<Integer>> sortedPaths1to0 = game.board.sortPaths(allPaths1to0);
 
         assertThat(sortedPaths0to1.get(0).size(), is(sortedPaths1to0.get(0).size()));
