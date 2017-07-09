@@ -46,7 +46,7 @@ class BoardEngine extends Board {
         return connected;
     }
 
-    void endTurn() throws InvalidObjectException {
+    void endTurn() {
         turnNumber++;
 
         for (Integer shrineId : getShrineIds()) {
@@ -74,7 +74,7 @@ class BoardEngine extends Board {
         }
     }
 
-    private void processMoves() throws InvalidObjectException {
+    private void processMoves() {
         // Move everything from departuresMap to arrivalMap for all Shrines
         for (Integer shrineId : getShrineIds()) {
             Shrine shrine = getShrine(shrineId);
@@ -88,8 +88,6 @@ class BoardEngine extends Board {
                         int num = subMap.get(type);
                         destination.addArrival(shrine.getOwnerId(), type, num);
                     }
-                } else {
-                    throw new InvalidObjectException(shrine.getId() + " does not connect to " + destinationId);
                 }
             }
             shrine.clearDepartureMap();
@@ -126,6 +124,7 @@ class BoardEngine extends Board {
      */
     Board getBoardForPlayer(Integer playerId) {
         Board board = new Board();
+        board.turnNumber = turnNumber;
 
         // Add (copies of) all shrines owned by the player
         for (Integer id : shrineMap.keySet()) {

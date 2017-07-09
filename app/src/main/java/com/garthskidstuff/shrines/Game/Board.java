@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -112,6 +113,17 @@ class Board {
         return shrineMap.keySet();
     }
 
+    Set<Integer> getOwnedShrineIds(Integer ownerid) {
+        Set<Integer> ownedIds = new HashSet<>();
+        for (Integer id : shrineMap.keySet()) {
+            Shrine shrine = getShrine(id);
+            if (shrine.getOwnerId() == ownerid) {
+                ownedIds.add(id);
+            }
+        }
+        return ownedIds;
+    }
+
     void addShrine(Shrine shrine, List<Integer> connectionIds) {
         connectionMap.put(shrine.getId(), connectionIds);
         shrineMap.put(shrine.getId(), shrine);
@@ -119,6 +131,10 @@ class Board {
 
     void addShrine(Shrine shrine) {
         connectionMap.put(shrine.getId(), new ArrayList<Integer>());
+        shrineMap.put(shrine.getId(), shrine);
+    }
+
+    void replaceShrine(Shrine shrine) {
         shrineMap.put(shrine.getId(), shrine);
     }
 

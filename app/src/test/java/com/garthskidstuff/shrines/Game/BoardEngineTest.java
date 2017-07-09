@@ -107,11 +107,7 @@ public class BoardEngineTest extends BaseTest {
             shrines.get(0).addDeparture(shrines.get(1).getId(), type, type.ordinal() + 1);
         }
 
-        try {
-            board.endTurn();
-        } catch (InvalidObjectException e) {
-            assertThat(e.getMessage(), true, is(false));
-        }
+        board.endTurn();
 
         for (int i = 0; i < shrines.size(); i++) {
             Map<Integer, Map<Shrine.MovableType, Integer>> departures = shrines.get(i).getDepartureMapCopy();
@@ -130,23 +126,6 @@ public class BoardEngineTest extends BaseTest {
     }
 
     @Test
-    public void endTurn_processMovesCatchException() {
-        List<Shrine> shrines = Utils.generateShrines(2);
-        board.addShrine(shrines.get(0));
-        board.addShrine(shrines.get(1));
-
-        shrines.get(0).addDeparture(shrines.get(1).getId(), Shrine.MovableType.GOLD, 1);
-
-        boolean thrown = false;
-        try {
-            board.endTurn();
-        } catch (InvalidObjectException e) {
-            thrown = true;
-        }
-        assertThat(thrown, is(true));
-    }
-
-    @Test
     public void endTurn_processMovesBackAndForth() {
         List<Shrine> shrines = Utils.generateShrines(2);
         board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
@@ -157,11 +136,7 @@ public class BoardEngineTest extends BaseTest {
             shrines.get(1).addDeparture(shrines.get(0).getId(), type, type.ordinal() + 10);
         }
 
-        try {
-            board.endTurn();
-        } catch (InvalidObjectException e) {
-            assertThat(e.getMessage(), true, is(false));
-        }
+        board.endTurn();
 
         for (int i = 0; i < shrines.size(); i++) {
             Map<Integer, Map<Shrine.MovableType, Integer>> departures = shrines.get(i).getDepartureMapCopy();
@@ -189,11 +164,7 @@ public class BoardEngineTest extends BaseTest {
 
         shrines.get(0).addDeparture(shrines.get(1).getId(), Shrine.MovableType.WORKER, 1);
 
-        try {
-            board.endTurn();
-        } catch (InvalidObjectException e) {
-            assertThat(e.getMessage(), true, is(false));
-        }
+        board.endTurn();
 
         Board playerBoard = board.getBoardForPlayer(0);
 
@@ -210,11 +181,7 @@ public class BoardEngineTest extends BaseTest {
 
         shrines.get(0).addDeparture(shrines.get(1).getId(), Shrine.MovableType.WORKER, 0);
 
-        try {
-            board.endTurn();
-        } catch (InvalidObjectException e) {
-            assertThat(e.getMessage(), true, is(false));
-        }
+        board.endTurn();
 
         Board playerBoard = board.getBoardForPlayer(0);
 
@@ -231,17 +198,13 @@ public class BoardEngineTest extends BaseTest {
 
         shrines.get(0).addDeparture(shrines.get(2).getId(), Shrine.MovableType.WORKER, 1);
 
-        try {
-            board.endTurn();
+        board.endTurn();
 
-            shrines.get(2).addDeparture(shrines.get(0).getId(), Shrine.MovableType.WORKER, 1);
-            shrines.get(1).addDeparture(shrines.get(2).getId(), Shrine.MovableType.WORKER, 1);
+        shrines.get(2).addDeparture(shrines.get(0).getId(), Shrine.MovableType.WORKER, 1);
+        shrines.get(1).addDeparture(shrines.get(2).getId(), Shrine.MovableType.WORKER, 1);
 
-            board.endTurn();
-            board.endTurn();
-        } catch (InvalidObjectException e) {
-            assertThat(e.getMessage(), true, is(false));
-        }
+        board.endTurn();
+        board.endTurn();
 
         Board playerBoard = board.getBoardForPlayer(0);
 
@@ -263,11 +226,7 @@ public class BoardEngineTest extends BaseTest {
         shrines.get(1).setMovableType(Shrine.MovableType.FIGHTER, 100);
         shrines.get(0).addDeparture(shrines.get(1).getId(), Shrine.MovableType.WORKER, 1);
 
-        try {
-            board.endTurn();
-        } catch (InvalidObjectException e) {
-            assertThat(e.getMessage(), true, is(false));
-        }
+        board.endTurn();
 
         Board playerBoard = board.getBoardForPlayer(0);
 
@@ -288,11 +247,7 @@ public class BoardEngineTest extends BaseTest {
             shrine.setNumGold(1);
         }
 
-        try {
-            board.endTurn();
-        } catch (InvalidObjectException e) {
-            assertThat(e.getMessage(), true, is(false));
-        }
+        board.endTurn();
 
         for (Shrine shrine : shrines) {
             assertThat(shrine.getNumWorker(), is(1));

@@ -654,7 +654,6 @@ class Shrine  {
         //noinspection SimplifiableIfStatement
         if (!departureMap.equals(shrine.departureMap)) return false;
         return arrivalMap.equals(shrine.arrivalMap);
-
     }
 
     @Override
@@ -681,7 +680,10 @@ class Shrine  {
 
     // This does not set id, imageId or displayName
     private void setShrine(Shrine other) {
+//        displayName = other.displayName;
         lastSeenTurnNum = other.lastSeenTurnNum;
+//        imageId = other.imageId;
+        ownerId = other.ownerId;
         maxWorkers = other.maxWorkers;
         numWorkerParts = other.numWorkerParts;
         numUsedWorker = other.numUsedWorker;
