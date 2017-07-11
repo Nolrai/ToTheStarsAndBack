@@ -730,4 +730,18 @@ class Shrine  {
         }
     }
 
+    /**
+     * Tests if the shrine will be able to mine enough gold to
+     * @param reserve how many worders we are going to use before endTurn.
+     * @return if positive: the amount of gold left over, if negative its the number of workers that starve
+     */
+
+    public int testStarve(int reserve) {
+        Shrine old = cloneShrine();
+        doOrder(Order.MINE, getNumWorker() - reserve);
+        int numWorkers = getNumUsedWorker() + reserve;
+        int gold = getNumGold();
+        setShrine(old);
+        return gold - numWorkers;
+    }
 }

@@ -11,7 +11,7 @@ abstract class PlayerAi extends Player {
      * Send a single worker from the passed-in source to every unowned connection
      */
     @SuppressWarnings("WeakerAccess")
-    protected void exploreWithWorkers(Integer sourceId) {
+    protected void exploreWithWorkers(int sourceId) {
         Shrine source = board.getShrine(sourceId);
         for (Integer id : board.getConnections(sourceId)) {
             Shrine target = board.getShrine(id);
@@ -21,5 +21,21 @@ abstract class PlayerAi extends Player {
         }
     }
 
+    /**
+     * for each unexplored connection find a worker to move closer
+     */
+    @SuppressWarnings("WeakerAccess")
+    protected void moveWorkersTowardsExplore() {
+
+    }
+
+//    protected int buildWithReserve(int shrineId, boolean buildFighters, int workerReserve, int altarReserve) {
+//        Shrine shrine = board.getShrine(shrineId);
+//        int amount = 0;
+//        int change = 2 ^ 8;
+//        // Linear search, (if this gets called a lot we should optimise)
+//
+//
+//    }
 
 }

@@ -157,4 +157,16 @@ class Board {
             return findPathSettings;
         }
     }
+
+    protected Board transpose() {
+        Board ret = new Board();
+        for (int sourceId : connectionMap.keySet()) {
+            for (int destination:
+                 ) {
+
+            }
+        }
+    }
+
+
 }
