@@ -2,7 +2,6 @@ package com.garthskidstuff.shrines.Game;
 
 import com.google.gson.Gson;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -35,7 +34,7 @@ public class GameTest extends BaseTest {
 
         Integer homeId0 = game.homeIds.get(0);
         Integer homeId1 = game.homeIds.get(1);
-        assertThat(game.world.getConnections(homeId0).size(), is(game.world.getConnections(homeId1).size()));
+        assertThat(game.board.getConnections(homeId0).size(), is(game.board.getConnections(homeId1).size()));
     }
 
     @Test
@@ -43,9 +42,9 @@ public class GameTest extends BaseTest {
         Game.Constants constants = new Game.Constants(1);
         Game game = Game.mkTestGame(constants);
 
-        for (Integer name : game.world.getShrineIds()) {
+        for (Integer name : game.board.getShrineIds()) {
             if (!game.homeIds.contains(name)) {
-                Shrine shrine = game.world.getShrine(name);
+                Shrine shrine = game.board.getShrine(name);
                 isBetween(constants.minMaxPopulation, constants.maxMaxPopulation, shrine.getMaxWorkers());
                 isBetween(constants.minMiningRateParts, constants.maxMiningRateParts, shrine.getMiningRateParts());
                 assertThat(shrine.getMiningDegradationRateParts(), is(constants.miningDegradationRateParts));
@@ -59,7 +58,7 @@ public class GameTest extends BaseTest {
         Game game = Game.mkTestGame(constants);
 
         for (Integer name : game.homeIds) {
-            Shrine shrine = game.world.getShrine(name);
+            Shrine shrine = game.board.getShrine(name);
             assertThat(shrine.getMaxWorkers(), is(constants.homeMaxPopulation));
             assertThat(shrine.getMiningRateParts(), is(constants.homeMiningRateParts));
             assertThat(shrine.getNumAltar(), is(constants.homeNumAlters));
@@ -75,10 +74,10 @@ public class GameTest extends BaseTest {
 
         Integer homeId0 = game.homeIds.get(0);
         Integer homeId1 = game.homeIds.get(1);
-        Set<List<Integer>> allPaths0to1 = game.world.getPaths(homeId0, homeId1, World.FindPathSettings.useAllShortest());
-        List<List<Integer>> sortedPaths0to1 = game.world.sortPaths(allPaths0to1);
-        Set<List<Integer>> allPaths1to0 = game.world.getPaths(homeId0, homeId1, World.FindPathSettings.useAllShortest());
-        List<List<Integer>> sortedPaths1to0 = game.world.sortPaths(allPaths1to0);
+        Set<List<Integer>> allPaths0to1 = game.board.getPaths(homeId0, homeId1, BoardEngine.FindPathSettings.useAllShortest());
+        List<List<Integer>> sortedPaths0to1 = game.board.sortPaths(allPaths0to1);
+        Set<List<Integer>> allPaths1to0 = game.board.getPaths(homeId0, homeId1, BoardEngine.FindPathSettings.useAllShortest());
+        List<List<Integer>> sortedPaths1to0 = game.board.sortPaths(allPaths1to0);
 
         assertThat(sortedPaths0to1.get(0).size(), is(sortedPaths1to0.get(0).size()));
     }

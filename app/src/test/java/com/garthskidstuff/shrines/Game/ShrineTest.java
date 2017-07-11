@@ -243,7 +243,7 @@ public class ShrineTest extends BaseTest {
         Shrine shrine = makeBasicShrine(0, "name", "imageId");
         shrine.setNumWorker(90);
 
-        shrine.endTurn();
+        shrine.endTurn(1);
 
         assertThat("" + shrine.getNumGoldParts() + " <= 0", (0 < shrine.getNumGoldParts()), is(true));
     }
@@ -255,7 +255,7 @@ public class ShrineTest extends BaseTest {
         shrine.setNumUsedWorker(1);
         shrine.setNumGold(100); // so they won't starve
 
-        shrine.endTurn();
+        shrine.endTurn(1);
 
         assertThat(shrine.getNumUsedWorker(), is(0));
         assertThat(shrine.getNumWorker(), is(2));
@@ -267,7 +267,7 @@ public class ShrineTest extends BaseTest {
         shrine.setNumAltar(10);
         shrine.setNumUsedAltar(10);
 
-        shrine.endTurn();
+        shrine.endTurn(1);
 
         assertThat(shrine.getNumUsedAltar(), is(0));
         assertThat(shrine.getNumAltar(), is(20));
@@ -278,7 +278,7 @@ public class ShrineTest extends BaseTest {
         Shrine shrine = makeBasicShrine(1, "name", "imageId");
         shrine.setNumUsedWorker(10);
 
-        shrine.endTurn();
+        shrine.endTurn(1);
 
         assertThat(shrine.getNumWorker(), is(0));
     }
@@ -289,7 +289,7 @@ public class ShrineTest extends BaseTest {
         shrine.setNumUsedWorker(1);
         shrine.setNumGold(1);
 
-        shrine.endTurn();
+        shrine.endTurn(1);
 
         assertThat(shrine.getNumWorker(), is(1));
     }
@@ -300,7 +300,7 @@ public class ShrineTest extends BaseTest {
         shrine.setNumUsedWorker(2);
         shrine.setNumGold(1);
 
-        shrine.endTurn();
+        shrine.endTurn(1);
 
         assertThat(shrine.getNumWorker(), is(1));
     }
@@ -311,7 +311,7 @@ public class ShrineTest extends BaseTest {
         shrine.setNumUsedWorker(10);
         shrine.setNumGold(10);
 
-        shrine.endTurn();
+        shrine.endTurn(1);
 
         assertThat(shrine.getNumWorkerParts(), is(10 * Shrine.PARTS_MULTIPLIER + 10 * workerRateParts));
     }
@@ -322,7 +322,7 @@ public class ShrineTest extends BaseTest {
         shrine.setNumUsedWorker(maxWorker - 1);
         shrine.setNumGold(maxWorker);
 
-        shrine.endTurn();
+        shrine.endTurn(1);
 
         assertThat(shrine.getNumWorker(), is(maxWorker));
     }
@@ -360,7 +360,7 @@ public class ShrineTest extends BaseTest {
         Shrine shrine = makeBasicShrine(0, "name", "imageId");
         shrine.setNumGold(1);
         shrine.setNumAltar(1);
-        Shrine oldShrine = shrine.cloneShrine(0);
+        Shrine oldShrine = shrine.cloneShrine();
         shrine.doOrder(order, 1);
 
         assertThat(shrine, is(oldShrine));
@@ -370,7 +370,7 @@ public class ShrineTest extends BaseTest {
         Shrine shrine = makeBasicShrine(0, "name", "imageId");
         shrine.setNumWorker(1);
         shrine.setNumAltar(1);
-        Shrine oldShrine = shrine.cloneShrine(0);
+        Shrine oldShrine = shrine.cloneShrine();
         shrine.doOrder(order, 1);
 
         assertThat(shrine, is(oldShrine));
@@ -380,7 +380,7 @@ public class ShrineTest extends BaseTest {
         Shrine shrine = makeBasicShrine(0, "name", "imageId");
         shrine.setNumWorker(1);
         shrine.setNumGold(1);
-        Shrine oldShrine = shrine.cloneShrine(0);
+        Shrine oldShrine = shrine.cloneShrine();
         shrine.doOrder(order, 1);
 
         assertThat(shrine, is(oldShrine));
@@ -409,7 +409,7 @@ public class ShrineTest extends BaseTest {
         shrine.setNumGold(type.moveCost);
         shrine.doMoveOrder(1, type, 1);
 
-        Shrine oldShrine = shrine.cloneShrine(0);
+        Shrine oldShrine = shrine.cloneShrine();
         Map<Integer, Map<MovableType, Integer>> map = shrine.getDepartureMapCopy();
 
         assertThat(map.size(), is(1));
@@ -421,7 +421,7 @@ public class ShrineTest extends BaseTest {
         shrine.setMovableType(type, 1000);
         shrine.doMoveOrder(1, type, 1);
 
-        Shrine oldShrine = shrine.cloneShrine(0);
+        Shrine oldShrine = shrine.cloneShrine();
         Map<Integer, Map<MovableType, Integer>> map = shrine.getDepartureMapCopy();
 
         assertThat(map.size(), is(0));

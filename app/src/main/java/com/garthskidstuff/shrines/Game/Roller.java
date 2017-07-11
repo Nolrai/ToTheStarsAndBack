@@ -4,10 +4,12 @@ import java.util.Random;
 
 /**
  * Created by garthupshaw1 on 6/17/17.
+ * A Random Number God. Capricious in her gifts and curses.
  */
 
+@SuppressWarnings("WeakerAccess")
 public class Roller {
-    private Random random;
+    private final Random random;
 
     public Roller(long seed) {
         random = (-1 == seed) ? new Random() : new Random(seed);

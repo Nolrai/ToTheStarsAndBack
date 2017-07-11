@@ -9,7 +9,7 @@ import java.util.Set;
 
 /**
  * Created by garthupshaw1 on 5/10/17.
- * A single node in the World graph
+ * A single node in the Board graph
  */
 
 class Shrine  {
@@ -33,7 +33,7 @@ class Shrine  {
 
     private final String imageId;
 
-    private int ownerId; // id of the home world that owns this shrine
+    private int ownerId; // id of the shrine that owns this shrine
 
     private int maxWorkers; // This is really final, but set in an init call AND is the actual int -- not 100th
 
@@ -205,6 +205,7 @@ class Shrine  {
         return copyMap(departureMap);
     }
 
+    @SuppressWarnings("WeakerAccess")
     public int getLastSeenTurnNum() {
         return lastSeenTurnNum;
     }
@@ -325,7 +326,7 @@ class Shrine  {
     boolean doOrder(Order order, int num) {
         Logger.i(TAG, ORDER + order + " " + NUM + num);
         int numParts = num * PARTS_MULTIPLIER;
-        Shrine oldShrine = cloneShrine(-1);
+        Shrine oldShrine = cloneShrine();
 
         boolean success = true;
         switch (order) {
@@ -557,7 +558,9 @@ class Shrine  {
         return sumMap;
     }
 
-    void endTurn() {
+    void endTurn(int turnNumber) {
+        setLastSeenTurnNum(turnNumber);
+
         // Unused workers automatically mine
         doOrder(Order.MINE, getNumWorker());
 
@@ -581,8 +584,8 @@ class Shrine  {
         }
     }
 
-    Shrine cloneShrine(int newID) {
-        Shrine s = new Shrine(newID, getDisplayName(), getImageId());
+    Shrine cloneShrine() {
+        Shrine s = new Shrine(getId(), getDisplayName(), getImageId());
         s.setShrine(this);
         return s;
     }
@@ -651,7 +654,6 @@ class Shrine  {
         //noinspection SimplifiableIfStatement
         if (!departureMap.equals(shrine.departureMap)) return false;
         return arrivalMap.equals(shrine.arrivalMap);
-
     }
 
     @Override
@@ -678,7 +680,10 @@ class Shrine  {
 
     // This does not set id, imageId or displayName
     private void setShrine(Shrine other) {
+//        displayName = other.displayName;
         lastSeenTurnNum = other.lastSeenTurnNum;
+//        imageId = other.imageId;
+        ownerId = other.ownerId;
         maxWorkers = other.maxWorkers;
         numWorkerParts = other.numWorkerParts;
         numUsedWorker = other.numUsedWorker;
