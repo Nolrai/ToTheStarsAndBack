@@ -3,12 +3,8 @@ package com.garthskidstuff.shrines.Game;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.InvalidObjectException;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
@@ -23,7 +19,7 @@ public class BoardEngineTest extends BaseTest {
     @Before
     public void setUp() {
         board = new BoardEngine(new Roller(1));
-        List<Integer> homeIds = new ArrayList<>();
+        List<Integer> homeIds = Utils.makeList();
         homeIds.add(0);
         homeIds.add(1);
         board.initForHomeIds(homeIds);
@@ -32,8 +28,8 @@ public class BoardEngineTest extends BaseTest {
     @Test
     public void isCompletelyConnected_triviallyTrue() {
         List<Shrine> shrines = Utils.generateShrines(2);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
-        board.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(0).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId()));
+        board.addShrine(shrines.get(1), Utils.makeList(shrines.get(0).getId()));
 
         boolean result = board.isCompletelyConnected();
 
@@ -43,9 +39,9 @@ public class BoardEngineTest extends BaseTest {
     @Test
     public void isCompletelyConnected_triviallyFalse() {
         List<Shrine> shrines = Utils.generateShrines(3);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
-        board.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(2).getId()));
-        board.addShrine(shrines.get(2), Utils.makeConnections(shrines.get(1).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId()));
+        board.addShrine(shrines.get(1), Utils.makeList(shrines.get(2).getId()));
+        board.addShrine(shrines.get(2), Utils.makeList(shrines.get(1).getId()));
 
         boolean result = board.isCompletelyConnected();
 
@@ -55,10 +51,10 @@ public class BoardEngineTest extends BaseTest {
     @Test
     public void isCompletelyConnected_TwoCompletelyDisconnected() {
         List<Shrine> shrines = Utils.generateShrines(4);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
-        board.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(0).getId()));
-        board.addShrine(shrines.get(2), Utils.makeConnections(shrines.get(3).getId()));
-        board.addShrine(shrines.get(3), Utils.makeConnections(shrines.get(2).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId()));
+        board.addShrine(shrines.get(1), Utils.makeList(shrines.get(0).getId()));
+        board.addShrine(shrines.get(2), Utils.makeList(shrines.get(3).getId()));
+        board.addShrine(shrines.get(3), Utils.makeList(shrines.get(2).getId()));
 
         boolean result = board.isCompletelyConnected();
 
@@ -71,7 +67,7 @@ public class BoardEngineTest extends BaseTest {
         List<Shrine> shrines = Utils.generateShrines(SIZE);
         for (int i = 0; i < SIZE; i++) {
             int[] idx = new int[]{(i + 1) % SIZE, (i + 2) % SIZE, (i + 3) % SIZE, (i + 4) % SIZE};
-            board.addShrine(shrines.get(i), Utils.makeConnections(shrines.get(idx[0]).getId(), shrines.get(idx[1]).getId(), shrines.get(idx[2]).getId(), shrines.get(idx[3]).getId()));
+            board.addShrine(shrines.get(i), Utils.makeList(shrines.get(idx[0]).getId(), shrines.get(idx[1]).getId(), shrines.get(idx[2]).getId(), shrines.get(idx[3]).getId()));
         }
 
         boolean result = board.isCompletelyConnected();
@@ -86,7 +82,7 @@ public class BoardEngineTest extends BaseTest {
         for (int i = 0; i < SIZE; i++) {
             int[] idx = new int[]{(i + 1) % SIZE, (i + 2) % SIZE, (i + 3) % SIZE, (i + 4) % SIZE};
             if (0 < i) {
-                board.addShrine(shrines.get(i), Utils.makeConnections(shrines.get(idx[0]).getId(), shrines.get(idx[1]).getId(), shrines.get(idx[2]).getId(), shrines.get(idx[3]).getId()));
+                board.addShrine(shrines.get(i), Utils.makeList(shrines.get(idx[0]).getId(), shrines.get(idx[1]).getId(), shrines.get(idx[2]).getId(), shrines.get(idx[3]).getId()));
             } else {
                 board.addShrine(shrines.get(i));
             }
@@ -100,7 +96,7 @@ public class BoardEngineTest extends BaseTest {
     @Test
     public void endTurn_processMovesTrivial() {
         List<Shrine> shrines = Utils.generateShrines(2);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId()));
         board.addShrine(shrines.get(1));
 
         for (Shrine.MovableType type : Shrine.MovableType.values()) {
@@ -128,8 +124,8 @@ public class BoardEngineTest extends BaseTest {
     @Test
     public void endTurn_processMovesBackAndForth() {
         List<Shrine> shrines = Utils.generateShrines(2);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
-        board.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(0).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId()));
+        board.addShrine(shrines.get(1), Utils.makeList(shrines.get(0).getId()));
 
         for (Shrine.MovableType type : Shrine.MovableType.values()) {
             shrines.get(0).addDeparture(shrines.get(1).getId(), type, type.ordinal() + 1);
@@ -159,7 +155,7 @@ public class BoardEngineTest extends BaseTest {
     @Test
     public void endTurn_processMovesAddToKnownShrines() {
         List<Shrine> shrines = Utils.generateShrines(2);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId()));
         board.addShrine(shrines.get(1));
 
         shrines.get(0).addDeparture(shrines.get(1).getId(), Shrine.MovableType.WORKER, 1);
@@ -176,7 +172,7 @@ public class BoardEngineTest extends BaseTest {
     @Test
     public void endTurn_processMovesDontAddToKnownShrinesIfZero() {
         List<Shrine> shrines = Utils.generateShrines(2);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId()));
         board.addShrine(shrines.get(1));
 
         shrines.get(0).addDeparture(shrines.get(1).getId(), Shrine.MovableType.WORKER, 0);
@@ -192,9 +188,9 @@ public class BoardEngineTest extends BaseTest {
     @Test
     public void endTurn_processMovesSavesShrineState() {
         List<Shrine> shrines = Utils.generateShrines(3);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(2).getId()));
-        board.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(2).getId()));
-        board.addShrine(shrines.get(2), Utils.makeConnections(shrines.get(0).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(2).getId()));
+        board.addShrine(shrines.get(1), Utils.makeList(shrines.get(2).getId()));
+        board.addShrine(shrines.get(2), Utils.makeList(shrines.get(0).getId()));
 
         shrines.get(0).addDeparture(shrines.get(2).getId(), Shrine.MovableType.WORKER, 1);
 
@@ -220,7 +216,7 @@ public class BoardEngineTest extends BaseTest {
     @Test
     public void endTurn_returnSuicideScout() {
         List<Shrine> shrines = Utils.generateShrines(2);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId()));
         board.addShrine(shrines.get(1));
 
         shrines.get(1).setMovableType(Shrine.MovableType.FIGHTER, 100);
@@ -239,8 +235,8 @@ public class BoardEngineTest extends BaseTest {
     @Test
     public void endTurn_callShrineEndTurn() {
         List<Shrine> shrines = Utils.generateShrines(3);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
-        board.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(0).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId()));
+        board.addShrine(shrines.get(1), Utils.makeList(shrines.get(0).getId()));
         board.addShrine(shrines.get(2));
         for (Shrine shrine : shrines) {
             shrine.setNumUsedWorker(1);

@@ -11,9 +11,11 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by garthupshaw1 on 7/3/17.
+ * This class handles searching for paths in the net work of connections.
+ * Its daughter class BoardEngine handles actually going to a new turn.
  */
 
+@SuppressWarnings("WeakerAccess")
 class Board {
     static Comparator<List<Integer>> SORT_SHORTEST_FIRST = new Comparator<List<Integer>>() {
         @Override
@@ -41,12 +43,14 @@ class Board {
 
     @SuppressWarnings("unused")
     List<Shrine> getShrines(List<Integer> shrineIds) {
-        List<Shrine> shrines = new ArrayList<>();
+        List<Shrine> shrines = Utils.makeList();
         for (Integer id : shrineIds) {
             shrines.add(getShrine(id));
         }
         return shrines;
-    }Set<List<Integer>> getPaths(Integer startId, Integer endId) {
+    }
+
+    Set<List<Integer>> getPaths(Integer startId, Integer endId) {
         return getPaths(connectionMap.keySet(), startId, endId, FindPathSettings.useAllShortest());
     }
 
@@ -65,8 +69,7 @@ class Board {
 
     protected Paths makePathsTo(Set<Integer> knownShrines, Integer start, Integer end, FindPathSettings findPathSettings) {
         Paths paths = new Paths(start, end);
-        List<Pair<Integer, Integer>> q = new ArrayList<>();
-        q.add(new Pair<>(0, paths.startId));
+        List<Pair<Integer, Integer>> q = Utils.makeList(new Pair<>(0, paths.startId));
 
         //noinspection WhileLoopReplaceableByForEach
         for (int i = 0; i < q.size(); i++) {
@@ -76,7 +79,7 @@ class Board {
                 if ((null != connections) &&
                         ((FindPathType.USE_ALL_SHORTEST == findPathSettings.findPathType) ||
                                 (item.first < findPathSettings.depth))) {
-                    List<Integer> pathConnections = new ArrayList<>();
+                    List<Integer> pathConnections = Utils.makeList();
                     for (Integer shrineId : connections) {
                         if (knownShrines.contains(shrineId)) {
                             pathConnections.add(shrineId);
@@ -103,7 +106,7 @@ class Board {
     }
 
     List<List<Integer>> sortPaths(Set<List<Integer>> allPaths, Comparator<List<Integer>> comparator) {
-        List<List<Integer>> sortedPaths = new ArrayList<>();
+        List<List<Integer>> sortedPaths = new ArrayList<>(); //We can't use "makeList" because java.
         sortedPaths.addAll(allPaths);
         Collections.sort(sortedPaths, comparator);
         return sortedPaths;

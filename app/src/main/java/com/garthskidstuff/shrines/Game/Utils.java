@@ -1,15 +1,22 @@
 package com.garthskidstuff.shrines.Game;
 
+import android.support.annotation.NonNull;
+
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by garthtroubleupshaw on 6/1/17.
  * convenient holder of static utility methods
  */
 
+@SuppressWarnings("WeakerAccess")
 public class Utils {
-    public static boolean equals(Object o1, Object o2) {
+    public static boolean equals(java.io.Serializable o1, java.io.Serializable o2) {
         return (null == o1) ? (null == o2) : o1.equals(o2);
     }
 
@@ -25,48 +32,20 @@ public class Utils {
         return shrines;
     }
 
-    public static List<Integer> makeConnections(Integer c0) {
-        List<Integer> connections = new ArrayList<>();
-        connections.add(c0);
-        return connections;
+    @NonNull @SafeVarargs
+    public static <T> List<T> makeList (T... array) {
+        List<T> list = new ArrayList<>();
+        Collections.addAll(list, array);
+        return list;
     }
 
-    public static List<Integer> makeConnections(Integer c0, Integer c1) {
-        List<Integer> connections = new ArrayList<>();
-        connections.add(c0);
-        connections.add(c1);
-        return connections;
-    }
-
-    public static List<Integer> makeConnections(Integer c0, Integer c1, Integer c2) {
-        List<Integer> connections = new ArrayList<>();
-        connections.add(c0);
-        connections.add(c1);
-        connections.add(c2);
-        return connections;
-    }
-
-    public static List<Integer> makeConnections(Integer c0, Integer c1, Integer c2, Integer c3) {
-        List<Integer> connections = new ArrayList<>();
-        connections.add(c0);
-        connections.add(c1);
-        connections.add(c2);
-        connections.add(c3);
-        return connections;
-    }
-
-    public static List<Integer> makeConnections(Integer c0, Integer c1, Integer c2, Integer c3, Integer c4) {
-        List<Integer> connections = new ArrayList<>();
-        connections.add(c0);
-        connections.add(c1);
-        connections.add(c2);
-        connections.add(c3);
-        connections.add(c4);
-        return connections;
-    }
-
-    public static boolean isBetweenInclusive(int low, int high, int value) {
-        return (low <= value) && (value <= high);
+    @NonNull @SafeVarargs
+    public static <T> Set<T> makeSet(T... array) {
+        Set<T> list = new HashSet<>();
+        for (T x : array) {
+            list.add(x);
+        }
+        return list;
     }
 
 }

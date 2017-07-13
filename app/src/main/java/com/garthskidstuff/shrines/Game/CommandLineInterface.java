@@ -20,7 +20,7 @@ class CommandLineInterface {
     }
     
     private static List<String> readFile(String path) throws IOException {
-        List<String> lines = new ArrayList<>();
+        List<String> lines = Utils.makeList();
         BufferedReader br = new BufferedReader(new FileReader(path));
         //noinspection TryFinallyCanBeTryWithResources
         try {

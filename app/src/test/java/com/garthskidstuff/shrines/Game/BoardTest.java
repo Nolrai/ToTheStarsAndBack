@@ -3,11 +3,8 @@ package com.garthskidstuff.shrines.Game;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.InvalidObjectException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.core.Is.is;
@@ -28,7 +25,7 @@ public class BoardTest extends BaseTest {
     @Test
     public void getPathsTo_trivialPath() {
         List<Shrine> shrines = Utils.generateShrines(2);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId()));
         board.addShrine(shrines.get(1));
 
         Set<List<Integer>> allPaths = board.getPaths(shrines.get(0).getId(), shrines.get(1).getId());
@@ -42,8 +39,8 @@ public class BoardTest extends BaseTest {
     @Test
     public void getPathsTo_simplePath() {
         List<Shrine> shrines = Utils.generateShrines(3);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
-        board.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(2).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId()));
+        board.addShrine(shrines.get(1), Utils.makeList(shrines.get(2).getId()));
         board.addShrine(shrines.get(2));
 
         Set<List<Integer>> allPaths = board.getPaths(shrines.get(0).getId(), shrines.get(2).getId());
@@ -90,8 +87,8 @@ public class BoardTest extends BaseTest {
     @Test
     public void getPathsTo_trivialLoop() {
         List<Shrine> shrines = Utils.generateShrines(2);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
-        board.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(0).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId()));
+        board.addShrine(shrines.get(1), Utils.makeList(shrines.get(0).getId()));
 
         Set<List<Integer>> allPaths = board.getPaths(shrines.get(0).getId(), shrines.get(1).getId());
 
@@ -104,9 +101,9 @@ public class BoardTest extends BaseTest {
     @Test
     public void getPathsTo_simpleLoop() {
         List<Shrine> shrines = Utils.generateShrines(3);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
-        board.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(2).getId()));
-        board.addShrine(shrines.get(2), Utils.makeConnections(shrines.get(0).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId()));
+        board.addShrine(shrines.get(1), Utils.makeList(shrines.get(2).getId()));
+        board.addShrine(shrines.get(2), Utils.makeList(shrines.get(0).getId()));
 
         Set<List<Integer>> allPaths = board.getPaths(shrines.get(0).getId(), shrines.get(2).getId());
 
@@ -119,8 +116,8 @@ public class BoardTest extends BaseTest {
     @Test
     public void getPathsTo_trivialLoopWithDeadEnd() {
         List<Shrine> shrines = Utils.generateShrines(3);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId()));
-        board.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(0).getId(), shrines.get(2).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId()));
+        board.addShrine(shrines.get(1), Utils.makeList(shrines.get(0).getId(), shrines.get(2).getId()));
         board.addShrine(shrines.get(2));
 
         Set<List<Integer>> allPaths = board.getPaths(shrines.get(0).getId(), shrines.get(2).getId());
@@ -134,9 +131,9 @@ public class BoardTest extends BaseTest {
     @Test
     public void getPathsTo_trivialDeadEndLoop() {
         List<Shrine> shrines = Utils.generateShrines(3);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId(),shrines.get(2).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId(),shrines.get(2).getId()));
         board.addShrine(shrines.get(1));
-        board.addShrine(shrines.get(2), Utils.makeConnections(shrines.get(0).getId()));
+        board.addShrine(shrines.get(2), Utils.makeList(shrines.get(0).getId()));
 
         Set<List<Integer>> allPaths = board.getPaths(shrines.get(0).getId(), shrines.get(1).getId());
 
@@ -149,7 +146,7 @@ public class BoardTest extends BaseTest {
     @Test
     public void getPathsTo_trivialDeadEnd() {
         List<Shrine> shrines = Utils.generateShrines(3);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId(), shrines.get(2).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId(), shrines.get(2).getId()));
         board.addShrine(shrines.get(1));
         board.addShrine(shrines.get(2));
 
@@ -164,9 +161,9 @@ public class BoardTest extends BaseTest {
     @Test
     public void getPathsTo_simpleDeadEnd() {
         List<Shrine> shrines = Utils.generateShrines(4);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId(), shrines.get(2).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId(), shrines.get(2).getId()));
         board.addShrine(shrines.get(1));
-        board.addShrine(shrines.get(2), Utils.makeConnections(shrines.get(3).getId()));
+        board.addShrine(shrines.get(2), Utils.makeList(shrines.get(3).getId()));
         board.addShrine(shrines.get(3));
 
         Set<List<Integer>> allPaths = board.getPaths(shrines.get(0).getId(), shrines.get(1).getId());
@@ -180,8 +177,8 @@ public class BoardTest extends BaseTest {
     @Test
     public void getPathsTo_simpleDeadEndTwo() {
         List<Shrine> shrines = Utils.generateShrines(4);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId(), shrines.get(2).getId()));
-        board.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(3).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId(), shrines.get(2).getId()));
+        board.addShrine(shrines.get(1), Utils.makeList(shrines.get(3).getId()));
         board.addShrine(shrines.get(2));
         board.addShrine(shrines.get(3));
 
@@ -196,8 +193,8 @@ public class BoardTest extends BaseTest {
     @Test
     public void getPathsTo_oneLongOneShort() {
         List<Shrine> shrines = Utils.generateShrines(3);
-        board.addShrine(shrines.get(0), Utils.makeConnections(shrines.get(1).getId(), shrines.get(2).getId()));
-        board.addShrine(shrines.get(1), Utils.makeConnections(shrines.get(2).getId()));
+        board.addShrine(shrines.get(0), Utils.makeList(shrines.get(1).getId(), shrines.get(2).getId()));
+        board.addShrine(shrines.get(1), Utils.makeList(shrines.get(2).getId()));
         board.addShrine(shrines.get(2));
 
         Set<List<Integer>> allPaths = board.getPaths(shrines.get(0).getId(), shrines.get(2).getId(), BoardEngine.FindPathSettings.useMaxDepth(Integer.MAX_VALUE));
@@ -215,7 +212,7 @@ public class BoardTest extends BaseTest {
         List<Shrine> shrines = Utils.generateShrines(SIZE);
         for (int i = 0; i < SIZE; i++) {
             int[] idx = new int[]{(i + 1) % SIZE, (i + 2) % SIZE, (i + 3) % SIZE, (i + 4) % SIZE};
-            board.addShrine(shrines.get(i), Utils.makeConnections(shrines.get(idx[0]).getId(), shrines.get(idx[1]).getId(), shrines.get(idx[2]).getId(), shrines.get(idx[3]).getId()));
+            board.addShrine(shrines.get(i), Utils.makeList(shrines.get(idx[0]).getId(), shrines.get(idx[1]).getId(), shrines.get(idx[2]).getId(), shrines.get(idx[3]).getId()));
         }
 
         Set<List<Integer>> allPaths = board.getPaths(shrines.get(0).getId(), shrines.get(SIZE - 1).getId());
@@ -240,7 +237,7 @@ public class BoardTest extends BaseTest {
         List<Shrine> shrines = Utils.generateShrines(SIZE);
         for (int i = 0; i < SIZE; i++) {
             int[] idx = new int[]{(i + 1) % SIZE, (i + 2) % SIZE, (i + 3) % SIZE, (i + 4) % SIZE};
-            board.addShrine(shrines.get(i), Utils.makeConnections(shrines.get(idx[0]).getId(), shrines.get(idx[1]).getId(), shrines.get(idx[2]).getId(), shrines.get(idx[3]).getId()));
+            board.addShrine(shrines.get(i), Utils.makeList(shrines.get(idx[0]).getId(), shrines.get(idx[1]).getId(), shrines.get(idx[2]).getId(), shrines.get(idx[3]).getId()));
         }
 
         Set<List<Integer>> allPaths = board.getPaths(shrines.get(0).getId(), shrines.get(SIZE - 1).getId(), BoardEngine.FindPathSettings.useMaxDepth(Integer.MAX_VALUE));
@@ -334,7 +331,7 @@ public class BoardTest extends BaseTest {
         List<Shrine> shrines = Utils.generateShrines(SIZE);
         for (int i = 0; i < SIZE; i++) {
             int[] idx = new int[]{(i + 1) % SIZE, (i + 2) % SIZE, (i + 3) % SIZE, (i + 4) % SIZE};
-            board.addShrine(shrines.get(i), Utils.makeConnections(shrines.get(idx[0]).getId(), shrines.get(idx[1]).getId(), shrines.get(idx[2]).getId(), shrines.get(idx[3]).getId()));
+            board.addShrine(shrines.get(i), Utils.makeList(shrines.get(idx[0]).getId(), shrines.get(idx[1]).getId(), shrines.get(idx[2]).getId(), shrines.get(idx[3]).getId()));
         }
         Set<List<Integer>> allPaths = board.getPaths(shrines.get(0).getId(), shrines.get(SIZE - 1).getId(), BoardEngine.FindPathSettings.useMaxDepth(Integer.MAX_VALUE));
 
@@ -349,14 +346,14 @@ public class BoardTest extends BaseTest {
     /* Helper Functions */
 
     private void makeDiamond(Board board, List<Shrine> shrines, int idx0, int idx1, int idx2, int idx3) {
-        board.addShrine(shrines.get(idx0), Utils.makeConnections(shrines.get(idx1).getId(), shrines.get(idx2).getId()));
-        board.addShrine(shrines.get(idx1), Utils.makeConnections(shrines.get(idx3).getId()));
-        board.addShrine(shrines.get(idx2), Utils.makeConnections(shrines.get(idx3).getId()));
+        board.addShrine(shrines.get(idx0), Utils.makeList(shrines.get(idx1).getId(), shrines.get(idx2).getId()));
+        board.addShrine(shrines.get(idx1), Utils.makeList(shrines.get(idx3).getId()));
+        board.addShrine(shrines.get(idx2), Utils.makeList(shrines.get(idx3).getId()));
         board.addShrine(shrines.get(idx3));
     }
 
     private List<Integer> makePath(List<Shrine> shrines, int[] indexes) {
-        List<Integer> path = new ArrayList<>();
+        List<Integer> path = Utils.makeList();
         for (int idx : indexes) {
             path.add(shrines.get(idx).getId());
         }

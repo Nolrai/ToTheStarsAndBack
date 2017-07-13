@@ -2,7 +2,6 @@ package com.garthskidstuff.shrines.Game;
 
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.core.Is.is;
@@ -18,7 +17,7 @@ public class PathsTest extends BaseTest {
     public void putAndGet_singleItem() {
         List<Integer> shrineIds = generateShrineIds(2);
         Paths path = new Paths(shrineIds.get(0), shrineIds.get(1));
-        List<Integer> connections = Utils.makeConnections(shrineIds.get(1));
+        List<Integer> connections = Utils.makeList(shrineIds.get(1));
 
         path.put(shrineIds.get(0), connections);
         List<Integer> testConnections = path.get(shrineIds.get(0));
@@ -30,7 +29,7 @@ public class PathsTest extends BaseTest {
     public void putAndGet_itemNotInPath() {
         List<Integer> shrineIds = generateShrineIds(2);
         Paths path = new Paths(shrineIds.get(0), shrineIds.get(1));
-        List<Integer> connections = Utils.makeConnections(shrineIds.get(1));
+        List<Integer> connections = Utils.makeList(shrineIds.get(1));
 
         path.put(shrineIds.get(0), connections);
         List<Integer> testConnections = path.get(shrineIds.get(1));
@@ -40,7 +39,7 @@ public class PathsTest extends BaseTest {
 
 
     private List<Integer> generateShrineIds(int num) {
-        List<Integer> shrineIds = new ArrayList<>();
+        List<Integer> shrineIds = Utils.makeList();
         for (int i = 0; i < num; i++) {
             shrineIds.add(i);
         }

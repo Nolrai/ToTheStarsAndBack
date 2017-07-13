@@ -164,7 +164,7 @@ public class Game {
         Shuffled<String> namesShuffled = new Shuffled<>(nameList);
         Shuffled<String> imagesShuffled = new Shuffled<>(imageList);
 
-        List<Shrine> shrines = new ArrayList<>();
+        List<Shrine> shrines = Utils.makeList();
         for (int i = 0; i < numShrines; i++) {
             Shrine shrine = new Shrine(i, namesShuffled.next(), imagesShuffled.next());
             shrines.add(shrine);
@@ -181,7 +181,7 @@ public class Game {
             //generate raw web
             for (Shrine shrine : shrines) {
                 int numConnections = roller.roll(constants.minConnections, constants.maxConnections);
-                List<Integer> connections = new ArrayList<>();
+                List<Integer> connections = Utils.makeList();
                 do {
                     Integer newConnectionId = shrines.get(roller.roll(0, numShrines - 1)).getId();
                     //  our graph is a simply connected graph. So at most one edge A to B, and no
@@ -237,7 +237,7 @@ public class Game {
                     int length0to1 = sorted0to1.get(0).size();
                     int length1to0 = sorted1to0.get(0).size();
                     if ((length0to1 == length1to0) && (length0to1 >= constants.minHomeDistance) && (length0to1 <= constants.maxHomeDistance)) {
-                        List<Integer> homes = new ArrayList<>();
+                        List<Integer> homes = Utils.makeList();
                         homes.add(home0);
                         homes.add(home1);
                         return homes;
@@ -249,8 +249,8 @@ public class Game {
     }
 
     public static Game mkTestGame(Constants constants) {
-        List<String> names = new ArrayList<>();
-        List<String> images = new ArrayList<>();
+        List<String> names = Utils.makeList();
+        List<String> images = Utils.makeList();
         for (int i = 0; i < 150; i++) {
             String name = "Name_" + i;
             String imageId = "Image_" + i;
@@ -271,7 +271,7 @@ public class Game {
      */
     class Shuffled<T> implements Iterator {
         final List<T> oldList;
-        final List<Integer> innerList = new ArrayList<>();
+        final List<Integer> innerList = Utils.makeList();
         private int now;
 
         /**

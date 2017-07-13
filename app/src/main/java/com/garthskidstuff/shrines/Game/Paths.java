@@ -60,8 +60,7 @@ public class Paths {
 
     Set<List<Integer>> makeSetOfPathsFrom() {
         Set<List<Integer>> allPaths = new HashSet<>();
-        List<Integer> path1 = new ArrayList<>();
-        path1.add(startId);
+        List<Integer> path1 = Utils.makeList(startId);
         allPaths.add(path1);
 
         boolean keepGoing = false;
@@ -79,7 +78,7 @@ public class Paths {
                     if (null != connections) {
                         for (Integer shrineId : connections) {
                             if (!path.contains(shrineId)) { // not a loop
-                                List<Integer> newPath = new ArrayList<>();
+                                List<Integer> newPath = Utils.makeList();
                                 newPath.addAll(path);
                                 if ((-1 == shortestLength) ||
                                         (newPath.size() < shortestLength) ||
