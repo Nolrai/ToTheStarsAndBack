@@ -164,12 +164,13 @@ class Board {
     protected Board transpose() {
         Board ret = new Board();
         for (int sourceId : connectionMap.keySet()) {
-            for (int destination:
-                 ) {
-
+            for (int destinationId : connectionMap.get(sourceId)) {
+                List<Integer> wrappedDestinationId = Utils.makeList(destinationId);
+                ret.addShrine(shrineMap.get(destinationId).cloneShrine(), wrappedDestinationId);
             }
         }
+        ret.turnNumber = turnNumber;
+        return ret;
     }
-
 
 }
