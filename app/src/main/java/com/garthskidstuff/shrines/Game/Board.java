@@ -143,6 +143,8 @@ class Board {
 
     private enum FindPathType { USE_ALL_SHORTEST, USE_MAX_DEPTH }
 
+    public static class EndOn {}
+
     static class FindPathSettings {
         FindPathType findPathType;
         int depth = -1;
