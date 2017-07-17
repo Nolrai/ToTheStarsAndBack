@@ -30,7 +30,7 @@ abstract class PlayerAi extends Player {
         for (Integer sourceId : board.getShrineIds()) {
             for (Integer targetId : board.getConnections(sourceId)) {
                 if (!board.getShrineIds().contains(targetId)) {//We found a unexplored shrine
-                    backwards.getPaths(targetId, Board.EndOn.HasWorker, Board.FindPathSettings.useAllShortest());
+                    backwards.getPaths(targetId, EndOn.HasWorker, Board.FindPathSettings.useAllShortest());
                 }
             }
         }

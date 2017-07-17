@@ -14,13 +14,13 @@ import java.util.Set;
 
 public class Paths {
     Integer startId;
-    Integer endId;
+    EndOn endFilter;
     int shortestLength = -1;
     public Map<Integer, List<Integer>> map = new HashMap<>();
 
-    public Paths(Integer startId, Integer endId) {
+    public Paths(Integer startId, EndOn endFilter) {
         this.startId = startId;
-        this.endId = endId;
+        this.endFilter = endFilter;
     }
 
     public void put(Integer shrineId, List<Integer> connections) {
