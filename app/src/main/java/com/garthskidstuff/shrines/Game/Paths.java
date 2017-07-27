@@ -98,4 +98,8 @@ public class Paths {
 
         return allPaths;
     }
+
+    static class EndOn {
+
+    }
 }

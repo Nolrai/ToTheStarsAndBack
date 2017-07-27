@@ -744,4 +744,13 @@ class Shrine  {
         setShrine(old);
         return gold - numWorkers;
     }
+
+    static Filter<Shrine> ownedAndHas(final int id, final MovableType type) {
+        return new Filter<Shrine>() {
+            @Override
+            public boolean test(Shrine x) {
+                return (id == x.ownerId) && x.getMovableType(type) > 0;
+            }
+        };
+    }
 }

@@ -67,7 +67,7 @@ class Board {
         return paths.makeSetOfPathsFrom();
     }
 
-    protected Paths makePathsTo(Set<Integer> knownShrines, Integer start, Integer end, FindPathSettings findPathSettings) {
+    protected Paths makePathsTo(Set<Integer> knownShrines, Integer start, Filter<Shrine> end, FindPathSettings findPathSettings) {
         Paths paths = new Paths(start, end);
         List<Pair<Integer, Integer>> q = Utils.makeList(new Pair<>(0, paths.startId));
 
