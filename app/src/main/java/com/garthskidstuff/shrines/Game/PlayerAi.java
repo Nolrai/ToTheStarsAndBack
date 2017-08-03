@@ -1,11 +1,19 @@
 package com.garthskidstuff.shrines.Game;
 
+import java.util.List;
+import java.util.Set;
+
 /**
  * Created by garthupshaw1 on 7/3/17.
  *
  */
 
 abstract class PlayerAi extends Player {
+    Roller mRoller;
+
+    public PlayerAi (Roller r) {
+        mRoller = r;
+    }
 
     /**
      * Send a single worker from the passed-in source to every unowned connection
@@ -27,14 +35,30 @@ abstract class PlayerAi extends Player {
     @SuppressWarnings("WeakerAccess")
     protected void moveWorkersTowardsExplore() {
         Board backwards = board.transpose();
-        for (Integer sourceId : board.getShrineIds()) {
+        //TODO: Choose at random?
+        Shuffled<Integer> = new Shuffled<>(board.getShrineIds());
+        for (Integer sourceId : ) {
             for (Integer targetId : board.getConnections(sourceId)) {
                 if (!board.getShrineIds().contains(targetId)) {//We found a unexplored shrine
-                    backwards.getPaths(targetId, EndOn.HasWorker, Board.FindPathSettings.useAllShortest());
+                    Set<List<Integer>> paths = backwards.getPaths(targetId, new Utils.Func<Shrine, Boolean>() {
+                        @Override
+                        public Boolean apply(Shrine shrine) {
+                            return isOwnedByMe(shrine) && shrine.getNumWorker() > 0;
+                        }
+                    }, Board.FindPathSettings.useAllShortest());
+                    //TODO: Choose at random?
+
+                    for (List<Integer> path : paths) {
+
+                    }
                 }
             }
         }
 
+    }
+
+    private boolean isOwnedByMe(Shrine shrine) {
+        return shrine.getOwnerId() == PlayerAi.this.getId();
     }
 
 //    protected int buildWithReserve(int shrineId, boolean buildFighters, int workerReserve, int altarReserve) {

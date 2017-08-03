@@ -58,7 +58,7 @@ class Board {
         return getPaths(knownShrines, startId, endId, FindPathSettings.useAllShortest());
     }
 
-    Set<List<Integer>> getPaths(Integer startId, Integer endId, FindPathSettings findPathSettings) {
+    Set<List<Integer>> getPaths(Integer startId, Utils.Func<Shrine, Boolean> endId, FindPathSettings findPathSettings) {
         return getPaths(connectionMap.keySet(), startId, endId, findPathSettings);
     }
 

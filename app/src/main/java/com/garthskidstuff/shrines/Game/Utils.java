@@ -3,7 +3,6 @@ package com.garthskidstuff.shrines.Game;
 import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -48,4 +47,8 @@ public class Utils {
         return list;
     }
 
+    //@FunctionalInterface
+    public interface Func<Domain, CoDomain> {
+        CoDomain apply (Domain d);
+    }
 }

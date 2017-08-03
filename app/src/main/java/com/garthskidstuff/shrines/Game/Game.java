@@ -9,6 +9,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import static android.R.id.list;
+
 /**
  * The God object for the "business logic"/Model. I.e. everything that isn't IO goes _here_.
  * Created by garthupshaw1 on 5/10/17.
@@ -269,9 +271,10 @@ public class Game {
      *
      * @param <T> The type of the item returned by next/contained in oldList.
      */
-    class Shuffled<T> implements Iterator {
+    static class Shuffled<T> implements Iterator {
         final List<T> oldList;
         final List<Integer> innerList = Utils.makeList();
+        private final Roller mRoller;
         private int now;
 
         /**
@@ -279,7 +282,8 @@ public class Game {
          *
          * @param list the list we want to get random elements out of.
          */
-        public Shuffled(List<T> list) {
+        public Shuffled(Roller roller, List<T> list) {
+            mRoller = roller;
             oldList = list;
             for (int ix = 0; ix < list.size(); ix++) {
                 innerList.add(ix);
