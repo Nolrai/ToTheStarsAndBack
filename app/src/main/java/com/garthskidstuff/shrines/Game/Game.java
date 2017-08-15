@@ -1,15 +1,9 @@
 package com.garthskidstuff.shrines.Game;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
-import static android.R.id.list;
 
 /**
  * The God object for the "business logic"/Model. I.e. everything that isn't IO goes _here_.
@@ -137,8 +131,6 @@ public class Game {
     final List<Integer> homeIds;
     BoardEngine board;
 
-    private volatile Roller roller;
-
     /**
      * This constructor is the one called by the actual app
      *
@@ -161,7 +153,7 @@ public class Game {
      */
     public Game(List<String> nameList, List<String> imageList, Constants constants) {
         this.constants = constants;
-        roller = new Roller(constants.seed);
+        Roller roller = new Roller(constants.seed);
         int numShrines = roller.roll(constants.minShrines, constants.maxShrines);
         Shuffled<String> namesShuffled = new Shuffled<>(nameList);
         Shuffled<String> imagesShuffled = new Shuffled<>(imageList);
@@ -272,23 +264,39 @@ public class Game {
      * @param <T> The type of the item returned by next/contained in oldList.
      */
     static class Shuffled<T> implements Iterator {
-        final List<T> oldList;
+        final List<T> old;
         final List<Integer> innerList = Utils.makeList();
-        private final Roller mRoller;
+        private final Roller roller;
         private int now;
 
         /**
          * This just prepares a list of indexes, and keeps an reference to the passed in list.
          *
-         * @param list the list we want to get random elements out of.
+         * @param old the Collection we want to get random elements out of.
          */
-        public Shuffled(Roller roller, List<T> list) {
-            mRoller = roller;
-            oldList = list;
-            for (int ix = 0; ix < list.size(); ix++) {
-                innerList.add(ix);
+        public Shuffled(Roller roller, List<T> old) {
+            this.roller = roller;
+            this.old = old;
+            int ix=0;
+            for (@SuppressWarnings("unused") T elm : old) {
+                innerList.add(ix++);
             }
 
+        }
+
+        /**
+         * This creates a shuffled itterator, but note that original set is not affected by remove.
+         * @param roller
+         * @param oldSet
+         * @param <T>
+         * @return
+         */
+        public static <T> Shuffled<T> fromSet(Roller roller, Set<T> oldSet) {
+            List<T> old = new ArrayList<>();
+            for(T elem : oldSet) {
+                old.add(elem);
+            }
+            return new Shuffled (roller, old);
         }
 
         /**
@@ -310,7 +318,7 @@ public class Game {
         public T next() {
             now = roller.roll(0, innerList.size() - 1);
             innerList.remove(now);
-            return oldList.get(now);
+            return old.get(now);
         }
 
         /**
@@ -325,7 +333,7 @@ public class Game {
                     innerList.set(ix, 1 + item);
                 }
             }
-            oldList.remove(now);
+            old.remove(now);
         }
     }
 

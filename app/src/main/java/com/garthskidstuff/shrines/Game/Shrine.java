@@ -732,8 +732,8 @@ class Shrine  {
 
     /**
      * Tests if the shrine will be able to mine enough gold to
-     * @param reserve how many worders we are going to use before endTurn.
-     * @return if positive: the amount of gold left over, if negative its the number of workers that starve
+     * @param reserve how many workers we are going to use before endTurn.
+     * @return if positive: the amount of gold left over, if negative: the number of workers that starve
      */
 
     public int testStarve(int reserve) {

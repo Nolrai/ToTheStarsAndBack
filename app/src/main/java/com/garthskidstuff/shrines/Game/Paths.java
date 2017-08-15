@@ -1,6 +1,5 @@
 package com.garthskidstuff.shrines.Game;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -9,53 +8,64 @@ import java.util.Set;
 
 /**
  * Created by garthtroubleupshaw on 6/1/17.
- * Capture all map from a startId Integer to an endId Integer
+ * Capture all paths from a startId Integer to an endId Integer
  */
 
 public class Paths {
-    Integer startId;
-    EndOn endFilter;
-    int shortestLength = -1;
-    public Map<Integer, List<Integer>> map = new HashMap<>();
+    public final Integer startId;
+    public final Filter<Shrine> endFilter;
+    public int maxLength;
+    public final Map<Integer, List<Integer>> map = new HashMap<>();
+    public final Board board;
 
-    public Paths(Integer startId, EndOn endFilter) {
+    @SuppressWarnings("unused")
+    public Paths(int startId, Filter<Shrine> endFilter, Board board) {
+        this(startId, endFilter, -1, board);
+    }
+
+    public Paths(int startId, Filter<Shrine> endFilter, int maxLength, Board board) {
         this.startId = startId;
         this.endFilter = endFilter;
+        this.maxLength = maxLength;
+        this.board = board;
     }
 
-    public void put(Integer shrineId, List<Integer> connections) {
-        map.put(shrineId, connections);
+    List<Integer> put(Integer shrineId, List<Integer> connections) {
+       return map.put(shrineId, connections);
     }
 
-    public List<Integer> get(Integer shrineId) {
+    List<Integer> get(Integer shrineId) {
         return map.get(shrineId);
     }
 
-    public void remove(Integer shrineId) {
-        map.remove(shrineId);
-    }
-
+    @SuppressWarnings("SimplifiableIfStatement")
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Paths)) return false;
 
         Paths paths = (Paths) o;
 
-        if (shortestLength != paths.shortestLength) return false;
+        if (maxLength != paths.maxLength) return false;
         if (!startId.equals(paths.startId)) return false;
-        if (!endId.equals(paths.endId)) return false;
-        return map.equals(paths.map);
+        if (!endFilter.equals(paths.endFilter)) return false;
+        if (!map.equals(paths.map)) return false;
+        return board.equals(paths.board);
 
     }
 
     @Override
     public int hashCode() {
         int result = startId.hashCode();
-        result = 31 * result + endId.hashCode();
-        result = 31 * result + shortestLength;
+        result = 31 * result + endFilter.hashCode();
+        result = 31 * result + maxLength;
         result = 31 * result + map.hashCode();
+        result = 31 * result + board.hashCode();
         return result;
+    }
+
+    boolean filterShrine(Integer shrineId) {
+        return endFilter.test(board.getShrine(shrineId));
     }
 
     Set<List<Integer>> makeSetOfPathsFrom() {
@@ -63,7 +73,7 @@ public class Paths {
         List<Integer> path1 = Utils.makeList(startId);
         allPaths.add(path1);
 
-        boolean keepGoing = false;
+        boolean keepGoing;
         do {
             keepGoing = false;
             Set<List<Integer>> newAllPaths = new HashSet<>();
@@ -71,8 +81,8 @@ public class Paths {
 
             for (List<Integer> path : allPaths) {
                 Integer endPath = path.get(path.size() - 1);
-                boolean tooLong = (-1 != shortestLength) && (shortestLength < path.size());
-                if (!tooLong && !Utils.equals(endPath, endId)) { // partial path hasn't hit endId
+                boolean tooLong = (-1 != maxLength) && (maxLength < path.size());
+                if (!tooLong && filterShrine(endPath)) { // A.K.A the path is unfinished.
                     List<Integer> connections = get(endPath);
                     newAllPaths.remove(path);
                     if (null != connections) {
@@ -80,9 +90,9 @@ public class Paths {
                             if (!path.contains(shrineId)) { // not a loop
                                 List<Integer> newPath = Utils.makeList();
                                 newPath.addAll(path);
-                                if ((-1 == shortestLength) ||
-                                        (newPath.size() < shortestLength) ||
-                                        (shrineId == endId)) {
+                                if ((-1 == maxLength) ||
+                                        (newPath.size() < maxLength) ||
+                                        (filterShrine(shrineId))) {
                                     newPath.add(shrineId);
                                     newAllPaths.add(newPath);
                                     keepGoing = true;
@@ -97,9 +107,5 @@ public class Paths {
         } while (keepGoing);
 
         return allPaths;
-    }
-
-    static class EndOn {
-
     }
 }

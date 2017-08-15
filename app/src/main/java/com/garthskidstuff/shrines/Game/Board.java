@@ -50,25 +50,27 @@ class Board {
         return shrines;
     }
 
-    Set<List<Integer>> getPaths(Integer startId, Integer endId) {
-        return getPaths(connectionMap.keySet(), startId, endId, FindPathSettings.useAllShortest());
+    Set<List<Integer>> getPaths(Integer startId, Filter<Shrine> endFilter) {
+        return getPaths(connectionMap.keySet(), startId, endFilter, FindPathSettings.useAllShortest());
     }
 
-    Set<List<Integer>> getPaths(Set<Integer> knownShrines, Integer startId, Integer endId) {
-        return getPaths(knownShrines, startId, endId, FindPathSettings.useAllShortest());
+    @SuppressWarnings("unused")
+    Set<List<Integer>> getPaths(Set<Integer> knownShrines, Integer startId, Filter<Shrine> endFilter) {
+        return getPaths(knownShrines, startId, endFilter, FindPathSettings.useAllShortest());
     }
 
-    Set<List<Integer>> getPaths(Integer startId, Utils.Func<Shrine, Boolean> endId, FindPathSettings findPathSettings) {
-        return getPaths(connectionMap.keySet(), startId, endId, findPathSettings);
+    @SuppressWarnings("unused")
+    Set<List<Integer>> getPaths(Integer startId, Filter<Shrine> endFilter, FindPathSettings findPathSettings) {
+        return getPaths(connectionMap.keySet(), startId, endFilter, findPathSettings);
     }
 
-    Set<List<Integer>> getPaths(Set<Integer> knownShrines, Integer startId, Integer endId, FindPathSettings findPathSettings) {
-        Paths paths = makePathsTo(knownShrines, startId, endId, findPathSettings);
+    Set<List<Integer>> getPaths(Set<Integer> knownShrines, Integer startId, Filter<Shrine> endFilter, FindPathSettings findPathSettings) {
+        Paths paths = makePathsTo(knownShrines, startId, endFilter, findPathSettings);
         return paths.makeSetOfPathsFrom();
     }
 
-    protected Paths makePathsTo(Set<Integer> knownShrines, Integer start, Filter<Shrine> end, FindPathSettings findPathSettings) {
-        Paths paths = new Paths(start, end);
+    protected Paths makePathsTo(Set<Integer> knownShrines, Integer start, Filter<Shrine> endFilter, FindPathSettings findPathSettings) {
+        Paths paths = new Paths(start, endFilter, this);
         List<Pair<Integer, Integer>> q = Utils.makeList(new Pair<>(0, paths.startId));
 
         //noinspection WhileLoopReplaceableByForEach
@@ -91,10 +93,10 @@ class Board {
                     }
                 }
                 if ((FindPathType.USE_ALL_SHORTEST == findPathSettings.findPathType) &&
-                        (Utils.equals(item.second, paths.endId))) {
+                        (endFilter.test(getShrine(item.second)))) {
                     findPathSettings.findPathType = FindPathType.USE_MAX_DEPTH;
                     findPathSettings.depth = item.first;
-                    paths.shortestLength = item.first;
+                    paths.maxLength = item.first;
                 }
             }
         }
