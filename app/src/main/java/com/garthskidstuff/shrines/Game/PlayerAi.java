@@ -36,7 +36,7 @@ abstract class PlayerAi extends Player {
     protected void moveWorkersTowardsExplore() {
         Board backwards = board.transpose();
 
-        Game.Shuffled<Integer> knownWorlds = new Game.Shuffled<>(board.getShrineIds());
+        Shuffled<Integer> knownWorlds = new Shuffled<>(board.getShrineIds());
         for (Integer sourceId : ) {
             for (Integer targetId : board.getConnections(sourceId)) {
                 if (!board.getShrineIds().contains(targetId)) {//We found a unexplored shrine

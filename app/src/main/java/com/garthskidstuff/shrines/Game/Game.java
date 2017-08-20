@@ -1,7 +1,5 @@
 package com.garthskidstuff.shrines.Game;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -22,15 +20,15 @@ public class Game {
         public int maxConnections = 5;
         public int minMaxPopulation = 5; // The max size pop can grow is between min/max
         public int maxMaxPopulation = 40;
-        public int minMiningRateParts = (int)(Shrine.PARTS_MULTIPLIER * 1.5);
-        public int maxMiningRateParts = (int)(Shrine.PARTS_MULTIPLIER * 5);
+        public int minMiningRateParts = (int) (Shrine.PARTS_MULTIPLIER * 1.5);
+        public int maxMiningRateParts = (int) (Shrine.PARTS_MULTIPLIER * 5);
         // amount mining rate goes down each time a worker mines. 
         // The result after deviding needs to be even.
-        public int miningDegradationRateParts = Shrine.PARTS_MULTIPLIER / 1000; 
+        public int miningDegradationRateParts = Shrine.PARTS_MULTIPLIER / 1000;
         public int minWorkerRateParts = Shrine.PARTS_MULTIPLIER / 100;
         public int maxWorkerRateParts = Shrine.PARTS_MULTIPLIER / 5;
         public int homeMaxPopulation = 100;
-        public int homeMiningRateParts = (int)(Shrine.PARTS_MULTIPLIER * 2);
+        public int homeMiningRateParts = (int) (Shrine.PARTS_MULTIPLIER * 2);
         public int homeWorkerRateParts = Shrine.PARTS_MULTIPLIER / 10;
         public int homeNumAlters = 10;
         public int homeNumGold = 30;
@@ -155,8 +153,8 @@ public class Game {
         this.constants = constants;
         Roller roller = new Roller(constants.seed);
         int numShrines = roller.roll(constants.minShrines, constants.maxShrines);
-        Shuffled<String> namesShuffled = new Shuffled<>(nameList);
-        Shuffled<String> imagesShuffled = new Shuffled<>(imageList);
+        Shuffled<String> namesShuffled = new Shuffled<>(roller, nameList);
+        Shuffled<String> imagesShuffled = new Shuffled<>(roller, imageList);
 
         List<Shrine> shrines = Utils.makeList();
         for (int i = 0; i < numShrines; i++) {
@@ -253,88 +251,6 @@ public class Game {
         }
 //        Utils.Logd("MainActivity", "random seed = " + seed);
         return new Game(names, images, constants);
-    }
-
-    /**
-     * Shuffled is an iterator (with remove) that accesses the elements of the passed in list in a
-     * random order.
-     * "Shuffled" is a bit of misnomer because it only actually "shuffles" on demand.
-     * (By choosing a random remaining element.)
-     *
-     * @param <T> The type of the item returned by next/contained in oldList.
-     */
-    static class Shuffled<T> implements Iterator {
-        final List<T> old;
-        final List<Integer> innerList = Utils.makeList();
-        private final Roller roller;
-        private int now;
-
-        /**
-         * This just prepares a list of indexes, and keeps an reference to the passed in list.
-         *
-         * @param old the Collection we want to get random elements out of.
-         */
-        public Shuffled(Roller roller, List<T> old) {
-            this.roller = roller;
-            this.old = old;
-            int ix=0;
-            for (@SuppressWarnings("unused") T elm : old) {
-                innerList.add(ix++);
-            }
-
-        }
-
-        /**
-         * This creates a shuffled itterator, but note that original set is not affected by remove.
-         * @param roller
-         * @param oldSet
-         * @param <T>
-         * @return
-         */
-        public static <T> Shuffled<T> fromSet(Roller roller, Set<T> oldSet) {
-            List<T> old = new ArrayList<>();
-            for(T elem : oldSet) {
-                old.add(elem);
-            }
-            return new Shuffled (roller, old);
-        }
-
-        /**
-         * As long as the innerList isn't empty then we can run Next.
-         * (_Which_ item is next is decided in next().)
-         * @return can we run next safely.
-         */
-        @Override
-        public boolean hasNext() {
-            return !innerList.isEmpty();
-        }
-
-        /**
-         * Randomly fetches a remaining item.
-         *
-         * @return the randomly selected element.
-         */
-        @Override
-        public T next() {
-            now = roller.roll(0, innerList.size() - 1);
-            innerList.remove(now);
-            return old.get(now);
-        }
-
-        /**
-         * Not yet used. This removes the item at now (i.e the item returned by the most recent next)
-         * from the original list.
-         */
-        @Override
-        public void remove() {
-            for (int ix = 0; ix < innerList.size(); ix++) {
-                int item = innerList.get(ix);
-                if (item > now) {
-                    innerList.set(ix, 1 + item);
-                }
-            }
-            old.remove(now);
-        }
     }
 
     @Override
